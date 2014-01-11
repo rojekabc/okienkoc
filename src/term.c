@@ -426,10 +426,7 @@ Kod A:
 int goc_charWait()
 {
 	fd_set fds;
-	struct timeval tv;
 	int n = 0;
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
 	FD_ZERO( &fds );
 	FD_SET( STDIN_FILENO, &fds );
 	n = select( STDIN_FILENO + 1, &fds, NULL, NULL, NULL );

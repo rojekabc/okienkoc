@@ -66,6 +66,7 @@ int goc_maprawFill(GOC_HANDLER handler, GOC_StFillArea* area)
 		pos -= area->width;
 		pos += map->width;
 	}
+	return GOC_ERR_OK;
 }
 
 // uchwyt - okreslenie mapy

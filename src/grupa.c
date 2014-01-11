@@ -8,7 +8,7 @@
 #include "screen.h"
 #include "hotkey.h"
 
-extern const char* GOC_ELEMENT_GROUP = "GOC_Group";
+const char* GOC_ELEMENT_GROUP = "GOC_Group";
 
 static int groupPaint(GOC_HANDLER uchwyt)
 {

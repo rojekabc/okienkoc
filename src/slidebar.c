@@ -128,7 +128,7 @@ int goc_slidebarListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned
 			return GOC_ERR_REFUSE;
 		if ( !(slide->flag & GOC_EFLAGA_ENABLE) )
 			return GOC_ERR_REFUSE;
-		slidebarMove(slide, slide->position);
+		slidebarMove(uchwyt, slide->position);
 		return GOC_ERR_OK;
 	}
 	else if ( wiesc == GOC_MSG_FOCUSFREE )

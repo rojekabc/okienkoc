@@ -169,7 +169,7 @@ static void *xTermEventGenerator(void *arg)
 static int xTermInit()
 {
 	int bar;
-	XEvent event;
+	// XEvent event;
 
 	// open display connection
 	dpy = XOpenDisplay( NULL );
@@ -221,7 +221,7 @@ static int xTermInit()
 	// start registering events - if no listener do nothing
 	if ( pITerm->event )
 	{
-		int errcode = pthread_create(&thread, NULL, &xTermEventGenerator, NULL);
+		pthread_create(&thread, NULL, &xTermEventGenerator, NULL);
 	}
 	return 0;
 }

@@ -35,7 +35,6 @@ int goc_mapaposSetSize(GOC_HANDLER uchwyt, int d, int w)
 int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)handler;
-	GOC_COLOR lastkolor = 0;
 	GOC_StChar znak;
 	int i = map->nPunkt;
 
@@ -46,7 +45,7 @@ int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
 		// sprawdz, czy znajduje sie na rysowanym obszarze
 		if ( goc_areaIsInside( (*area), (*pointDraw) ) )
 		{
-			goc_systemSendMsg(handler, GOC_MSG_MAPGETCHAR, &znak, pointDraw);
+			goc_systemSendMsg(handler, GOC_MSG_MAPGETCHAR, &znak, (unsigned int)pointDraw);
 			if ( znak.code )
 			{
 				area->pElement[(pointDraw->y - area->y)*area->width + (pointDraw->x - area->x)] = znak;
@@ -74,7 +73,7 @@ int goc_mapaposPaint(GOC_HANDLER uchwyt, GOC_StArea *obszar, GOC_StPoint *punkt)
 		// sprawdz, czy znajduje sie na rysowanym obszarze
 		if ( goc_areaIsInside( (*obszar), (*pointDraw) ) )
 		{
-			goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETCHAR, &znak, pointDraw);
+			goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETCHAR, &znak, (unsigned int)pointDraw);
 			if ( znak.code )
 			{
 				goc_gotoxy(

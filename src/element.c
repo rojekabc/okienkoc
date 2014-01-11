@@ -248,9 +248,3 @@ void *goc_elementGetFunc(GOC_HANDLER uchwyt, const char *funkcjaId)
 	}
 	return NULL;
 }
-
-void goc_elementRegister()
-{
-	const char *name = "Element";
-	registerClassParented(name, "FileObject");
-}

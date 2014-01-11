@@ -6,7 +6,6 @@
 #include <signal.h>
 
 #include "okienkoc.h"
-#include "fileobject.h"
 #include "signals.h"
 #include "conflog.h"
 #include "iterm.h"

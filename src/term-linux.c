@@ -3,6 +3,7 @@
 #include <linux/kd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/select.h>
 #include "term.h"
 #include "iterm.h"
 #include "conflog.h"
@@ -270,7 +271,7 @@ static int linuxTermInit()
 		// start registering events - if no listener do nothing
 		if ( pITerm->event )
 		{
-			int errcode = pthread_create(&thread, NULL, &linuxTermEventGenerator, NULL);
+			pthread_create(&thread, NULL, &linuxTermEventGenerator, NULL);
 		}
 	}
 	else
@@ -283,7 +284,7 @@ static int linuxTermInit()
 		// start registering events - if no listener do nothing
 		if ( pITerm->event )
 		{
-			int errcode = pthread_create(&thread, NULL, &linuxStdTermEventGenerator, NULL);
+			pthread_create(&thread, NULL, &linuxStdTermEventGenerator, NULL);
 		}
 	}
 

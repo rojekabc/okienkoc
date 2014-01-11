@@ -30,7 +30,6 @@ int goc_isReadChar(GOC_IStream *is)
 // -2 GOC_ERROR
 int goc_isReadArray(GOC_IStream *is, unsigned char *pBuffer, unsigned int nBuffer)
 {
-	int c;
 	int cnt = 0;
 	if ( is == NULL )
 	{
@@ -49,7 +48,7 @@ int goc_isReadArray(GOC_IStream *is, unsigned char *pBuffer, unsigned int nBuffe
 	}
 	while ( nBuffer-- )
 	{
-		c = is->readChar(is);
+		int c = is->readChar(is);
 		if ( c < 0 )
 			break;
 		*pBuffer = (unsigned char)c;
@@ -59,7 +58,7 @@ int goc_isReadArray(GOC_IStream *is, unsigned char *pBuffer, unsigned int nBuffe
 	if ( cnt > 0 )
 		return cnt;
 	else
-		return c;
+		return -1;
 }
 
 char *goc_isReadLine(GOC_IStream *is)

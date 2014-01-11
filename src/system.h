@@ -1,7 +1,6 @@
 #ifndef _GOC_SYSTEM_H_
 #define _GOC_SYSTEM_H_
 #include "global.h"
-#include "fobclass.h"
 #include "iterm.h"
 
 extern const char* GOC_ELEMENT_SYSTEM;

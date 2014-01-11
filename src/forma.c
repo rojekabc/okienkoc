@@ -87,9 +87,7 @@ int goc_formShowLock(GOC_HANDLER uchwyt, int flags)
 int goc_formHide(GOC_HANDLER uchwyt)
 {
 	GOC_StForm *forma = (GOC_StForm*)uchwyt;
-	GOC_HANDLER uojc;
 	GOC_DEBUG("-> goc_formHide");
-	uojc = forma->ojciec;
 	forma->flag &= ~(GOC_EFLAGA_ENABLE | GOC_EFLAGA_PAINTED | GOC_FORMFLAGFOCUS);
 	goc_systemFocusOn(forma->focus);
 //	goc_systemFocusNext(uojc);

@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 #include "system.h"
 #include "screen.h"
 #include "conflog.h"

@@ -1,4 +1,6 @@
 #include "mempipestream.h"
+#include "memistream.h"
+#include "memostream.h"
 #include "conflog.h"
 #include <malloc.h>
 #include <string.h>
@@ -106,9 +108,8 @@ int goc_memPipeReadArray(GOC_MemPipeStream *pipe, unsigned char *pBuffer, unsign
 
 int goc_memPipeSize(GOC_MemPipeStream* pipe)
 {
-	int size = 0;
 	CHECK_NULL(pipe);
 	if ( pipe->istream != NULL )
-
-	return size;
+		return goc_isAvailable(pipe->istream);
+	return 0;
 }

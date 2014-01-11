@@ -2,7 +2,7 @@
 OBJS = system.o tablica.o term.o ramka.o screen.o element.o napis.o wpis.o \
 	mystr.o przycisk.o lista.o wybor.o pasek.o procent.o nbitpola.o \
 	maska.o forma.o plik.o font.o bits.o hotkey.o grupa.o slista.o \
-	plista.o timer.o global.o confxml.o fileobject.o fobclass.o maparaw.o \
+	plista.o timer.o global.o maparaw.o \
 	mapapos.o signals.o istream.o fileistream.o memistream.o tableiterator.o \
 	iterator.o properties.o arguments.o memostream.o ostream.o mempipestream.o \
 	slidebar.o
@@ -26,12 +26,12 @@ PREFIXINCLUDE = $(PREFIX)/include/okienkoc
 
 # Flagi kompilacji i linkowania
 # DEBUGCFLAGS = -Wall -g -D_DEBUG -I.
-DEBUGCFLAGS = -Wall -g -O0 -I/usr/include/libxml2 -D_DEBUG
-NORMALCFLAGS = -Wall -O2 -s -I/usr/include/libxml2
+DEBUGCFLAGS = -Wall -g -O0 -D_DEBUG
+NORMALCFLAGS = -Wall -O2 -s
 # DEBUGLFLAGS = -shared
 # DEBUGLFLAGS = -shared -lxml2
-DEBUGLFLAGS = -shared -lxml2 -lpthread memwatch.o
-NORMALLFLAGS = -s -shared -lxml2 -ldl -lpthread
+DEBUGLFLAGS = -shared -lpthread memwatch.o
+NORMALLFLAGS = -s -shared -ldl -lpthread
 
 # Pliki wyjsciowe dla zapisania flag kompilacji / debugowania
 CFLAGSFILE = .cflags
