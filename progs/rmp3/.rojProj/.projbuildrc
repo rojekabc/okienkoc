@@ -1,0 +1,12 @@
+PACKAGENAME="rmp3"
+VERSION="0.7"
+COPYCHANGEFILE="*.c *.h"
+COPYFILE="Makefile *.1 *.s *.dat playlist6"
+COPYDIR="control dokumentacja outoss playlist"
+LICENSE="GPL"
+DEVPACKAGENAME=$PACKAGENAME
+DEVVERSION="$VERSION-dev"
+DEVCOPYFILE="$COPYCHANGEFILE $COPYFILE .projbuildrc"
+DEVCOPYDIR="$COPYDIR"
+AUTHOR="Piotr Rojewski"
+YEAR="2005"

@@ -1,0 +1,100 @@
+Sterownik wyjscia:
+
+int audioOpen(AudioStruct*)
+int audioClose(AudioStruct*)
+int audioResetParemeters(audio_info_struct *ai)
+int audioGetParameters(audio_info_struct *ai)
+int audioGetRate(audio_info_struct *ai)
+int audioSetRate(audio_info_struct *ai)
+int audioSetChannels(audio_info_struct *ai)
+int audioSetFormat(audio_info_struct *ai)
+int audioGetFormats(audio_info_struct *ai)
+int audioPlaySamples(audio_info_struct *ai, uchar *buf, int len)
+
+Sterownik wejscia (rozne formaty plikow):
+
+getDescription
+init(void)
+isOurFile(filename*)
+playFile(filename*)
+pause()
+stop()
+seek(int time)
+cleanup()
+getSongInfo()
+
+----------------------------------------------------------------------------
+Obecnie sposob dekodowania obsluguje tylko pliki MP3. Wyjscie moze trafiac
+na port audio lub plik wav.
+Podczas wywolania play_audio jest rozpoznawany format MP3 - layer 1, 2 lub 3,
+nastepnie odpowiednie jest wywolywane do_layout1 (2,3), ktore wywoluje
+funkcje flush_audio, a te wysyla na odpowiednie wyjscie odpowiedni plik.
+
+Chce to przerobic tak, ze plik wejsciowy bedzie dyktowal sposob dekodowania.
+Ten spowoduje zaladowanie odpowiedniego modulu dekodujacego ow plik.
+Natomiast wyprowadzenie wyjscia nie bedzie sie odbywalo na zasadzie
+rozpoznania ustawien, lecz poprzez podmiane biblioteki kontrolujacej wyjscie.
+
+Drugie, moze nalezaloby uruchomic drugi proces, ktory zajmowalby sie tylko
+onsluga grania. Trzeba tylko zamiescic jakas pamiec wspoldzielona, zeby mozna
+pomiedzy procesami przekazywac polecenia.
+-------------------------------------------------------------------------------
+Aplikacja g³ówna:
+- stanowi program uruchomieniowy
+- przechwytuje sygna³y sterowania pochodz±ce z klawiatury
+- ³aduje modu³ wyj¶ciowy
+- inicjuje mixer'a
+- obs³uguje mixer'a
+- ma funkcje, która zwraca listê dostêpnych modu³ów wej¶ciowych
+- ³aduje modu³ playlisty
+- ma funkcje interpretuj±ce plik konfiguracyjny
+- foldery, w których trzyma pliki konfiguracyjne
+
+W±tek d¼wiêkowy/Modu³ wej¶ciowy
+- stanowi modu³ dekoduj±cy, który jest uruchamiany w osobnym w±tku
+- dekoduje podany plik
+- zdekodowan± próbkê przesy³a poprzez funkcje podstawowe na kartê d¼wiêkow±
+- powinien uruchomic osobny watek, ktory bedzie gra³ piosenkê i powróciæ do
+  programu g³ównego
+
+Modu³ wyj¶ciowy
+- posiada zestaw funkcji u¿ywanych do przekierowania danych wynikowych do
+  odpowiedniego pliku/urz±dzenia. Do niego docieraj± dane o podstawowej,
+	zdekodowanej formie
+
+Modu³ playlist'y
+- modu³ zarz±dzaj±cy playlist±
+- modu³ nie powinien byæ osobnym w±tkiem. Po wykonaniu zadania ma zakoñczyæ siê.
+- posiada funkcje:
+  const char *nextSong()
+		zwraca nazwe pliku lub NULL
+	const char *previousSong()
+		zwraca nazwe pliku lub NULL
+	shuffleMode(uchar)
+		ustalenie trybu losowania z listy
+	init
+		zainicjowanie modu³u
+	cleanup
+		wyczyszczenie przed usunieciem modu³u
+	create
+		za³o¿enie listy z argumentem listy piosenek
+	// W wersji pozniejszej
+	loadListFromFile(const char *filename)
+	addFilesInDir(dirname)
+	remFilesInDir(dirname)
+	printList(FILE*)
+
+Struktura katalogow:
+	Katalog:
+	*playlist
+		Modu³ playlisty
+
+	Modu³ kodeka
+		init(play_samples_function)
+			Zainicjowanie modulu
+		setparameter(int param, void *arg)
+			Ustawienie parametru modulu
+		int isMyFile(const char *filename)
+			Okre¶lenie, czy dany plik nalezy do kodeka
+		playFile(const char *filename)
+			Graj plik

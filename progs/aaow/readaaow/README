@@ -1,0 +1,7 @@
+List of files and programs
+aaow.c aaow.h - files generated from aaow.xml by fobBuilder. Contains basic structures and data of game.
+caaow.c - program which read original data files, view it and converts it to xml.
+data - folder witch input data of campaigns
+fobHeader.h - basic header of fobBuilder for serialization, deserialization and creation of fob structures
+raaow.c - just reading and printing data files (not xml)
+rxml.c - read and view xml data files

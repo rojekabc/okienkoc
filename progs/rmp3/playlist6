@@ -1,0 +1,169 @@
+#!/bin/sh
+# ----------------------- USTAWIENIA UZYTKOWNIKA -----------------------
+#katalog listy
+listdir=~/.playlist
+#plik temporary
+tmpfile=.tmp
+#nazwa listy domyÂ¶¶lnej
+nazwalisty=.default
+#polecenie odtwarzania z lista piosenek MOJE
+odtw="rmp3 -z -@"
+#Czy nalezy wykonac automatyczne inicjowanie podczas startu
+initauto=true
+# Domy¶lny katalog, w którym s± umieszczone piosenki
+sounddir=~/.playlist/.snddir
+# Czy autoamtycznie pryebudowywaæ przy uruchamianiu listê list z sounddir
+rebuiltinit=true
+# polecenia inicjuj±ce dzia³anie programu
+function initcmd() {
+	return;
+}
+# ----------------------- KONIEC USTAWIEN UZYTKOWNIKA -----------------------
+# ----------------------- ZMIENNE PROGRAMU ----------------------------------
+#zmienna pomocnicza
+temp=
+# aktualny wybór elementu
+wybor=-1
+#wersja programu
+wer=0.0.6
+#numer procesu grajacego
+pid=0
+#lista niezbêdników do dzia³ania
+proglist="grep gawk find ls chmod dialog rm less cat mv mkdir kill pwd"
+
+# Usun listy muzyczne
+function clearList()
+{
+	rm -f $listdir/* 2> /dev/null
+}
+function buildlist() {
+	# Rozpocznij tworzenie nowych
+	temp=`pwd`
+	OIFS=$IFS
+	IFS=$'\n';
+	for i in `find -L . -type d`; do
+		echo $i > $listdir/$tmpfile
+		temp2=`gawk '{gsub(/\./,"");sub(/\//,"");gsub(/\//,"-");gsub(/\[/,"");gsub(/\]/,"");gsub(/\ /,"");print $0}' $listdir/$tmpfile`
+		cd $i
+		pwd > $listdir/$tmpfile
+		find `pwd` -name "*.[Mm][pP]3" -maxdepth 1 > $listdir/$tmpfile
+		find `pwd` -name "*.[Ww][mM][aA]" -maxdepth 1 >> $listdir/$tmpfile
+		if [ -s $listdir/$tmpfile ]; then
+			mv $listdir/$tmpfile $listdir/$temp2
+			echo "Zak³adam listê $temp2"
+		fi
+		cd $temp
+	done
+	IFS=$OIFS
+	return;
+}
+# ----------------------- KONIEC ZMIENNYCH PROGRAMU -------------------------
+# ----------------------- START APLIKACJI SKRYPTOWEJ ------------------------
+clear
+# sprawdzenie czy istnieja polecenia niezbedne do dzialania listy
+for i in $proglist; do
+	which $i > /dev/null 2> /dev/null
+	if [ ! "$?" == "0" ]; then
+		echo "Nie odnaleziono programu niezbêdnego do dzia³ania tej aplikacji: $i"
+		exit
+	fi
+done
+# Obecno¶æ katalogu listy
+if [ ! -d $listdir ]; then
+    echo "Zakladam katalog $listdir"
+    echo ""
+    mkdir $listdir
+    chmod 700 $listdir
+fi
+# Obecno¶æ domy¶lnej listy
+if [ ! -e $listdir/$nazwalisty ]; then
+    echo "Zakladam plik listy $nazwalisty"
+    echo ""
+    echo "" > $listdir/$nazwalisty
+    chmod 600 $listdir/$nazwalisty
+fi
+if [ -n "$*" ]; then
+	#Parametry nie wskazane
+	echo "Aplikacja nie przyjmuje parameterów"
+	exit
+fi
+#Czy wykonaæ automatyczne inicjowanie
+if [ "$initauto" == "true" ]; then
+	initcmd
+fi
+# Czy przebudowywaæ
+if [ "$rebuiltinit" == "true" ]; then
+	clearList;
+	for i in $sounddir; do
+		cd $i
+		buildlist
+	done
+fi
+# Menu odpal i operuj na nim
+while (( $wybor!=0 )); do
+dialog --title "Rojkowa lista piosenek" \
+--menu "Wersja programu $wer" 20 40 12\
+ "1" "Graj"\
+ "2" "Wybierz listy do grania"\
+ "3" "Kreator list"\
+ "4" "Usuñ listy"\
+ "5" "Inicjuj"\
+ "6" "Wyczysc listê piosenek"\
+ "7" "Pokaz liste piosenek"\
+  2> $listdir/$tmpfile
+wybor=`cat $listdir/$tmpfile`
+	case $wybor in
+	2)
+	    ls -1 $listdir > $listdir/$tmpfile
+	    opcje=""
+	    x="0"
+	    for i in $(cat $listdir/$tmpfile); do
+				x="1"
+				opcje="$opcje $i ! off"
+	    done
+			echo $opcje
+	    if [ $x == "1" ]; then
+	    dialog --title "Rojkowa lista piosenek" --separate-output --checklist "Wybierz listy do zagrania" 20 70 12 $opcje 2> $listdir/$tmpfile
+	    rm $listdir/$nazwalisty
+	    for i in $(cat $listdir/$tmpfile); do
+				cat $listdir/$i >> $listdir/$nazwalisty
+	    done
+	    fi
+	    ;;
+	1)
+	    clear
+	    $odtw$listdir/$nazwalisty 2> /dev/null;
+	    ;;
+	3)
+		# Ju¿ istnieje mo¿liwo¶æ zapisywania z szeregu katalogów
+	    clear
+	    echo "Przejd¼ do katalogu, w którym s± piosenki nadaj±ce siê na listê."
+	    echo "Nastêpnie wydaj polecenie 'lista'."
+	    temp=""
+			cd $sounddir
+	    while [ "$temp" != "lista" ]; do
+		$temp
+		pwd
+		read temp
+	    done
+		buildlist
+		echo "Naci¶nik Enter"
+		read
+	    ;;
+	4)
+	    rm -f $listdir/* 2> /dev/null
+	    ;;
+	5)
+			initcmd
+	    ;;
+	6)
+	    rm $listdir/$nazwalisty
+	    ;;
+	7)
+	    less $listdir/$nazwalisty
+	    ;;
+	*)
+	    exit
+	    ;;
+	esac
+done

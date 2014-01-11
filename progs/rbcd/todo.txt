@@ -1,0 +1,10 @@
+Done - Dodaæ operacjê mno¿enia * 2 (uproszczony algorytm)
+Check - Dodaæ mno¿enie oparte na operacji mno¿enia*2 i rozbiciu na czynniki
+  z algorytmu RSA
+Done - Dodaæ operacjê odejmowania, która de facto stanowi dodawanie liczby normalnej
+  i odwróconej
+TODO - Spróbowaæ opracowaæ algorytm dzielenia !
+TODO - W dzieleniu wyznaczac dwie liczby: wynik dzielenia i reszte
+TODO - Dodaæ funkcjê, która zamienia³aby resztê i dzieln± na liczbê u³amkow±
+  z dowoln± liczb± miejsc po przecinku.
+TODO - stworzyæ prosty kalkulator pozwalaj±cy na liczenie przy u¿yciu BCD

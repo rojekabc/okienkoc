@@ -1,0 +1,20 @@
+Nazwa z uname -a
+Uptime
+CPU Usage
+RAM Usage
+Swap Usage
+Processes number / Running
+Network Download / Upload
+Filesystem: df -h
+Temperatures: CPU
++ top
+Battery
+Swap
+Date / Time
+Sprawdzanie poczty
+Pod³±czenie do player-a muzyki
+
+Podpinanie us³ug:
+1 - wskazanie pliku, z którego ma byæ odczytywana warto¶æ + filtr odczytuj±cy
+2 - wskazanie polecenia, jakie ma zostaæ wykonane, aby pozyskaæ warto¶æ
+3 - okre¶lenie czêsto¶ci od¶wie¿ania niektórych us³ug

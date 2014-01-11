@@ -1,0 +1,11 @@
+Zasdy pliku konfiguracyjnego
+----------------------------
+zmienna=warto¶æ
+
+Konfiguracja mixera
+-------------------
+Konfiguracja modu³ów
+--------------------
+output=modu³.so
+control=modu³.so
+playlist=modu³.so

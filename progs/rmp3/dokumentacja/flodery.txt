@@ -1,0 +1,17 @@
+zmienne:
+PROGNAME
+PREFIX
+~
+
+PREFIX/bin
+	katalog z zainstalowanym programem wykonywalnym
+PREFIX/share/PROGNAME
+	katalog z bibliotekami dzielonymi
+PREFIX/share/PROGNAME/control
+	biblioteki kontroluj±ce interakcjê z u¿ytkownikiem
+PREFIX/share/PROGNAME/playlist
+	biblioteki kontroluj±ce przemieszczenia po li¶cie
+PREFIX/share/PROGNAME/output
+	biblioteki kontroluj±ce urz±dzenie wyj¶cia
+~/.PROGNAMErc
+	plik konfiguracyjny u¿ytkownika, który wykonuje program

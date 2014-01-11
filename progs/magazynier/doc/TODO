@@ -1,0 +1,13 @@
+- Dodanie zachowania dla plansz wiêkszych ni¿ dostêpna przestrzeñ na monitorze
+	Czyli przesuwanie widoku planszy dodatkowymi klawiszami, przesuwanie widoku
+	w zale¿no¶ci od po³o¿enia gracza, ograniczenie po³o¿onej maski, aby nie
+	nadpisywa³a widoczne komunikaty.
+- Komunikaty b³êdów w okienkach na sleep'ie lub getchar.
+- Umo¿liwienie zapisywania wykonanych ruchów rozwi±zuj±cych dan± planszê do
+	pliku oraz odczytywania takiego pliku dla konkretnej planszy.
+- Dostosowywanie d³ugo¶ci okienek w zale¿no¶ci od umieszczonych komunikatów
+	lub taka ich korekcja, aby nie by³o niepotrzebnych baboli przy umieszczeniu
+	zbyt d³ugiego napisu.
+- Wypisanie pomocy po naci¶niêciu przycisku F1.
+- Dodanie pliku ./configure z mozliwo¶ci± statycznego linkowania plików
+  z bibliotekami libmlotek oraz libokienko

@@ -1,0 +1,20 @@
+<Definitions>
+	<Class name="Klasa">
+		<Field name="name" type="string" />
+		<Table name="list" type="string" />
+		<Method name="Serialize" />
+		<Method name="Deserialize" />
+		<Method name="Free" />
+		<Method name="Alloc" />
+	</Class>
+	<Class name="BaseObject" parent="Klasa">
+		<Field name="value" type="uint" />
+		<Field name="type" type="byte" />
+		<Method name="Init" />
+		<Method name="Serialize" />
+		<Method name="Deserialize" />
+		<Method name="Alloc" />
+		<Method name="Free" />
+		<Table name="ciagi" type="string" />
+	</Class>
+</Definitions>

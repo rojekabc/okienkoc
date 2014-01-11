@@ -1,0 +1,53 @@
+AC_PREREQ(2.57)
+AC_INIT([docmanager], [0.1], [rojek_abc@o2.pl])
+AC_PROG_CC
+AC_HEADER_STDC
+
+#enable_debug="no";
+#enable_xml="yes";
+#enable_tests="yes";
+build_objects="";
+build_progs="fobBuilder";
+cflags="-Wall";
+lflags="-lokienkoc -lm";
+
+AC_ARG_ENABLE([debug], [  --enable-debug	Compile in debug version (Default:no)])
+if test -z $enable_debug; then
+	enable_debug="no";
+fi
+if test "$enable_debug" == "yes"; then
+	cflags="$cflags -D_DEBUG_ -g";
+	lflags="$lflags -lmpatrol -lbfd -liberty";
+else
+	cflags="$cflags -O2";
+fi
+
+AC_ARG_ENABLE([xml], [  --enable-xml	Story in XML file format (Default:yes)])
+if test -z $enable_xml; then
+	enable_xml="yes";
+fi
+if test "$enable_xml" == "yes"; then
+	cflags="$cflags -D_XMLFILE_";
+	lflags="$lflags -lxml2";
+	build_objects="$build_objects";
+else
+	build_objects="$build_objects";
+fi
+
+AC_ARG_ENABLE([tests], [  --enable-tests	Build tests (Default:yes)])
+if test -z $enable_tests; then
+	enable_tests="yes";
+fi
+if test "$enable_tests" == "yes"; then
+	build_progs="$build_progs";
+fi
+
+outputfiles="$outputfiles Makefile";
+
+AC_SUBST([cflags])
+AC_SUBST([lflags])
+AC_SUBST([build_objects])
+AC_SUBST([build_progs])
+AC_SUBST([system_conffile])
+AC_PROG_MAKE_SET([make])
+AC_OUTPUT([$outputfiles])

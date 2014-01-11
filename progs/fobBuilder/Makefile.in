@@ -1,0 +1,69 @@
+OBJS = @build_objects@
+	
+OUTLIB = 
+LIBLINK =
+
+INCLUDEPATH =
+INCLUDEPATHS = -I/usr/include/libxml2 -I/home/projewski/include
+
+OUTERROR = ERRORS
+
+PREFIX = @prefix@
+CFLAGS = @cflags@
+
+#DEBUGCFLAGS = -Wall -g -D_DEBUG
+#NORMALCFLAGS = -Wall -O2 -s
+#DEBUGLFLAGS = -shared
+#NORMALLFLAGS = -s -shared
+
+PROG = @build_progs@
+# PROGLIBS = -lokienkoc -lm -lxml2
+PROGLIBS = -L/home/projewski/lib @lflags@
+PROGINCLUDE = -I/usr/local/include -I/home/projewski/include -I/usr/include/libxml2
+
+all: prepare $(OUTLIB) $(OBJS) $(PROG)
+
+prepare:
+	@rm -f $(OUTERROR)
+
+$(OBJS): %.o: %.c $(INCLUDEFILE)
+	@echo "--- Compile $< ---" >> $(OUTERROR)
+	@echo $"Compile $<$"
+	@gcc $< @cflags@ -c -o $@ $(INCLUDEPATHS) 2>> $(OUTERROR)
+
+$(OUTLIB): $(OBJS)
+	@echo $"--- Link $@ ---$" >> $(OUTERROR)
+	@echo $"Link $@$"
+	@gcc @lflags@ -o $@ $(OBJS) $(LIBSIN) 2>> $(OUTERROR)
+	@ln -sf $(OUTLIB) $(LIBLINK)
+
+clean:
+	@echo $"Cleaning builds$"
+	@rm -f $(OBJS) $(OUTLIB) $(OUTERROR) $(LIBLINK) $(PROG) *~ */*~
+
+cleanconf:
+	@echo $"Cleaning configuration trash$"
+	@rm -rf config.log autom4te.cache config.status
+
+cleanpostconf:
+	@echo $"Cleaning postconfiguration$"
+	@rm -f configure Makefile global.h
+
+cleanall: clean cleanconf cleanpostconf
+
+install:
+	install -d $(PREFIX)/bin
+	install -m 0755 $(PROG) $(PREFIX)/bin
+	sh createconf.sh
+	install -d $(PREFIX)/share/docmanager
+	install -m 0644 docmanagerrc $(PREFIX)/share/docmanager
+	rm -f docmanagerrc
+
+uninstall:
+	rm -f $(PREFIX)/bin/$(PROG)
+	rm -rf $(PREFIX)/share/docmanager
+
+$(PROG): %: %.c $(OBJS)
+	@echo $"--- Build $@ ---$" >> $(OUTERROR)
+	@echo $"Build $@$"
+	@gcc -o $@ $(CFLAGS) $(PROGLIBS) $(PROGINCLUDE) $(OBJS) $@.c 2>> $(OUTERROR)

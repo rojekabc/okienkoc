@@ -1,0 +1,31 @@
+Wersja 1.1
+- Umo¿liwienie ustawiania w³asnego znaku komentowania konfiguracji w funkcji
+- Ulepszenie sposobu odczytu plików konfiguracji tablicowej tak, aby
+	poch³ania³y mniej zasobów
+- Zliczanie liczby dostêpnych poziomów poprzez przeszukiwanie folderu, zamiast
+	umieszczania takiej informacji w pliku konfiguracyjnym
+- Poszukiwanie angielskiego pliku opisu deskrypcji global.desc
+- Rozpoznawanie w plikach plansz tytu³u
+- Rozpoczynanie liczenia czasu (odczyt zegara) w momencie wykonania pierwszego
+	ruchu, zamiast rozpoczêcia liczenia czasu zaraz po za³adowaniu
+- Dodanie mo¿liwo¶ci cofania wykonanych ruchów na klawisz 'u'
+- Dodanie klawisza resetowania do pocz±tkowego rozstawienia 'r'
+- Umo¿liwienie ustalania znaczków i kolorków w pliku konfiguracyjnym.
+- Wyrzucenie wszystkich tekstów do pliku konfiguracyjnego, co pozwala na
+	t³umaczenia
+- Umo¿liwienie ustalania zestawu plansz z linii poleceñ
+- Logowanie wyników z u¿yciem rozró¿nienia na nazwe zestawu u¿ytych plansz
+- Problem: Podczas operacji cofania ruchu jest ¼le przywracany stan zaliczonych
+	miejsc magazynu - poprawiony
+- Dodanie napisu gratulacyjnego po zakoñczeniu planszy
+Wersja 1.0
+	Powsta³ program Magazynier. Pomys³ samej gry ju¿ istnieje od dawna. Napisanie
+	jej w trybie tekstowym zosta³o wykonane w programie o nazwie SiSi. Niestety
+	spory nak³ad bug'ów jaki tam siê znajdowa³ uniemo¿liwi³ swobodne poprawiane.
+	Dlatego narodzi³ siê Magazynier.
+	- Wersja jest po Polsku.
+	- Wczytuje plansze.
+	- Posiada system logowania wyników.
+	- Umo¿liwia ustawianie ogólnej konfiguracji w g³ównym pliku ustawieñ.
+	- Umo¿liwia granie :+)
+	- Jest badana pod k±tem wycieków pamiêci.

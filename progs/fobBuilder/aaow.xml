@@ -1,0 +1,160 @@
+<Definitions>
+	<!-- Konfiguracje dla rozgrywki -->
+	<Class name="Configuration">
+		<!-- SUPPLY Object -->
+		<Field name="supplyObjectsMax" type="byte" description="liczba obiektow, ktorym bedzie udzielane zaopatrzenie" />
+		<Field name="supplyRadius" type="byte" description="promien w jakim bedzie dokonywane zaopatrzenie" />
+		<Field name="supplyTick" type="byte" description="co ile tur bedzie generowany obiekt zaopatrzenia" />
+		<Field name="supplyStore" type="byte" description="ilosc jednostek zaopatrzeniowych, jakie moga byc magazynowane" />
+		<Field name="supplyRepairTick" type="byte" description="ile tur zajmuje usuniecie jednostki uszkodzen" />
+		<!-- GAME -->
+		<Field name="tickTime" type="byte" description="liczba sekund przypadajaca na jedna jednostke czasowa" />
+		<Field name="flySeen" type="string" description="okreslenie, kiedy zostana zauwazone samoloty przeciwnika" />
+		<!-- FACTORY Object -->
+		<Field name="factoryRadius" type="byte" description="promien,  wjakim bedzie wysylany samolot na lotnisko" />
+		<Field name="factoryStore" type="byte" description="ilosc samolotow, jakie mozna magazynowac w fabryce" />
+		<Field name="factoryTick" type="byte" description="ile tur zajmuje zbudowanie " />
+		<Field name="factoryRepairTick" type="byte" description="ile tur zajmuje usuniecie jednostki uszkodzen" />
+		<!-- CITY Object -->
+		<Field name="cityWorkersRadius" type="byte" description="promien, w jakim miasto dostarcza swych pracownikow do fabryk" />
+		<Field name="citySupplyTick" type="byte" description="ile tur zajmuje miastu wygenerowanie jednostki zaopatrzenia" />
+		<Field name="citySypplyRadius" type="byte" description="w jakim promieniu miasto rozprowadza zaopatrzenie" />
+		<Field name="cityRepairTick" type="byte" description="ile tur zajmuje usuniecie poziomu zniszczen" />
+		<!-- Airport Object -->
+		<Field name="airportFlyMax" type="byte" description="maksymalna liczba samolotow, jakie moga znajdowac sie na lotnisku" />
+		<Field name="airportSupplyMax" type="byte" description="maksymalna liczba zaopatrzenia militarnego, jakie moze skladowac lotnisko" />
+		<Field name="airportRepairTick" type="byte" description="ile tur zajmuje usuniecie poziomu zniszczen" />
+		<!-- Village Object -->
+		<Field name="villageSupplyTick" type="byte" description="ile tur zajmuje wygenerowanie jednostki zaopatrzenia militarnego" />
+		<Field name="villageSupplyRadius" type="byte" description="w jakim promieniu rozprowadzane jest zaopatrzenie" />
+		<Field name="villageRepairTick" type="byte" description="ile tur zajmuje usuniecie jednostki uszkodzen" />
+		<!-- Fort Object -->
+		<Field name="fortRepairTick" type="byte" description="ile tur zajmuje usuniecie jednostki uszkodzen" />
+		<!-- Capital Object -->
+		<Field name="capitalRepaitTick" type="byte" description="ile tur zajmuje usuniecie jednostki uszkodzen" />
+	</Class>
+
+	<Class name="ValuePunkt">
+		<Field name="x" type="uint" />
+		<Field name="y" type="uint" />
+		<Field name="value" type="int" />
+	</Class>
+
+	<!-- Samoloty -->
+	<Class name="Fly">
+		<Field name="type" type="byte" />
+		<Field name="pilotName" type="string" description="imie pilota" />
+		<Field name="pilotExp" type="byte" />
+		<Field name="live" type="byte" description="uszkodzenia 100 brak" />
+		<Field name="flag" type="byte" description="przynaleznosc" />
+		<Field name="fuel" type="byte" />
+	</Class>
+	<Class name="Bomber" parent="Fly">
+		<Field name="bomb" type="byte" description="liczba bomb" />
+	</Class>
+	<Class name="Fighter" parent="Fly">
+	</Class>
+
+	<!-- Budynki -->
+	<Class name="Build" parent="ValuePunkt">
+		<Field name="live" type="byte" description="poziom uszkodzen" />
+		<Field name="repairTick" type="byte" />
+		<Field name="flag" type="byte" description="przynaleznosc narodowa" />
+	</Class>
+
+	<Class name="Supply" parent="Build">
+		<Table name="dest" type="ValuePunkt" />
+		<Field name="tick" type="byte" description="aktualny tick" />
+		<Field name="store" type="byte" description="liczba jednostek w magazynie" />
+	</Class>
+	<Class name="Factory" parent="Build">
+		<Field name="tick" type="byte" />
+		<Table name="store" type="Fly" serialize="select" />
+		<Table name="dest" type="ValuePunkt" />
+	</Class>
+	<Class name="City" parent="Build">
+		<Field name="tick" type="byte" />
+	</Class>
+	<Class name="Airport" parent="Build">
+		<Table name="fly" type="Fly" serialize="select" />
+		<Field name="store" type="byte" />
+	</Class>
+	<Class name="Village" parent="Build">
+		<Field name="tick" type="byte" />
+	</Class>
+	<Class name="Fort" parent="Build">
+	</Class>
+	<Class name="Capital" parent="Fort">
+	</Class>
+	<Class name="BridgeH" parent="Build">
+	</Class>
+	<Class name="BridgeV" parent="Build">
+	</Class>
+
+	<Class name="MoveUnit" parent="ValuePunkt">
+		<Field name="identifier" type="int" />
+	</Class>
+
+	<Class name="SupplyUnit" parent="MoveUnit">
+		<Field name="destx" type="byte" />
+		<Field name="desty" type="byte" />
+		<Field name="destbuild" type="Build" />
+	</Class>
+
+	<!-- Misje dla samolotow -->
+	<Class name="Mission">
+		<Field name="type" type="byte" />
+	</Class>
+	<Class name="Eskadra" parent="MoveUnit">
+		<Table name="fly" type="Fly" serialize="select" />
+		<Table name="mission" type="Mission" serialize="select" />
+	</Class>
+	<Class name="Scaning" parent="Mission">
+		<Field name="x" type="byte" />
+		<Field name="y" type="byte" />
+	</Class>
+	<Class name="Bombard" parent="Mission">
+		<Field name="x" type="byte" />
+		<Field name="y" type="byte" />
+	</Class>
+	<Class name="FrontAttack" parent="Mission">
+		<Field name="x" type="byte" />
+		<Field name="y" type="byte" />
+	</Class>
+	<Class name="FrontHelp" parent="Mission">
+		<Field name="x" type="byte" />
+		<Field name="y" type="byte" />
+	</Class>
+	<Class name="Land" parent="Mission">
+		<Field name="x" type="byte" />
+		<Field name="y" type="byte" />
+	</Class>
+	<Class name="FlyAttack" parent="Mission">
+		<Field name="identifier" type="int" />
+	</Class>
+
+	<!--
+	terrainMap:
+	2 bity na typ terenu
+	00 - clear
+	01 - forest
+	10 - river
+	11 - mountain
+	3 bity na przynaleznosc terenu, w tym 000 to ziemia niczyja
+	1 bit czy istnieje front, 01 to tak
+	buildMap:
+	polozenie budynkow
+	flyMap:
+	polozenie eskadr
+	-->
+	<Class name="GameData">
+		<Field name="title" type="string" />
+		<Field name="description" type="string" />
+		<Field name="mapwidth" type="byte" />
+		<Field name="mapheight" type="byte" />
+		<Field name="terrain" type="string" />
+		<Field name="front" type="string" />
+		<Table name="build" type="Build" />
+		<Table name="fly" type="Eskadra" />
+	</Class>
+</Definitions>

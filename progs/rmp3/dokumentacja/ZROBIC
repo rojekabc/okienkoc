@@ -1,0 +1,10 @@
+- plik konfiguracyjny i rozmieszczenie pakietu instalacyjnego
++ cofanie do poprzedniej piosenki
+	Zostalo wykonane poza graniem z opcja full-random
++ reakcja na pojedyncze nacisniecia klawiszy
+- eliminacja zgrzytow na cietych piosenkach ( filtr )
+- umozliwienie recznego ustawiania wlasnych klawiszy funkcyjnych
+- zapamietywanie domyslnych ustawien mixer'a
+- wbudowanie systemu zarzadzania listami piosenek w program
+- zadbanie o funkcjê wywo³ywan± przy koñcu programu, który zadba o zwolnienie
+  zasobów (modu³ów i pamiêci).

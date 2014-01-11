@@ -1,0 +1,70 @@
+[GOC_INFO] [rlandgener.c:832] Turn:   0
+[GOC_INFO] [rlandgener.c:696] Filling up with 6
+[GOC_INFO] [rlandgener.c:832] Turn:   1
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 65
+[GOC_INFO] [rlandgener.c:832] Turn:   2
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 103
+[GOC_INFO] [rlandgener.c:832] Turn:   3
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 122
+[GOC_INFO] [rlandgener.c:832] Turn:   4
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 129
+[GOC_INFO] [rlandgener.c:832] Turn:   5
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 83
+[GOC_INFO] [rlandgener.c:832] Turn:   6
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 51
+[GOC_INFO] [rlandgener.c:832] Turn:   7
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 88
+[GOC_INFO] [rlandgener.c:832] Turn:   8
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 122
+[GOC_INFO] [rlandgener.c:832] Turn:   9
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 86
+[GOC_INFO] [rlandgener.c:832] Turn:  10
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 52
+[GOC_INFO] [rlandgener.c:832] Turn:  11
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 139
+[GOC_INFO] [rlandgener.c:832] Turn:  12
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 138
+[GOC_INFO] [rlandgener.c:832] Turn:  13
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 100
+[GOC_INFO] [rlandgener.c:832] Turn:  14
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 119
+[GOC_INFO] [rlandgener.c:832] Turn:  15
+[GOC_INFO] [rlandgener.c:748] Generate land 1 with landmass size 54
+[GOC_INFO] [rlandgener.c:832] Turn:  16
+[GOC_INFO] [rlandgener.c:748] Generate land 2 with landmass size 116
+[GOC_INFO] [rlandgener.c:832] Turn:  17
+[GOC_INFO] [rlandgener.c:748] Generate land 2 with landmass size 142
+[GOC_INFO] [rlandgener.c:832] Turn:  18
+[GOC_INFO] [rlandgener.c:748] Generate land 2 with landmass size 108
+[GOC_INFO] [rlandgener.c:832] Turn:  19
+[GOC_INFO] [rlandgener.c:748] Generate land 2 with landmass size 50
+[GOC_INFO] [rlandgener.c:832] Turn:  20
+[GOC_INFO] [rlandgener.c:748] Generate land 2 with landmass size 128
+[GOC_INFO] [rlandgener.c:832] Turn:  21
+[GOC_INFO] [rlandgener.c:748] Generate land 4 with landmass size 103
+[GOC_INFO] [rlandgener.c:832] Turn:  22
+[GOC_INFO] [rlandgener.c:748] Generate land 4 with landmass size 144
+[GOC_INFO] [rlandgener.c:832] Turn:  23
+[GOC_INFO] [rlandgener.c:748] Generate land 4 with landmass size 112
+[GOC_INFO] [rlandgener.c:832] Turn:  24
+[GOC_INFO] [rlandgener.c:748] Generate land 5 with landmass size 102
+[GOC_INFO] [rlandgener.c:832] Turn:  25
+[GOC_INFO] [rlandgener.c:748] Generate land 5 with landmass size 82
+[GOC_INFO] [rlandgener.c:832] Turn:  26
+[GOC_INFO] [rlandgener.c:748] Generate land 7 with landmass size 54
+[GOC_INFO] [rlandgener.c:832] Turn:  27
+[GOC_INFO] [rlandgener.c:748] Generate land 7 with landmass size 98
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
+[GOC_INFO] [rlandgener.c:832] Turn:  28
+[GOC_INFO] [rlandgener.c:875] This is the end
