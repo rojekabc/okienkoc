@@ -1,8 +1,5 @@
-OBJS = 
+OBJS = system-drops.o
 	
-OUTLIB = 
-LIBLINK =
-
 INCLUDEPATH =
 INCLUDEPATHS =
 
@@ -24,9 +21,9 @@ PROG = rlandgener
 PROGLIBS = -lokienkoc -lm
 PROGINCLUDE = -I/usr/local/include
 
-all: prepare $(OUTLIB) $(PROG)
+all: prepare $(PROG)
 
-debug: preparedebug $(OUTLIB) $(PROG)
+debug: preparedebug $(PROG)
 
 prepare:
 	@echo "Preparing..."
@@ -45,12 +42,6 @@ $(OBJS): %.o: %.c $(INCLUDEFILE)
 	@echo $"Compile $<$"
 	@gcc $< `cat $(CFLAGSFILE)` -c -o $@ $(INCLUDEPATHS) $(DEBUGFLAGS) 2>> $(OUTERROR)
 
-$(OUTLIB): $(OBJS)
-	@echo $"--- Link $@ ---$" >> $(OUTERROR)
-	@echo $"Link $@$"
-	@gcc `cat $(LFLAGSFILE)` -o $@ $(OBJS) $(LIBSIN) 2>> $(OUTERROR)
-	@ln -sf $(OUTLIB) $(LIBLINK)
-
 clean:
 	@echo $"Cleaning$"
 	@rm -f $(OBJS) $(OUTLIB) $(OUTERROR) $(LIBLINK) $(PROG) .cflags .lflags *~
@@ -65,8 +56,8 @@ uninstall:
 	rm -f $(PREFIXLIB)/$(OUTLIB) $(PREFIXLIB)/$(LIBLINK)
 	rm -rf $(PREFIXINCLUDE)
 
-$(PROG): %: %.c
+$(PROG): %: %.c $(OBJS)
 	@echo $"--- Compile $< ---$" >> $(OUTERROR)
 	@echo $"Compile $<$"
-	@gcc -o $@ $< $(PROGLIBS) $(PROGINCLUDE) `cat $(CFLAGSFILE)` 2>> $(OUTERROR)
+	@gcc -o $@ $< $(OBJS) $(PROGLIBS) $(PROGINCLUDE) `cat $(CFLAGSFILE)` 2>> $(OUTERROR)
 
