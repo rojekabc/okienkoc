@@ -1,9 +1,0 @@
---- Compile rlandgener.c ---
-rlandgener.c: In function ‘petlaCount’:
-rlandgener.c:104:9: warning: assignment discards ‘const’ qualifier from pointer target type [enabled by default]
-rlandgener.c: In function ‘rainGeneration’:
-rlandgener.c:517:7: warning: unused variable ‘y’ [-Wunused-variable]
-rlandgener.c:516:7: warning: unused variable ‘x’ [-Wunused-variable]
-rlandgener.c: In function ‘main’:
-rlandgener.c:958:3: warning: passing argument 2 of ‘petlaCount’ from incompatible pointer type [enabled by default]
-rlandgener.c:88:6: note: expected ‘const struct stChange **’ but argument is of type ‘struct stChange **’
