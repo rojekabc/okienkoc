@@ -1,18 +1,20 @@
 #include "rlandgener.h"
+#include "system-drops.h"
 #include <okienkoc/random.h>
 // #define GOC_PRINTINFO
 #define GOC_PRINTERROR
 #define GOC_INFO
 #include <okienkoc/log.h>
 
-#define NUMBEROFLANDS 15
-#define NUMBEROFTREES 5
-#define NUMBEROFHILLS 3
-#define NUMBEROFDESERT 2
-#define NUMBEROFSWAMP 2
-
 static stContext* context = NULL;
 static int nBiomeTurn = 0;
+struct {
+	int lands;
+	int trees;
+	int hills;
+	int desert;
+	int swamp;
+} biome = {15, 5, 3, 2, 2};
 
 static void generateFillUp(int code)
 {
@@ -123,35 +125,35 @@ static int hotkeyNextTurnDrops(
 		// fill up with sea
 		generateFillUp(6);
 	}
-	else if ( nBiomeTurn <= NUMBEROFLANDS )
+	else if ( nBiomeTurn <= biome.lands )
 	{
 		int *allowed = malloc(sizeof(int)*1);
 		allowed[0] = 6;
 		generateLandMass(1, allowed, 1);
 		free(allowed);
 	}
-	else if ( nBiomeTurn <= NUMBEROFLANDS + NUMBEROFTREES )
+	else if ( nBiomeTurn <= biome.lands + biome.trees )
 	{
 		int *allowed = malloc(sizeof(int)*1);
 		allowed[0] = 1;
 		generateLandMass(2, allowed, 1);
 		free(allowed);
 	}
-	else if ( nBiomeTurn <= NUMBEROFLANDS + NUMBEROFTREES + NUMBEROFHILLS )
+	else if ( nBiomeTurn <= biome.lands + biome.trees + biome.hills )
 	{
 		int *allowed = malloc(sizeof(int)*1);
 		allowed[0] = 1;
 		generateLandMass(4, allowed, 1);
 		free(allowed);
 	}
-	else if ( nBiomeTurn <= NUMBEROFLANDS + NUMBEROFTREES + NUMBEROFHILLS + NUMBEROFDESERT )
+	else if ( nBiomeTurn <= biome.lands + biome.trees + biome.hills + biome.desert )
 	{
 		int *allowed = malloc(sizeof(int)*1);
 		allowed[0] = 1;
 		generateLandMass(5, allowed, 1);
 		free(allowed);
 	}
-	else if ( nBiomeTurn <= NUMBEROFLANDS + NUMBEROFTREES + NUMBEROFHILLS + NUMBEROFDESERT + NUMBEROFSWAMP )
+	else if ( nBiomeTurn <= biome.lands + biome.trees + biome.hills + biome.desert + biome.swamp)
 	{
 		int *allowed = malloc(sizeof(int)*1);
 		allowed[0] = 1;
@@ -172,6 +174,20 @@ static int hotkeyNextTurnDrops(
 	goc_gotoxy(0, 0);
 	fflush(stdout);
 	return GOC_ERR_OK;
+}
+
+void systemDropsAddArgs(GOC_Argument* args)
+{
+	args = goc_argumentsAdd(args,
+		"--drops-land", "Set ammount of lands", goc_argumentIntFunction, &biome.lands);
+	args = goc_argumentsAdd(args,
+		"--drops-forest", "Set ammount of lands", goc_argumentIntFunction, &biome.trees);
+	args = goc_argumentsAdd(args,
+		"--drops-swamp", "Set ammount of lands", goc_argumentIntFunction, &biome.swamp);
+	args = goc_argumentsAdd(args,
+		"--drops-hills", "Set ammount of lands", goc_argumentIntFunction, &biome.hills);
+	args = goc_argumentsAdd(args,
+		"--drops-desert", "Set ammount of lands", goc_argumentIntFunction, &biome.desert);
 }
 
 void initSystemDrops(stContext* icontext)

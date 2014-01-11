@@ -759,6 +759,7 @@ int main(int argc, char **argv)
 		"--maxlandmass", "Maximum land mass of generated land [system:civ/rain] (int:60)", goc_argumentIntFunction, &context.configuration.maxLandMass);
 	args = goc_argumentsAdd(args,
 		"--margines", "Set margines value of random new points [system:civ/points/rain] (int:10)", goc_argumentIntFunction, &context.configuration.margines);
+	systemDropsAddArgs(args);
 
 	args = goc_argumentsSetUnknownFunction(args, goc_argumentHelpFunction);
 
