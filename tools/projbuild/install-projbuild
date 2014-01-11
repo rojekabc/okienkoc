@@ -1,0 +1,18 @@
+#!/bin/sh
+PREFIX=/usr/local;
+BININSTALL="buildall builddev buildpkg rproj rtodo";
+SHRINSTALL="builddev buildpkg color.shfun doc vendor.shfun file.shfun properties.shfun";
+
+for i in $BININSTALL; do
+	cp -rf bin/$i $PREFIX/bin;
+	chmod 755 $PREFIX/bin/$i;
+done;
+
+if ! test -d $PREFIX/share/projbuild; then
+	mkdir $PREFIX/share/projbuild;
+fi
+
+for i in $SHRINSTALL; do
+	cp -rf share/projbuild/$i $PREFIX/share/projbuild;
+	chmod 755 $PREFIX/share/projbuild/$i;
+done;

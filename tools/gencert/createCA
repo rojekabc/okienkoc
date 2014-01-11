@@ -1,0 +1,142 @@
+#!/bin/sh
+# Argumenty
+#	nazwa CA
+
+# sprawd¼ czy podano nazwê
+if test -z $1; then
+	echo "Nie podano nazwy tworzonego CA."
+	exit
+fi
+
+# sprawd¼, czy przypadkiem ju¿ nie istnieje
+if test -e $1; then
+	echo "Odnaleziono juz plik o podanej nazwie. Nie moge utworzyc CA."
+	exit
+fi
+
+# utwórz katalog
+echo "Creating $1 folder"
+mkdir $1
+
+# utwórz plik z nazw±
+echo "Creating CAname"
+echo "$1" > $1/CAname
+
+# dodanie do CA plikow do generowania certyfikatow
+echo "Creating link files"
+cd $1
+ln -s ../genCert genCert
+ln -s ../reCert reCert
+ln -s ../createCA createCA
+cp ../defaultCert.cnf defaultCert.cnf
+cd ..
+
+# plik konfiguracyjny
+# uzyje tego o nazwie nazwa.cnf lub default.cnf
+echo "Creating cnf file"
+if test -f $1.cnf; then
+	mv $1.cnf $1/$1.cnf
+elif test -f CAname; then
+	# tworzenie CA w CA
+	if test -f `cat CAname`.cnf; then
+		cp `cat CAname`.cnf $1/$1.cnf
+	elif test -f defaultCA.cnf; then
+		cp defaultCA.cnf $1/$1.cnf
+	else
+		echo "Brak pliku konfiguracji."
+		exit;
+	fi
+else
+	if test -f defaultCA.cnf; then
+		cp defaultCA.cnf $1/$1.cnf
+	else
+		echo "Brak pliku konfiguracji.";
+		exit;
+	fi
+fi
+
+# ustawienia klucza dla CA
+# uzyje tego nazwa.rsa lub nazwa.dsa lub defaultCA.rsa lub defaultCA.dsa
+# wewnatrz pliku .rsa powinna byc wpisana dlugosc klucza
+echo "Creating key setting file"
+if test -f $1.rsa; then
+	mv $1.rsa $1/$1.rsa
+elif test -f $1.dsa; then
+	mv $1.dsa $1/$1.dsa
+elif test -f CAname; then
+	# CA w CA
+	tmp=`cat CAname`;
+	if test -f $tmp.rsa; then
+		cp $tmp.rsa $1/$1.rsa
+	elif test -f $tmp.dsa; then
+		cp $tmp.dsa $1/$1.dsa
+	else
+		echo "512" > $1/$1.rsa
+	fi
+else
+	if test -f defaultCA.rsa; then
+		cp defaultCA.rsa $1/$1.rsa
+	elif test -f defaultCA.dsa; then
+		cp defaultCA.dsa $1/$1.dsa
+	else
+		echo "512" > defaultCA.rsa
+		cp defaultCA.rsa $1/$1.rsa
+	fi
+fi
+
+# czas certyfikatu
+# uzyje nazwa.days lub defaultCA.days lub automatycznie 30 dni
+echo "Creating days setting file"
+if test -f $1.days; then
+	mv $1.days $1/$1.days
+elif test -f CAname; then
+	# CA w CA
+	tmp=`cat CAname`;
+	if test -f $tmp.days; then
+		cp $tmp.days $1/$1.days
+	fi
+elif test -f defaultCA.days; then
+	cp defaultCA.days $1/$1.days
+else
+	echo "30" > $1/$1.days
+fi
+
+# generowanie klucza
+echo "Generating key"
+if test -f $1/$1.rsa; then
+	openssl genrsa -out $1/$1.pem.key `cat $1/$1.rsa`
+elif test -f $1/$1.dsa; then
+	openssl gendsa -out $1/$1.pem.key
+else
+	echo "Nie mogê znale¼æ okre¶lenia pliku klucza.";
+	exit;
+fi
+
+# generowanie request'a do formy x509
+echo "Generating request"
+if test -f $1/$1.cnf; then
+	openssl req -out $1/$1.req -new -key $1/$1.pem.key -keyform PEM -config $1/$1.cnf -batch
+#	openssl req -out $1/$1.pem.cer -new -key $1/$1.pem.key -keyform PEM -x509 -days `cat $1.days` -config $1/$1.cnf -batch
+else
+	echo "Nie mogê znale¼æ pliku konfiguracyjnego"
+fi
+
+# generowanie certyfikatu jako X509
+echo "Generating certificate"
+if test -f CAname; then
+	tmp=`cat CAname`;
+	openssl x509 -inform PEM -outform DER -in $1/$1.req -out $1/$1.der.cer -CA $tmp.pem.cer -CAkey $tmp.pem.key -CAserial serial -CAcreateserial -req -extensions v3_ca -extfile $1/$1.cnf -days `cat $1/$1.days`
+else
+	# self signed
+	openssl x509 -inform PEM -outform DER -in $1/$1.req -out $1/$1.der.cer -req -extensions v3_ca -extfile $1/$1.cnf -days `cat $1/$1.days` -signkey $1/$1.pem.key
+fi
+openssl x509 -inform DER -outform PEM -in $1/$1.der.cer -out $1/$1.pem.cer
+#openssl x509 -inform PEM -outform DER -in $1/$1.pem.cer -out $1/$1.der.cer
+
+# generowanie klucza jako PKCS8
+echo "Generating PKCS#8"
+openssl pkcs8 -in $1/$1.pem.key -out $1/$1.der.key -inform PEM -outform DER -topk8 -nocrypt
+
+# Tworzenie PFXa z has³em test
+echo "Generating PKCS#12"
+openssl pkcs12 -out $1/$1.pfx -clcerts -nodes -export -in $1/$1.pem.cer -inkey $1/$1.pem.key -password pass:test

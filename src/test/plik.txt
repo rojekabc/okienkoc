@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='iso-8859-2' ?>
+<FileObjectDoc>
+<FileObject>
+<String name='alfa'>alfa</String>
+<String name='beta'>beta</String>
+<Integer name='gamma'>12</Integer>
+</FileObject>
+<FileObject>
+<String name='alfa'>alfa</String>
+<String name='beta'>beta</String>
+<Integer name='gamma'>12</Integer>
+</FileObject>
+<FileObject>
+<String name='alfa'>alfa</String>
+<String name='beta'>beta</String>
+<Integer name='gamma'>12</Integer>
+</FileObject>
+</FileObjectDoc>

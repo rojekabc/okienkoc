@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Script for listing modified files in repo
+
+svn st $* | grep "^M" | awk '{print $2}';

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+NAME_DOG=rex
+NAME_CAT=puffy
+
+NAME_PETT=NAME_$1;
+echo "${!NAME_PETT}";

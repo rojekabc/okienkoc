@@ -1,0 +1,426 @@
+#!/bin/sh
+# Program organizujący wykonywanie opisów.
+#
+# Planowane parametry
+# -ls			wylistuj dostepne opisy
+# -rm name		usun wybrany opis i jego zasoby
+# -mv name name		zmien nazwe opisu i jego zasobów
+# name			załóż lub edytuj istniejący opis
+# -mk name		utwórz dodatkowe zasoby dla opisu
+# -put name file	dodaj do zasobów plik
+# -get name file	pobierz z zasobów plik
+# -info name		podaj informacje o opisie i jego zasobach
+# -rm name file		usuń z zasobów wybrany plik
+# -cat name		po prostu wypisz opis na wyjście
+#
+#
+###############################################################################
+# ZMIENNE GLOBALNE SKRYPTU
+
+katalog=~/.ropis
+
+###############################################################################
+
+SHFUN_PATH=/usr/local/share/projbuild;
+. $SHFUN_PATH/file.shfun
+. $SHFUN_PATH/color.shfun;
+. $SHFUN_PATH/vendor.shfun;
+
+function printHelp()
+{
+	echo "Application parameters"
+	echo "-ls		wylistuj dostżpne opisy"
+	echo "-rm name		usuż wybrany opis i jego zasoby"
+	echo "-mv name name	zmież nazwe opisu i jego zasobów"
+	echo "name		zażóż lub edytuj istniejżcy opis"
+	echo "-mk name		utwórz dodatkowe zasoby dla opisu"
+	echo "-put name file	dodaj do zasobów plik"
+	echo "-get name file	pobierz z zasobów plik"
+	echo "-info name	podaj informacje o opisie i jego zasobach"
+	echo "-rm name file	usuż z zasobów wybrany plik"
+	echo "-use file name	użyj wskazanego pliku jako opisu o danej nazwie"
+	echo "-get file		pobierz plik opisu o wskazanej nazwie"
+	echo "-cat name		po prostu wypisz opis na wyjżcie"
+	echo;
+	echo -n "				Copyright @ ";
+	colortext CYAN "$FUN_VENDOR_AUTHOR";
+}
+
+# Sprawdzenie istnienia katalogu i założenie go przy braku
+if test -e $katalog; then
+	if test -d $katalog; then
+		echo -n
+	else
+		echo "[$katalog] is not a folder"
+		exit
+	fi
+else
+	mkdir $katalog
+	chmod 700 $katalog
+	echo "Create application folder [$katalog]"
+fi
+
+if test -e $katalog/group; then
+	if test -d $katalog/group; then
+		echo -n
+	else
+		echo "[$katalog/group] is not a folder"
+		exit
+	fi
+else
+	mkdir $katalog/group
+	chmod 700 $katalog/group
+	echo "Create application folder [$katalog/group]"
+fi
+
+# Sprawdź, czy podano parametry
+if test -z "$*"; then
+	printHelp;
+	exit;
+fi
+
+cipher="false";
+
+# Rozpoznawanie parametru
+case $1 in
+	-*)
+		case $1 in
+			-ls | -list)
+			option=list
+			namesrc=$2
+			nameinside=$3
+			;;
+			-rm | -remove)
+			option=remove
+			namesrc=$2
+			nameinside=$3
+			;;
+			-mv | -move)
+			option=move
+			namesrc=$2
+			namedst=$3
+			;;
+			-put)
+			option=put
+			namesrc=$2
+			filename=$3
+			;;
+			-get)
+			option=get
+			namesrc=$2
+			filename=$3
+			;;
+			-info)
+			option=info
+			namesrc=$2
+			;;
+			-use)
+			option=use
+			filename=$2
+			namesrc=$3
+			;;
+			-cat)
+			option=cat
+			namesrc=$2
+			;;
+			-cipher)
+				option=edit
+				cipher="true";
+				namesrc=$2;
+				nameinside=$3;
+			;;
+			# Polecenia dla grupy
+			-g | --group )
+				case $2 in
+					# Create new group
+					new | create)
+						option=gadd;
+						gname=$3;
+						unset $namesrc;
+					;;
+					# Add opis to group
+					# if opis name is empty - create group
+					add)
+						option=gadd;
+						gname=$3;
+						namesrc=$4;
+					;;
+					# Remove opis from group or whole group
+					rem | remove | rm)
+						option=gremove;
+						gname=$3;
+						namesrc=$4;
+					;;
+					# List opis in group or groups
+					list | ls)
+						option=glist;
+						gname=$3;
+					;;
+					# print help
+					*)
+						option=ghelp;
+					;;
+				esac
+			;;
+			# Create new group
+			-gnew | -gcreate)
+				option=gadd;
+				gname=$2;
+				unset $namesrc;
+			;;
+			# Add opis to group
+			# if opis name is empty - create group
+			-gadd)
+				option=gadd;
+				gname=$2;
+				namesrc=$3;
+			;;
+			# Remove opis from group or whole group
+			-grem | -gremove | -grm)
+				option=gremove;
+				gname=$2;
+				namesrc=$3;
+			;;
+			# List opis in group or groups
+			-glist | -gls)
+				option=glist;
+				gname=$2;
+			;;
+			# print help
+			-gh | -ghelp)
+				option=ghelp;
+			;;
+			*)
+				option=help;
+			;;
+		esac
+	;;
+	help)
+		option=help;
+	;;
+	*)
+		option=edit
+		namesrc=$1
+		nameinside=$2
+	;;
+esac
+
+tmp=`pwd -P`
+cd $katalog
+
+case $option in
+	edit)
+		if test -z $nameinside; then
+			if test -f $namesrc.txt.cz; then
+				rcip $namesrc.txt.cz > $namesrc.txt.gz;
+				cipher="true";
+			fi
+			if test -f $namesrc.txt.gz; then
+				gzip -d $namesrc.txt.gz
+				if test ! -f $namesrc.txt; then
+					echo "Brak pliku do edycji";
+					exit -1;
+				fi
+			fi
+			vim $namesrc.txt
+			echo "Edycja opisu [$namesrc] zakończona"
+			rm -f $namesrc.txt~
+			if test -s $namesrc.txt; then
+				gzip -9S .gz $namesrc.txt
+			else
+				rm -f $namesrc.txt
+			fi
+			if test "$cipher" = "true"; then
+				rcip $namesrc.txt.gz > $namesrc.txt.cz;
+				rm -f $namesrc.txt.gz;
+			fi
+		else
+			if test -f $namesrc.tar.gz; then
+				gzip -d $namesrc.tar.gz
+				tar xf $namesrc.tar
+				rm -f $namesrc.tar
+				if test -f $namesrc/$nameinside; then
+					vim $namesrc/$nameinside
+					echo "Edycja elementu [$nameinside] opisu [$namesrc] zakończona"
+				else
+					echo "Brak elementu [$nameinside]"
+				fi
+				tar cf $namesrc.tar $namesrc
+				gzip -9S .gz $namesrc.tar
+				rm -rf $namesrc
+			else
+				echo "Brak pakietu [$mamesrc]"
+				cd $tmp
+				exit
+			fi
+		fi
+	;;
+	list)
+		for i in $namesrc*.t[xa][tr].[cg]z; do
+			fileNameFreeExt filename $i;
+			fileExtension extension $i;
+			case $extension in
+				tar.[cg]z )
+					echo "[$filename]";
+					;;
+				txt.[cg]z )
+					echo "$filename";
+					;;
+			esac
+		done
+#		for i in $namesrc*.txt.gz; do
+#			echo "${i%.txt.gz}";
+#		done
+	;;
+	remove)
+		if test -z $nameinside; then
+			echo "Usuwanie opisu [$namesrc]"
+			rm -f $namesrc.txt.gz $namesrc.tar.gz
+		else
+			echo "Usuwanie elementu [$nameinside] z opisu [$namesrc]"
+			if test -f $namesrc.tar.gz; then
+				gzip -d $namesrc.tar.gz
+				tar xf $namesrc.tar
+				rm -f $namesrc.tar
+				if test -f $namesrc/$nameinside; then
+					rm -f $namesrc/$nameinside
+				else
+					echo "Brak elementu [$nameinside]"
+				fi
+				tar cf $namesrc.tar $namesrc
+				gzip -9S .gz $namesrc.tar
+				rm -rf $namesrc
+			else
+				echo "Brak pakietu [$namesrc]"
+				cd $tmp;
+				exit
+			fi
+		fi
+	;;
+	move)
+		echo "Zmiana nazwy opisu [$namesrc] na [$namedst]"
+		mv -f $namesrc.txt.gz $namedst.txt.gz
+		mv -f $namesrc.tar.gz $namedst.tar.gz
+	;;
+	put)
+		if test -f $namesrc.tar.gz; then
+			gzip -d $namesrc.tar.gz
+			tar xf $namesrc.tar
+			rm -f $namesrc.tar
+		else
+			mkdir $namesrc
+		fi
+		cp $tmp/$filename $namesrc
+		tar cf $namesrc.tar $namesrc
+		gzip -9S .gz $namesrc.tar
+		rm -rf $namesrc
+	;;
+	get)
+		if test -z $filename; then
+			if test -f $namesrc.txt.gz; then
+				gzip -d $namesrc.txt.gz
+				cp $namesrc.txt $tmp
+				gzip -9S .gz $namesrc.txt
+			else
+				echo "Brak pliku opisu [$namesrc]"
+			fi
+		else
+			if test -f $namesrc.tar.gz; then
+				gzip -d $namesrc.tar.gz
+				tar xf $namesrc.tar
+				rm -f $namesrc.tar
+			else
+				echo "Opis [$namesrc] nie posiada dodatkowych plików."
+				cd $tmp
+				exit
+			fi
+			cp $namesrc/$filename $tmp
+			tar cf $namesrc.tar $namesrc
+			gzip -9S .gz $namesrc.tar
+			rm -rf $namesrc
+		fi
+	;;
+	info)
+		if test -f $namesrc.txt.gz; then
+			ls -l $namesrc.txt.gz
+		fi
+		if test -f $namesrc.tar.gz; then
+			gzip -d $namesrc.tar.gz
+			tar tf $namesrc.tar
+			gzip -9S .gz $namesrc.tar
+		fi
+	;;
+	use)
+		if test -f $tmp/$filename; then
+			cp $tmp/$filename $namesrc.txt
+			gzip -9S .gz $namesrc.txt
+		else
+			echo "Wskazano nieistniejący plik"
+		fi
+	;;
+	cat)
+		if test -f $namesrc.txt.gz; then
+			gzip -dc $namesrc.txt.gz;
+		else
+			echo "No thread [$namesrc]";
+		fi
+	;;
+	help)
+		printHelp;
+	;;
+	gadd)
+		if test -z "$gname"; then
+			printGroupHelp;
+			exit -1;
+		fi
+		if test -z "$namesrc"; then
+			touch $katalog/group/$gname;
+		else
+			find $katalog -name "$namesrc.t[xa][rt].[cg]z" | grep -q '.';
+			if test "$?" = "0"; then
+				echo "$namesrc" >> $katalog/group/$gname
+				sort -u $katalog/group/$gname > $katalog/group/$gname.tmp;
+				mv -f $katalog/group/$gname.tmp $katalog/group/$gname;
+			else
+				echo "Thread [$namesrc] not created";
+			fi
+		fi
+	;;
+	gremove)
+		if test -z "$gname"; then
+			printGroupHelp;
+			exit -1;
+		fi
+		if ! test -f $katalog/group/$gname; then
+			exit -1;
+		fi
+		if test -z "$namesrc"; then
+			rm -f $katalog/group/$gname;
+		else
+			touch $katalog/group/$gname.tmp;
+			while read -r LINE; do
+				if ! test "$namesrc" = "$LINE"; then
+					echo "$LINE" >> $katalog/group/$gname.tmp;
+				fi
+			done < $katalog/group/$gname;
+			mv -f $katalog/group/$gname.tmp $katalog/group/$gname;
+		fi
+	;;
+	ghelp)
+	;;
+	glist)
+		if test -z "$gname"; then
+			echo "Listing existing groups";
+			ls $katalog/group;
+		else
+			echo -n "Listing threads in group [";
+			colortext -n GREEN "$gname";
+			echo "]";
+			if test -f $katalog/group/$gname; then
+				cat $katalog/group/$gname;
+			fi
+		fi
+	;;
+esac
+cd $tmp
+exit

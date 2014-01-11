@@ -1,0 +1,18 @@
+Zmienne ustawia siê tak, jak w programowaniu bash'a.
+Zmienne nale¿y umie¶ciæ w pliku .projbuildrc w aktualnym folderze projektu.
+
+Zmienne u¿ywane do dystrybucji u¿ytkownika:
+PACKAGENAME
+VERSION
+COPYFILE
+LICENSE
+AUTHOR
+YEAR
+COPYDIR
+COPYCHANGEFILE
+
+Zmienne u¿ywane do dystrybucji developer:
+DEVPACKAGENAME
+DEVVERSION
+DEVCOPYFILE
+DEVCOPYDIR

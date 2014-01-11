@@ -1,0 +1,47 @@
+# Z ca³ej ¶cie¿ki z pllikiem zwraca jego rozszerzenie
+function fileExtension()
+{
+	# Wyodrebnij nazwe pliku
+	SHFUN_TMP=${2##*/};
+	# Wyodrebnij rozszerzenie
+	if test "${SHFUN_TMP#*.}" = "$SHFUN_TMP"; then
+		eval "$1=''";
+	else
+		eval "$1=${SHFUN_TMP#*.}";
+	fi
+}
+
+# Z ca³ej ¶cie¿ki z plikiem zwraca jego nazwê bez rozszerzenia
+function fileName()
+{
+	eval "$1=${2##*/}";
+}
+
+# Z ca³ej ¶cie¿ki z plikiem zwraca ¶cie¿kê do pliku
+function filePath()
+{
+	SHFUN_TMP=${2%/*};
+	if test "$SHFUN_TMP" = "$2"; then
+		eval "$1='.'";
+	else
+		eval "$1=$SHFUN_TMP";
+	fi
+#	echo "`dirname $2`";
+}
+
+# Z ca³ej ¶cie¿ki zwraca nazwê pliku bez rozszerzenia
+function fileNameFreeExt()
+{
+	# Wyeliminuj sciezke
+	SHFUN_TMP=${2##*/};
+	# Usun rozszerzenie
+	eval "$1=${SHFUN_TMP%%.*}";
+}
+
+# Z ca³ej ¶cie¿ki zwraca ¶cie¿kê z nazw± pliku, ale bez rozszerzenia
+function filePathFreeExt()
+{
+	filePath SHFUN_TMP_A $2;
+	fileNameFreeExt SHFUN_TMP_B $2;
+	eval "$1=$SHFUN_TMP_A/$SHFUN_TMP_B";
+}

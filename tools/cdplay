@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# usage:
+#   cdplay [track number]
+
+PLAYERS="mplayer";
+CDROMDEVICE="/dev/cdrom";
+
+for i in $PLAYERS; do
+	PLAYER=`which mplayer 2> /dev/null`;
+	if test "$?" == "0"; then
+		echo "FOUND $i";
+		break;
+	fi
+done;
+
+case $i in
+	mplayer )
+		echo "left right     Back/Forward 10 seconds";
+		echo "down up        Back/Forward 1 minute";
+		echo "PgDown PgUp    Back/Forward 10 minutes";
+		echo "[ ]            Decrease/Increase speed by 10%";
+		echo "Backspace      Normal speed";
+		echo "9 0            Increase/Decrease volume";
+		echo "m              Mute";
+		echo "p space        Pause";
+		$PLAYER -cdrom-device $CDROMDEVICE -really-quiet cdda://$1;
+		;;
+	* )
+		echo "Player not found";
+		;;
+esac;

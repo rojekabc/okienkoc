@@ -1,0 +1,98 @@
+# External variables
+COLOR_BLACK=0
+COLOR_RED=1
+COLOR_GREEN=2
+COLOR_YELLOW=3
+COLOR_BLUE=4
+COLOR_MAGNETA=5
+COLOR_CYAN=6
+COLOR_WHITE=7
+
+FLAG_BLINK=5
+FLAG_BOLD=1
+FLAG_NORMAL=0
+
+# Internal variables
+FUN_COLOR_FOREGROUND=3$COLOR_WHITE
+FUN_COLOR_BACKGROUND=4$COLOR_BLACK
+FUN_COLOR_FLAG=$FLAG_NORMAL
+
+function gotoxy()
+{
+	if test -z $1; then
+		return;
+	fi
+	if test -z $2; then
+		return;
+	fi
+	echo -en "\033[$2;$1f";
+}
+
+function clearscreen()
+{
+	echo -en "\033[2J";
+}
+
+function savexy()
+{
+	echo -en "\033[s";
+}
+
+function loadxy()
+{
+	echo -en "\033[u";
+}
+
+function changecolor()
+{
+	echo -en "\033[$FUN_COLOR_FLAG;$FUN_COLOR_FOREGROUND;$FUN_COLOR_BACKGROUND""m";
+}
+
+function setfcolor()
+{
+	if test -z $1; then
+		return;
+	fi
+	if ! test -z $2; then
+		FUN_COLOR_FLAG="FLAG_$2";
+		FUN_COLOR_FLAG="${!FUN_COLOR_FLAG}";
+	fi
+	FUN_COLOR_FOREGROUND="COLOR_$1";
+	FUN_COLOR_FOREGROUND="3${!FUN_COLOR_FOREGROUND}";
+	changecolor;
+}
+
+function setbcolor()
+{
+	if test -z $1; then
+		return;
+	fi
+	FUN_COLOR_BACKGROUND="COLOR_$1";
+	FUN_COLOR_BACKGROUND="4${!FUN_COLOR_BACKGROUND}";
+	changecolor;
+}
+
+function resetcolor()
+{
+	setfcolor WHITE NORMAL;
+	setbcolor BLACK;
+	changecolor;
+}
+
+function colortext()
+{
+	if test -z "$1"; then
+		return;
+	fi
+	if test "$1" = "-n"; then
+		if test -z "$2"; then
+			return;
+		fi
+		setfcolor $2;
+		echo -n "$3";
+	else
+		setfcolor $1;
+		echo "$2";
+	fi
+	resetcolor;
+}

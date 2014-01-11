@@ -1,0 +1,14 @@
+#!/bin/sh
+if test -z "$1"; then
+	echo "Give program name as argument";
+	exit -1;
+fi
+if test -f "memwatch.log"; then
+	rm -f memwatch.log;
+fi
+$1 2> ERRORS;
+kbd_mode -a;
+reset;
+if test -f "memwatch.log"; then
+	cat memwatch.log
+fi

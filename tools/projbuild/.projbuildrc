@@ -1,0 +1,9 @@
+PACKAGENAME="projbuild"
+VERSION="0.1"
+COPYFILE="install-projbuild"
+COPYDIR="bin share doc"
+LICENSE="GPL"
+DEVPACKAGENAME=$PACKAGENAME
+DEVVERSION="$VERSION-dev"
+DEVCOPYFILE="install-projbuild .projbuildrc"
+DEVCOPYDIR="bin share doc"

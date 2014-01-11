@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "Check speed of counting from 1 to 1000";
+echo -n "   counting by let  ";
+(time shellarithmetic/testlet > /dev/null) 2>&1 | grep "real"
+echo -n "   counting by expr ";
+(time shellarithmetic/testexpr > /dev/null) 2>&1 | grep "real"
+echo "Check calling function";
+echo -n '   calling by $(function) ';
+(time shellcall/testtwo > /dev/null) 2>&1 | grep "real"
+echo -n '   calling by `function` ';
+(time shellcall/testone > /dev/null) 2>&1 | grep "real"
+echo -n '   calling by function ';
+(time shellcall/testthree > /dev/null) 2>&1 | grep "real"
+echo -n '   calling by function ';
+(time shellcall/testfour > /dev/null) 2>&1 | grep "real"

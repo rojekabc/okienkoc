@@ -1,0 +1,77 @@
+#!/bin/sh
+
+. /usr/local/share/projbuild/file.shfun
+
+function checkProgram()
+{
+	which $1 1> /dev/null 2> /dev/null;
+	if ! test "$?" = "0"; then
+		echo "Cannot find [$1] program";
+		exit 1;
+	fi
+}
+
+if test -z "$1"; then
+	echo "No argument. Please specify file to extract.";
+	exit;
+fi
+
+fileExtension FEXT $1;
+fileNameFreeExt FNAME $1;
+
+# FEXT=`fileExtension "$1"`;
+# FNAME=`fileNameFreeExt "$1"`;
+
+
+case .$FEXT in
+	*.[zZ][iI][pP] | *.[jJ][aA][rR] )
+		echo "Unpack zip";
+		checkProgram unzip;
+		unzip "$1";
+		;;
+	*.[rR][aA][rR] )
+		echo "Unpack rar";
+		checkProgram unrar;
+		unrar x "$1";
+		;;
+	*.7[zZ] )
+		echo "Unpack 7-Zip";
+		checkProgram 7za;
+		7za x "$1";
+		;;
+	*.[aA][rR][jJ] )
+		echo "Unpack arj";
+		checkProgram unarj;
+		unarj x "$1";
+		;;
+	*.[tT][aA][rR].[bB][zZ]2 )
+		echo "Unpack tar.bz2";
+		checkProgram tar;
+		tar xfj "$1";
+		;;
+	*.[tT][aA][rR].[bB][zZ] )
+		echo "Unpack tar.bz";
+		checkProgram tar;
+		tar xfj "$1";
+		;;
+	*.[tT][aA][rR].[xX][zZ] | *.[tT][xX][zZ] )
+		echo "Unpack tar.xz";
+		checkProgram tar;
+		tar xfJ "$1";
+		;;
+	*.[tT][aA][rR].[gG][zZ] | *.[tT][gG][zZ] )
+		echo "Unpack tgz";
+		checkProgram tar;
+		tar xfz "$1";
+		;;
+	*.[gG][zZ] )
+		echo "Unpack GZip";
+		checkProgram gzip;
+		gzip -d "$1";
+		exit;
+		;;
+	*)
+		echo "Unknown extension [$FEXT]";
+		exit;
+		;;
+esac

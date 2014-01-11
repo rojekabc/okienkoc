@@ -1,0 +1,12 @@
+#!/bin/bash
+# Only numeric :(
+function getValue()
+{
+	eval "$1=$2";
+}
+
+X=0;
+while ! test "$X" = "1000"; do
+	let "X += 1";
+	getValue A 10a;
+done;

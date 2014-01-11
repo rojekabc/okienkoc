@@ -1,0 +1,29 @@
+PROJEKT="$DEVPACKAGENAME"
+if test -z "$PROJEKT"; then
+	PROJEKT="$PACKAGENAME-dev"
+fi
+if test -z "$PROJEKT"; then
+	echo "Okre¶l w zmiennej DEVPACKAGENAME nazwê projektu."
+	exit
+fi
+if ! test -d $PROJEKT; then
+	mkdir $PROJEKT
+	for i in $DEVCOPYDIR; do
+		if test -d $i; then
+			cp -rdf $i $PROJEKT
+		fi
+	done
+	for i in $DEVCOPYFILE; do
+		if test -f $i; then
+			cp -df $i $PROJEKT
+		fi
+	done
+	# Clear .svn folders
+	rm -rf `find $PROJEKT -type d -name '.svn'`;
+fi
+if test -z "$DEVVERSION"; then
+	savetar $PROJEKT $1
+else
+	savetar $PROJEKT $DEVVERSION
+fi
+rm -rf $PROJEKT

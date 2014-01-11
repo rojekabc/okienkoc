@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# argument 1 - recertyfikowany certyfikat
+# argument 2 - certyfikat wynikowy
+# Na podana nazwe istniejacego pliku nastepuje proces recertyfikacji
+if test -z $1; then
+	echo "Brak nazwy certyfikatu";
+	exit;
+fi
+if test -z $2; then
+	echo "Brak nazwy certyfikatu recertyfikowanego";
+	exit;
+fi
+
+echo "Creating configuration file"
+if test -f $2.cnf; then
+	echo -n "";
+elif test -f $1.cnf; then
+	cp $1.cnf $2.cnf
+elif test -f defaultCert.cnf; then
+	cp defaultCert.cnf $2.cnf
+fi
+
+echo "Linking keys"
+ln -s $1.pem.key $2.pem.key
+
+echo "Creating days configuration file"
+if test -f $1.days; then
+	cp $1.days $2.days
+elif defaultCert.days; then
+	cp defaultCert.days $2.days
+else
+	echo "30" > $2.days
+fi
+
+echo "Generating request"
+openssl req -out $2.req -new -key $2.pem.key -keyform PEM -days `cat $2.days` -config $2.cnf -batch
+
+echo "Generating X509 Certificate"
+if test -f CAname; then
+	tmp=`cat CAname`
+	# signed by CA
+	openssl x509 -inform PEM -outform DER -in $2.req -out $2.der.cer -CA $tmp.pem.cer -CAkey $tmp.pem.key -CAserial serial -CAcreateserial -req -extensions usr_cert -extfile $2.cnf
+else
+	# self signed
+	openssl x509 -inform PEM -outform DER -in $2.req -out $2.der.cer -req -extensions usr_cert -extfile $2.cnf -signkey $2.pem.key
+fi
+openssl x509 -inform DER -outform PEM -in $2.der.cer -out $2.pem.cer
+echo "Generating PKCS#8"
+openssl pkcs8 -in $2.pem.key -out $2.der.key -inform PEM -outform DER -topk8 -nocrypt
+echo "Generating PKCS#12"
+openssl pkcs12 -out $2.pfx -clcerts -nodes -export -in $2.pem.cer -inkey $2.pem.key -password pass:test

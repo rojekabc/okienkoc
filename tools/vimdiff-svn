@@ -1,0 +1,42 @@
+#!/bin/sh
+# Mofidied (C) 2009 Piotr Rojewski <rojek_abc@o2.pl>
+# Copyright (C) 2007 Matthias Kretz <kretz@kde.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+function revertAndDiff()
+{
+	FILEEXT=${1#*.};
+	if test "$FILEEXT" = "$1"; then
+		FILEEXT="";
+	fi
+	FILENAME=${1%.*};
+	if test -z "$FILEEXT"; then
+		TMPFILE="$FILENAME.tmp.$$";
+	else
+		TMPFILE="$FILENAME.tmp.$$.$FILEEXT";
+	fi
+	svn cat $1 > $TMPFILE;
+	vimdiff $1 $TMPFILE;
+	rm $TMPFILE;
+}
+
+if test -z "$1"; then
+	for i in `svn status|grep -v '^\?'|cut -c8-`; do
+		revertAndDiff "$i"
+	done
+else
+	revertAndDiff "$1"
+fi

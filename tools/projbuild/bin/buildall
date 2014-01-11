@@ -1,0 +1,11 @@
+#!/bin/sh
+
+path=`dirname $0`
+
+if test -z $1; then
+	$path/builddev
+	$path/buildpkg
+else
+	$path/builddev $1-dev
+	$ptah/buildpkg $1
+fi

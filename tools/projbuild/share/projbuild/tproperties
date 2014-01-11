@@ -1,0 +1,17 @@
+#!/bin/sh
+
+. properties.shfun
+
+function testFunction()
+{
+	echo "$1=$2";
+}
+
+echo "--- Calling propertiesListKeys, propertiesGetValue";
+propertiesListKeys test.properties | while read key; do
+	propertiesGetValue value test.properties $key;
+	echo "$key=$value";
+done;
+
+echo "--- Calling propertiesForEach";
+propertiesForEach test.properties testFunction;

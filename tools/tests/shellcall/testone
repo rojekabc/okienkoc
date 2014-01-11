@@ -1,0 +1,11 @@
+#!/bin/bash
+function getValue()
+{
+	echo $1;
+}
+
+X=0;
+while ! test "$X" = "1000"; do
+	let "X += 1";
+	A=`getValue 10`;
+done;

@@ -1,0 +1,231 @@
+#!/bin/sh
+
+CONF_NAME=.rojProj;
+ACTIVE_PROJECT=.active;
+
+TODO_CONF_NAME=TODO.7z;
+TODO_MAIN_FILE=TODO;
+PACKER_OPTIONS="-t7z -m0=lzma -mx=9 -mfb=256 -md=8m -ms=on";
+
+if test -f "./$CONF_NAME/$TODO_CONF_NAME"; then
+	CONF_PATH=./$CONF_NAME;
+else
+	CONF_PATH=~/$CONF_NAME/$ACTIVE_PROJECT;
+fi
+
+ACTUAL_PATH=`dirname $0`;
+PROGNAME=`basename $0`;
+SHFUN_PATH=$ACTUAL_PATH/../share/projbuild;
+
+. $SHFUN_PATH/color.shfun;
+. $SHFUN_PATH/vendor.shfun;
+
+# 1 - nazwa ustawienia
+# 2 - wartosc
+function setSetting()
+{
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {ISFOUND=0} {if ($1=="%" && $2=="'$1'") {print "% '$1' '$2'"; ISFOUND=1} else {print $0}} END {if (ISFOUND==0) {print "% '$1' '$2'";}}' | 7za a -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+}
+
+# 1 - nazwa ustawienia
+# R - wartosc ustawienia
+function getSetting()
+{
+	echo `7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | grep "$1" | awk '($1=="%") {print $3}'`;
+}
+
+# 1 = <priorytet>
+# 2 = opis
+function addTodo()
+{
+	# Ustal aktualny numer id TODO, ustaw go dla TODO, zwieksz go o 1 i zapisz
+	if test -z "$2"; then
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {TODOID=0} {if ($1=="%" && $2=="TODONUMBER") {TODOID=$3; print "% TODONUMBER "(TODOID+1)} else {print $0}} END {print "# "TODOID" "systime()" TODO weak"; print "* '"$1"'"; print "Creating todo {ID="TODOID"}" > "/dev/stderr"; }' | 7za a $PACKER_OPRIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+	else
+		RESULT="false";
+		PRIORLIST="weak medium high";
+		for i in $PRIORLIST; do
+			if test "$1" = "$i"; then
+				RESULT="true";
+				break;
+			fi
+		done;
+		if test "$RESULT" = "false"; then
+			echo "Priorytet [$1] not in possible value";
+			return;
+		fi
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {TODOID=0} {if ($1=="%" && $2=="TODONUMBER") {TODOID=$3; print "% TODONUMBER "(TODOID+1)} else {print $0}} END {print "# "TODOID" "systime()" TODO '$1'"; print "* '"$2"'"; print "Creating todo {ID="TODOID"}" > "/dev/stderr"; }' | 7za a $PACKER_OPRIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+	fi
+}
+
+# Wylistowanie rzeczy do zrobienia
+function listTodo()
+{
+	if test -z "$1"; then
+		echo "List active TODOs";
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; PRIOR=0;} {if ($1=="#") { if ($4=="TODO") {FOUND=1; PRIOR=$5; TODOID=$2; if (PRIOR=="weak") {printf "\033[0;37;40m"} else if (PRIOR=="medium") {printf "\033[0;32;40m"} else if (PRIOR=="high") {printf "\033[0;31;40m"}; } else {FOUND=0}} else if ($1=="*" && FOUND==1) {print "["TODOID"] "substr($0, 3);}} END {printf "\033[0;37;40m"}';
+	elif test "$1" = "done"; then
+		echo "List done TODOs";
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; PRIOR=0;} {if ($1=="#") { if ($4=="DONE") {FOUND=1; PRIOR=$5; TODOID=$2; if (PRIOR=="weak") {printf "\033[0;37;40m"} else if (PRIOR=="medium") {printf "\033[0;32;40m"} else if (PRIOR=="high") {printf "\033[0;31;40m"};} else {FOUND=0}} else if ($1=="*" && FOUND==1) {print "["TODOID"] "substr($0, 3);}} END {printf "\033[0;37;40m"}';
+	elif test "$1" = "removed"; then
+		echo "List removed TODOs";
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; PRIOR=0;} {if ($1=="#") { if ($4=="REMOVE") {FOUND=1; PRIOR=$5; TODOID=$2; if (PRIOR=="weak") {printf "\033[0;37;40m"} else if (PRIOR=="medium") {printf "\033[0;32;40m"} else if (PRIOR=="high") {printf "\033[0;31;40m"};} else {FOUND=0}} else if ($1=="*" && FOUND==1) {print "["TODOID"] "substr($0, 3);}} END {printf "\033[0;37;40m"}';
+	elif test "$1" = "all"; then
+		echo "List all TODOs";
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {PRIOR=0;} {if ($1=="#") { PRIOR=$5; TODOID=$2; TODOSTATE=$4; if (PRIOR=="weak") {printf "\033[0;37;40m"} else if (PRIOR=="medium") {printf "\033[0;32;40m"} else if (PRIOR=="high") {printf "\033[0;31;40m"};} else if ($1=="*") {print "["TODOID" - "TODOSTATE"] "substr($0, 3);}} END {printf "\033[0;37;40m"}';
+	fi
+}
+
+# Listowanie tych, które maj± status TODO
+# 1 = id
+function rmTodo()
+{
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; REMOVED=0;} {if ($1=="#") { if ($2=="'$1'") {FOUND=1; print $1" "$2" "$3" REMOVE "$5;} else if (FOUND==1) {print "A REMOVED "systime(); FOUND=0; REMOVED=1; print $0;} else {print $0;} } else {print $0;} } END {if (FOUND==1) {print "A REMOVED "systime(); FOUND=0; REMOVED=1;} if (REMOVED==1) {print "Todo '"$1"' Removed" > "/dev/stderr";} }' | 7za a $PACKER_OPTIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+}
+
+function priorTodo()
+{
+	# TODO: Dodaæ informacje o wykonaniu akcji zmiany priorytetu
+	RESULT="false";
+	PRIORLIST="weak medium high";
+	for i in $PRIORLIST; do
+		if test "$2" = "$i"; then
+			RESULT="true";
+			break;
+		fi
+	done;
+	if test "$RESULT" = "false"; then
+		echo "Priorytet [$2] not in possible value";
+		return;
+	fi
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; CHANGED=0;} {if ($1=="#") { if ($2=="'$1'") {FOUND=1; OLDPRIOR=$5; print $1" "$2" "$3" "$4" '"$2"'";} else if (FOUND==1) {print "A CPRIOR "systime()" "OLDPRIOR" '"$2"'"; FOUND=0; CHANGED=1; print $0;} else {print $0;} } else {print $0;} } END {if (FOUND==1) {print "A CPRIOR "systime()" "OLDPRIOR" '"$2"'"; FOUND=0; CHANGED=1;} if (CHANGED==1) {print "Todo '"$1"' Priority Changed" > "/dev/stderr";} }' | 7za a $PACKER_OPTIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+}
+
+function doneTodo()
+{
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; DONE=0;} {if ($1=="#") { if ($2=="'$1'") {FOUND=1; print $1" "$2" "$3" DONE "$5;} else if (FOUND==1) {print "A DONE "systime(); FOUND=0; DONE=1; print $0;} else {print $0;} } else {print $0;} } END {if (FOUND==1) {print "A DONE "systime(); FOUND=0; DONE=1;} if (DONE==1) {print "Todo '"$1"' marked as done" > "/dev/stderr";} }' | 7za a $PACKER_OPTIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+}
+
+# 1 = id
+# 2 = note text
+function noteTodo()
+{
+	if test -z "$1"; then
+		echo "No id for note";
+		return;
+	fi
+	if test -z "$2"; then
+		echo "No text for note";
+		return;
+	fi
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN {FOUND=0; DONE=0;} {if ($1=="#") { if ($2=="'$1'") {FOUND=1; print $1" "$2" "$3" "$4" "$5;} else if (FOUND==1) {print "A NOTE "systime(); print "* '"$2"'"; FOUND=0; DONE=1; print $0;} else {print $0;} } else {print $0;} } END {if (FOUND==1) {print "A NOTE "systime(); print "* '"$2"'"; FOUND=0; DONE=1;} if (DONE==1) {print "Added note to todo '"$1"'" > "/dev/stderr";} }' | 7za a $PACKER_OPTIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+}
+
+# Listowanie historii dla wskazanego TODO
+# 1 = id
+function histTodo()
+{
+	# DO zrobienia: W zale¿no¶ci od akcji, jaka zosta³a wykonana wypisaæ to, co zosta³o zmienione / ustawione w dan± datê
+	7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null | awk 'BEGIN{FOUND=0; TODODATE=0; print "ID="'"$1"';} { if ($1=="#") { if ($2=="'$1'") { FOUND=1; TODODATE=strftime("%Y-%m-%d %H:%M",$3); print "\t["TODODATE"] Status: NEW";} else {FOUND=0;} } else if (FOUND==1 && $1=="A" && $2=="REMOVED") {TODODATE=strftime("%Y-%m-%d %H:%M",$3); print "\t["TODODATE"] Status: "$2;} else if (FOUND==1 && $1=="*") {print "\t["TODODATE"] Description: "$0;} else if (FOUND==1 && $1=="A" && $2=="CPRIOR") {TODODATE=strftime("%Y-%m-%d %H:%M",$3); print "\t["TODODATE"] Priority change: "$4" -> "$5;} else if (FOUND==1 && $1=="A" && $2=="DONE") {TODODATE=strftime("%Y-%m-%d %H:%M",$3); print "\t["TODODATE"] Status: "$2;} else if (FOUND==1 && $1=="A" && $2=="NOTE") {TODODATE=strftime("%Y-%m-%d %H:%M",$3); print "\t["TODODATE"] Add Note";}}';
+}
+
+# Sprawdzenie, czy referencja do aktywnego projektu jest aktualna
+CUR=(pwd);
+if test -L $CONF_PATH; then
+	cd $CONF_PATH 2> /dev/null;
+	if ! test "$?" == "0"; then
+		echo "Active project is incorrect";
+		exit -1;
+	fi
+	cd $CUR;
+elif test -d $CONF_PATH; then
+	cd $CONF_PATH 2> /dev/null;
+	if ! test "$?" == "0"; then
+		echo "Active project is incorrect";
+		exit -1;
+	fi
+	cd $CUR;
+else
+	echo "No active project";
+	exit -1;
+fi
+
+echo $CONF_PATH;
+# Czy jest za³o¿ony plik przechowuj±cy TODO
+if ! test -f $CONF_PATH/$TODO_CONF_NAME; then
+	echo "Creating TODO configuration file";
+	echo "% TODONUMBER 1" | 7za a $PACKER_OPTIONS -si$TODO_MAIN_FILE $CONF_PATH/$TODO_CONF_NAME > /dev/null;
+fi
+
+# Actions
+case $1 in
+	add | --add | -a)
+		addTodo "$2" "$3";
+		# Add new TODO
+		# TODOID=`getSetting TODONUMBER`;
+		# TODOID=$((TODOID+1));
+		# `setSetting TODONUMBER $TODOID`;
+	;;
+	list | ls | --list | --ls | -l)
+		listTodo "$2";
+	;;
+	cat | --cat | -c)
+		# Just print original TODO file. It's rather used to debug
+		7za e -so $CONF_PATH/$TODO_CONF_NAME $TODO_MAIN_FILE 2> /dev/null;
+	;;
+	history | hist | --hist | --history | -h)
+		histTodo "$2";
+	;;
+	rm | remove | del | delete | --rm | --delete | --del | --remove | -r)
+		rmTodo "$2";
+	;;
+	prior | --prior | -p)
+		priorTodo "$2" "$3";
+	;;
+	done | --done | -d)
+		doneTodo "$2";
+	;;
+	note | --note | -n)
+		noteTodo "$2" "$3";
+	;;
+	*)
+		echo -n "Usage: ";
+		colortext -n GREEN $PROGNAME;
+		echo " <command>";
+		echo "	add <priorytet> [description]";
+		echo "		Add new todo";
+		echo "	cat";
+		echo "		Cat configuration file - debug use";
+		echo "	list";
+		echo "		List active todo";
+		echo "	history [id]";
+		echo "		Show history of one todo";
+		echo "	remove [id]";
+		echo "		Remove selected todo";
+		echo "	done [id]";
+		echo "		Mark todo as done";
+		echo "	prior [id] [status]";
+		echo "		Change priority of todo";
+		echo "	note [id] [note]";
+		echo "		Add Note to todo";
+		echo "";
+		echo -n "				Copyright @ ";
+		colortext CYAN "$FUN_VENDOR_AUTHOR";
+		exit 0;
+	;;
+esac;
+
+# Plik TODO:
+# % Wewnetrzne ustawienia
+# # ID DATA_UTWORZENIA STATUS PRIORYTET
+# * Deskrypcja
+# A Okreslenie specyficznej akcji, jaka zostala wykonana - to tylko dla historii
+
+# Akcje: NEW / REMOVED
+# Status: TODO / DONE / WAIT / REMOVE
+# Priorytety: weak / high / medium
+
+# Akcja REMOVED <DATA>
+# Akcja CPRIOR <DATA> <OLDPRIOR> <NEWPRIOR>
+# Akcja DONE <DATA>
+# Akcja NOTE <DATA>

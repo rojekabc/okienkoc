@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# /xxxx/ARTISTNAME/YEAR ALBUMNAME/TRACK TITLE.mp3
+
+. /usr/local/share/projbuild/color.shfun;
+. /usr/local/share/projbuild/vendor.shfun;
+. /usr/local/share/projbuild/file.shfun;
+
+SIFS=$IFS;
+IFS=$'\n';
+for i in $*; do
+	FULLPATHNAME=`readlink -f $i`;
+	FILENAME=`fileNameFreeExt $FULLPATHNAME`;
+	TRACK=${FILENAME:0:2};
+	FILENAME=${FILENAME:3};
+	DIRNAME=`dirname $FULLPATHNAME`;
+	ALBUMNAME=`basename $DIRNAME`;
+	YEAR=${ALBUMNAME:0:4};
+	ALBUMNAME=${ALBUMNAME:5};
+	DIRNAME=`dirname $DIRNAME`;
+	ARTISTNAME=`basename $DIRNAME`;
+	echo "Aritst [$ARTISTNAME] Year [$YEAR] Album [$ALBUMNAME] Track [$TRACK] Title [$FILENAME]"; 
+	mp3info -f -a "$ARTISTNAME" -l "$ALBUMNAME" -n "$TRACK" -t "$FILENAME" -y "$YEAR" $i;
+done
+IFS=$SIFS;

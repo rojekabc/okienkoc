@@ -1,0 +1,110 @@
+# List keys in file on stdout, every key in one line
+# $1 - properties file name
+function propertiesListKeys()
+{
+	if test -z "$1"; then
+		return;
+	fi
+	if test ! -f $1; then
+		return;
+	fi
+
+	while read -r FUN_PROPERTIES_LINE; do
+		# Pomin komentarze
+		SHFUN_TMP=${FUN_PROPERTIES_LINE%%#*};
+		if test -z "$SHFUN_TMP"; then
+			continue;
+		fi
+		# Wyodrebnij klucz
+		SHFUN_TMP_KEY=${SHFUN_TMP%%=*};
+		# Czy cos wyodrebniono
+		if test "$SHFUN_TMP" = "$SHFUN_TMP_KEY"; then
+			continue;
+		fi
+		# zwroc wartosc
+		SHFUN_TMP_KEYS="$SHFUN_TMP_KEYS $SHFUN_TMP_KEY";
+		echo $SHFUN_TMP_KEY;
+	done < $1;
+
+	# unset FUN_PROPERTIES_LINE FUN_PROPERTIES_INDEX;
+	unset FUN_PROPERTIES_LINE SHFUN_TMP SHFUN_TMP_KEY;
+}
+
+# put value of key in variable
+# $1 - variable name
+# $2 - properties file name
+# $3 - key name
+function propertiesGetValue()
+{
+	if test -z "$1"; then
+		return;
+	fi
+	if test -z "$2"; then
+		return;
+	fi
+	if test ! -f $2; then
+		return;
+	fi
+
+	while read -r FUN_PROPERTIES_LINE; do
+		# Pomin komentarze
+		SHFUN_TMP=${FUN_PROPERTIES_LINE%%#*};
+		if test -z "$SHFUN_TMP"; then
+			continue;
+		fi
+		# Wyodrebnij wartosc
+		SHFUN_TMP_VALUE=${SHFUN_TMP#$3=*};
+		# Czy cos wyodrebniono
+		if test "$SHFUN_TMP_VALUE" = "$SHFUN_TMP"; then
+			continue;
+		fi
+		# Zwroc wartosc
+		eval $1='$SHFUN_TMP_VALUE';
+		return;
+	done < $2;
+
+	unset FUN_PROPERTIES_LINE SHFUN_TMP SHFUN_TMP_VALUE;
+}
+
+# Each property is done with selected function
+# 1 - properties filename
+# 2 - called function witch arguments: KEY VALUE
+function propertiesForEach()
+{
+	if test -z "$1"; then
+		return;
+	fi
+	if test ! -f $1; then
+		return;
+	fi
+	if test -z "$2"; then
+		return;
+	fi
+
+	while read -r FUN_PROPERTIES_LINE; do
+		# Pomin komentarze
+		SHFUN_TMP=${FUN_PROPERTIES_LINE%%#*};
+		if test -z "$SHFUN_TMP"; then
+			continue;
+		fi
+
+		# Wyodrebnij klucz
+		SHFUN_TMP_KEY=${SHFUN_TMP%%=*};
+		# Czy cos wyodrebniono
+		if test "$SHFUN_TMP" = "$SHFUN_TMP_KEY"; then
+			continue;
+		fi
+
+		# Wyodrebnij wartosc
+		SHFUN_TMP_VALUE=${SHFUN_TMP#$SHFUN_TMP_KEY=*};
+		# Czy cos wyodrebniono
+		if test "$SHFUN_TMP_VALUE" = "$SHFUN_TMP"; then
+			continue;
+		fi
+		
+		# Wywolaj funkcje
+		$2 "$SHFUN_TMP_KEY" "$SHFUN_TMP_VALUE"
+	done < $1;
+
+	unset FUN_PROPERTIES_LINE SHFUN_TMP SHFUN_TMP_VALUE SHFUN_TMP_KEY;
+}

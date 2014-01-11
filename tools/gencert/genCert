@@ -1,0 +1,83 @@
+#!/bin/sh
+if test "$1"="--help"; then
+	echo "Skrypt generujacy certyfikaty";
+	echo "Wywolanie: $0 [nazwa]";
+	echo "";
+	echo "Do swojego dzialania wymaga openssl";
+	echo "";
+	echo "Skrypt wygeneruje certyfikat o podanej nazwie oraz klucz dla niego";
+	echo "Do kazdego etapu jest uzywany plik o nazwie nazwa.XXX";
+	echo "Jezeli taki plik nie zostanie odnaleziony to bedzie odbywalo sie poszukiwanie";
+	echo "pliku o nazwie defaultCert.XXX, a jesli tego brak to nastapi uzycie domyslnego"
+	echo "ustawienia. Po kazdym etapie generowany jest plik konfiguracji nazwa.XXX oraz";
+	echo "plik wynikowy";
+	echo "Etapy:";
+	echo "1. Ustalanie pliku konfiguracyjnego [nazwa.cnf] Domyslnie: blad";
+	echo "2. Generowanie klucza [nazwa.rsa lub nazwa.dsa] Domyslnie: RSA 512-bitow Generowanie [nazwa.pem.key]";
+	echo "3. Ustalanie dlugosci zycia certyfikatu [nazwa.days] Domyslnie: 30. Generowanie requesta [nazwa.req]";
+	echo "4. Generowanie certyfikatu. Generowanie [nazwa.der.cer i nazwa.pem.cer]";
+	echo "   Aby certyfikat byl podpisany przez wystawce nalezy stworzyc plik CAname z wpisana nazwa prefixu";
+	echo "   i dla wystawcy utworzyc pliki prefix.pem.cer prefix.pem.key. Dla wystawcy zostanie dodatkowo utworzony";
+	echo "   plik serial z ostatnim numerem seryjnym";
+	echo "5. Tworzenie przenosnych kluczy PKCS #8 [nazwa.der.key] oraz PKCS #12[nazwa.pfx (na haslo test)]";
+	exit;
+fi
+if test -z $1; then
+	echo "Brak Certu";
+	exit;
+fi
+
+echo "Creating configuration file"
+if test -f $1.cnf; then
+	echo -n "";
+elif test -f defaultCert.cnf; then
+	cp defaultCert.cnf $1.cnf
+else
+	echo "Brak pliku konfiguracyjnego"
+	exit;
+fi
+
+echo "Genearting key"
+if test -f $1.rsa; then
+	openssl genrsa -out $1.pem.key `cat $1.rsa`
+elif test -f $1.dsa; then
+	openssl gendsa -out $1.pem.key
+elif test -f defaultCert.rsa; then
+	cp defaultCert.rsa $1.rsa
+	openssl genrsa -out $1.pem.key `cat $1.rsa`
+elif test -f defaultCert.dsa; then
+	cp defaultCert.dsa $1.dsa
+	openssl gendsa -out $1.pem.key
+else
+	echo "512" > $1.rsa
+	openssl genrsa -out $1.pem.key `cat $1.rsa`
+fi
+
+echo "Creating days configuration file"
+if test -f $1.days; then
+	echo -n "";
+elif test -f defaultCert.days; then
+	cp defaultCert.days $1.days
+else
+	echo "30" > $1.days
+fi
+
+echo "Generating request"
+openssl req -out $1.req -new -key $1.pem.key -keyform PEM -days `cat $1.days` -config $1.cnf -batch
+
+echo "Generating X509 Certificate"
+if test -f CAname; then
+	tmp=`cat CAname`
+	# signed by CA
+	openssl x509 -inform PEM -outform DER -in $1.req -out $1.der.cer -CA $tmp.pem.cer -CAkey $tmp.pem.key -CAserial serial -CAcreateserial -req -extensions usr_cert -extfile $1.cnf
+else
+	# self signed
+	openssl x509 -inform PEM -outform DER -in $1.req -out $1.der.cer -req -extensions usr_cert -extfile $1.cnf -signkey $1.pem.key
+fi
+openssl x509 -inform DER -outform PEM -in $1.der.cer -out $1.pem.cer
+
+echo "Generating PKCS#8"
+openssl pkcs8 -in $1.pem.key -out $1.der.key -inform PEM -outform DER -topk8 -nocrypt
+
+echo "Generating PKCS#12"
+openssl pkcs12 -out $1.pfx -clcerts -nodes -export -in $1.pem.cer -inkey $1.pem.key -password pass:test

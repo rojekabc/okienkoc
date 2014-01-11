@@ -1,0 +1,95 @@
+#!/bin/sh
+
+ACTION="";
+
+# 1 - nazwa zmiennej, do której nast±pi przypisanie
+# 2 - tablica dostêpnych akcji
+# 3 - opis jaki ma byæ wy¶wietlony
+# 4 - opis b³êdnej opcji
+function readAction()
+{
+	CHECK="false";
+	echo -n "$3";
+	while test $CHECK = "false"; do
+		read $1;
+		for tmpi in $2; do
+		# w 1 jest nazwa zmiennej. Odczytanie wartosci zmiennej nazwanej w 1 to ${!1}
+			if test "${!1}" = "$tmpi"; then
+				CHECK="true";
+				break;
+			fi
+		done
+		if test "$CHECK" = "false"; then
+			echo $4;
+		fi
+	done
+}
+
+for i in `svn stat $* | awk '{if (substr($0, 0, 1) != " ") {print substr($0, 0, 1)" "substr($0, 8)} }'`; do
+	if test -z "$ACTION"; then
+		# Set action
+		ACTION="$i";
+	else
+		# Process action
+		case $ACTION in
+			A )
+				echo "Add $i";
+			;;
+			D )
+				echo "Delete $i";
+			;;
+			M )
+				echo "Modify $i";
+				readAction DECISION "l look n none" "What to do ? (l)ook (n)one: " "";
+				case $DECISION in
+					l | look )
+					vimdiff-svn $i;
+					;;
+					n | none )
+					;;
+				esac;
+			;;
+			"!" )
+				echo "Lost $i";
+				readAction DECISION "r remove rem rm g get n none" "What to do ? (r)emove (g)et (n)one: " "";
+				case $DECISION in
+					r | remove | rem | rm )
+					echo "Removing $i";
+					svn remove $i;
+					;;
+
+					g | get )
+					echo "Download $i";
+					svn up $i;
+					;;
+
+					n | none )
+					;;
+				esac;
+			;;
+			X | "?" )
+				echo "Non-versioned $i";
+				readAction DECISION "a add r remove n none" "What to do ? (a)dd (r)emove (n)one: " "";
+				case $DECISION in
+					r | remove | rem | rm )
+					echo "Removing $i";
+					rm -rf $i;
+					;;
+
+					a | add )
+					echo "Adding $i";
+					svn add $i;
+					;;
+
+					n | none )
+					;;
+				esac;
+			;;
+			* )
+				echo "Unknown action $ACTION on $i";
+			;;
+		esac
+		# Clear action
+		ACTION="";
+	fi	
+done

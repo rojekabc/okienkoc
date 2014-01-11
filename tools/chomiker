@@ -1,0 +1,37 @@
+#!/bin/sh
+
+MAX_COUNTER=50
+
+CNT=0
+PACKLIST=""
+ZIPCNT=1
+
+if test -z "$1"; then
+	echo "Nie podano w argumencie nazwy bazowej archiwum";
+	exit -1;
+fi
+
+SIFS=$IFS;
+IFS=$'\n';
+FILTERS="*.[jJ][pP][gG]"$'\n'"*.[jJ][pP][eE][gG]"$'\n'"*.[gG][iI][fF]"$'\n'"*.[aA][vV][iI]"$'\n';
+
+for j in $FILTERS; do
+	for i in `find . -name "$j"`; do
+		CNT=`expr $CNT + 1`;
+		PACKLIST="$PACKLIST$i"$'\n'
+		if test "$CNT" = "$MAX_COUNTER"; then
+			echo "Creating $1-$ZIPCNT.zip";
+			zip -0 $1-$ZIPCNT.zip $PACKLIST > /dev/null;
+			CNT=0;
+			PACKLIST="";
+			ZIPCNT=`expr $ZIPCNT + 1`;
+		fi
+	done;
+done;
+
+if test ! -z "$PACKLIST"; then
+	echo "Creating $1-$ZIPCNT.zip";
+	zip -0 $1-$ZIPCNT.zip $PACKLIST > /dev/null;
+fi
+
+IFS=$IFS;

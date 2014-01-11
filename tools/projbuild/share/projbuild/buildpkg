@@ -1,0 +1,46 @@
+PROJEKT=$PACKAGENAME
+if test -z "$PROJEKT"; then
+	echo "Okre¶l w zmiennej PACKAGENAME nazwê projektu."
+	exit
+fi
+if ! test -d $PROJEKT; then
+	mkdir $PROJEKT
+	for i in $COPYDIR; do
+		if test -d $i; then
+			cp -rdf $i $PROJEKT
+		fi
+	done
+	for i in $COPYFILE; do
+		if test -f $i; then
+			cp -df $i $PROJEKT
+		fi
+	done
+	for i in $COPYCHANGEFILE; do
+		if test -f $i; then
+			echo "/*" >> $PROJEKT/$i
+			echo " * File: $i" >> $PROJEKT/$i
+			echo " * Copyright (C) $YEAR $AUTHOR; Released under $LICENSE" >> $PROJEKT/$i
+			echo " * This file is part of $PROJEKT project" >> $PROJEKT/$i
+			echo " *" >> $PROJEKT/$i
+			echo " * Decription:" >> $PROJEKT/$i
+			echo " */" >> $PROJEKT/$i
+			echo >> $PROJEKT/$i
+			cat $i >> $PROJEKT/$i
+		fi
+	done
+	# Clear .svn folders
+	rm -rf `find $PROJEKT -type d -name '.svn'`;
+fi
+if ! test -z $LICENSE; then
+	if test -f $LICENSEFOLDER/$LICENSE; then
+		cp -f $LICENSEFOLDER/$LICENSE $PROJEKT/COPYING
+	else
+		echo "Brak pliku licencji $LICENSE"
+	fi
+fi
+if test -z $VERSION; then
+	savetar $PROJEKT $1
+else
+	savetar $PROJEKT $VERSION
+fi
+rm -rf $PROJEKT

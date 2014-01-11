@@ -1,0 +1,12 @@
+#!/bin/sh
+if [ "$*" == "" ]; then
+	echo "Sposób zastososowania: $0 <plik> [wersja]"
+	echo "Plik wynikowy <plik>-<wersja>.tar.gz"
+fi
+if [ "$2" == "" ]; then
+	tar cf $1.tar $1
+	gzip -9vS .gz $1.tar
+else
+	tar cf $1-$2.tar $1
+	gzip -9vS .gz $1-$2.tar
+fi

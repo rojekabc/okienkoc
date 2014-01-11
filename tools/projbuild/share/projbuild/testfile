@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Plik testuj±cy dzia³anie file.shfun. NIE EKSPORTOWAÆ NA ZEWN¡TRZ
+
+. file.shfun
+
+TESTFILES="alfa.rome.so.2 alfa alfa.romeo /mnt/home/offline/projekt.so.2 /mnt/home/offline/projekt /mnt/home/offline/projekt.so projekt/x.so projekt/.xxx ./name.so ./projekt/x.so";
+FUNCTIONNAMES="fileExtension fileName filePath fileNameFreeExt filePathFreeExt";
+for i in $TESTFILES; do
+	echo "Testing file: [$i]";
+	for j in $FUNCTIONNAMES; do
+		$j TMP $i;
+		echo "	$j: $TMP"
+	done
+done;

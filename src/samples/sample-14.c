@@ -1,0 +1,75 @@
+/*
+ * W probie tej zostan± pokazane dwie listy. Jedna jest podzielona na dwie
+ * kolumny. Obie posiadaj± te same elementy.
+ */
+#include <okienkoc/okienkoc.h>
+#include <stdio.h>
+
+void listaBuduj(GOC_HANDLER lista)
+{
+	goc_listAddText(lista, "alfa");
+	goc_listAddText(lista, "beta");
+	goc_listAddText(lista, "auto");
+	goc_listAddText(lista, "blok");
+	goc_listAddText(lista, "cesna");
+	goc_listAddText(lista, "ciezar");
+	goc_listAddText(lista, "drezno");
+	goc_listAddText(lista, "dublin");
+	goc_listAddText(lista, "ekran");
+	goc_listAddText(lista, "ewolucja");
+	goc_listAddText(lista, "fragment");
+	goc_listAddText(lista, "fuzja");
+	goc_listAddText(lista, "gra");
+	goc_listAddText(lista, "gapik");
+	goc_listAddText(lista, "hamak");
+	goc_listAddText(lista, "hak");
+	goc_listAddText(lista, "ig³a");
+	goc_listAddText(lista, "iskra");
+}
+
+void listaBudujKolumna(GOC_HANDLER lista)
+{
+	goc_listAddText(lista, "alfa");
+	goc_listSetColumnText(lista, "beta", 1);
+	goc_listAddText(lista, "auto");
+	goc_listSetColumnText(lista, "blok", 1);
+	goc_listAddText(lista, "cesna");
+	goc_listSetColumnText(lista, "ciezar", 1);
+	goc_listAddText(lista, "drezno");
+	goc_listSetColumnText(lista, "dublin", 1);
+	goc_listAddText(lista, "ekran");
+	goc_listSetColumnText(lista, "ewolucja", 1);
+	goc_listAddText(lista, "fragment");
+	goc_listSetColumnText(lista, "fuzja", 1);
+	goc_listAddText(lista, "gra");
+	goc_listSetColumnText(lista, "gapik", 1);
+	goc_listAddText(lista, "hamak");
+	goc_listSetColumnText(lista, "hak", 1);
+	goc_listAddText(lista, "ig³a");
+	goc_listSetColumnText(lista, "iskra", 1);
+}
+
+int main()
+{
+	GOC_MSG wiesc;
+	GOC_HANDLER lista;
+	GOC_HANDLER lista2;
+	lista = goc_elementCreate(GOC_ELEMENT_SELLIST, 1, 1, 20, 10,
+			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
+			GOC_WHITE, GOC_HANDLER_SYSTEM );
+	listaBuduj(lista);
+	goc_sellistSelect(lista, 1);
+	goc_sellistSelect(lista, 4);
+	goc_sellistSelect(lista, 5);
+	lista2 = goc_elementCreate(GOC_ELEMENT_SELLIST, 21, 1, 20, 10,
+			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
+			GOC_WHITE, GOC_HANDLER_SYSTEM );
+	goc_listAddColumn(lista2, 10);
+	goc_listAddColumn(lista2, 10);
+	listaBudujKolumna(lista2);
+	goc_sellistSelect(lista2, 1);
+	goc_sellistSelect(lista2, 4);
+	goc_sellistSelect(lista2, 5);
+	while (goc_systemCheckMsg( &wiesc ));
+	return 0;
+}

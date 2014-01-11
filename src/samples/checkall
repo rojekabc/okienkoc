@@ -1,0 +1,18 @@
+ISANYLOG="false";
+if test -e memwatch.log; then
+	rm -f memwatch.log;
+fi
+for i in `ls sample-??`; do
+	./$i ;
+	if test -e memwatch.log; then
+		echo "---- (BEGIN) $i ----" > $i.log;
+		cat memwatch.log >> $i.log;
+		echo "---- (END) $i ----" >> $i.log;
+		rm -f memwatch.log;
+		ISANYLOG="true";
+	fi
+done
+if test "$ISANYLOG" = "true"; then
+	cat sample-??.log | less;
+	rm -f sample-??.log;
+fi

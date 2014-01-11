@@ -1,0 +1,181 @@
+#!/bin/sh
+
+CONF_NAME=.rojProj
+CONF_PATH=~/$CONF_NAME
+ACTIVE_PROJECT=.active
+
+ACTUAL_PATH=`dirname $0`;
+PROGNAME=`basename $0`;
+SHFUN_PATH=$ACTUAL_PATH/../share/projbuild;
+
+START_PATH=`pwd -P`;
+
+if ! test -d $CONF_PATH; then
+	echo "Creating configuration folder $CONF_PATH";
+	mkdir $CONF_PATH;
+fi
+
+. $SHFUN_PATH/color.shfun;
+. $SHFUN_PATH/vendor.shfun;
+
+# Sprawdzenie, czy referencja do aktywnego projektu jest aktualna
+# Jezeli nie, to usun
+if test -L $CONF_PATH/$ACTIVE_PROJECT; then
+	cd $CONF_PATH/$ACTIVE_PROJECT 2> /dev/null;
+	if ! test "$?" == "0"; then
+		rm -f $CONF_PATH/$ACTIVE_PROJECT;
+	fi
+fi
+cd $START_PATH;
+
+case $1 in
+	-a | --add)
+		if test -z "$2"; then
+			echo "Wrong usage";
+			exit -1;
+		fi
+		if test -z "$3"; then
+			echo "Wrong usage";
+			exit -1;
+		fi
+		if ! test -d $3; then
+			echo "Second argument should be a directory";
+			exit -1;
+		fi
+
+		# Zmiana katalogu na wskazany !
+		cd $3 2> /dev/null;
+		if test "$?" != "0"; then
+			echo -n "Cannot get into direcotry ";
+			colortext GREEN $3;
+			exit -1;
+		fi
+
+		# Czy istnieje ju¿ folder konfiguruj±cy projekt ?
+		if ! test -d $CONF_NAME; then
+			mkdir $CONF_NAME;
+			if test "$?" != "0"; then
+				echo "Cannot create configuration";
+				exit -1;
+			fi
+		fi
+
+		ln -s `pwd -P`/$CONF_NAME $CONF_PATH/$2;
+		if test "$?" != "0"; then
+			echo -n "Cannot create project link to "
+			colortext -n GREEN $3;
+			echo -n " named ";
+			colortext GREEN $2;
+			exit -1;
+		fi
+
+		# Przywrócenie oryginalnego katalogu
+		cd $START_PATH;
+		exit 0;
+	;;
+	-r | --rm)
+		if test -z "$2"; then
+			echo "Wrong usage";
+			exit -1;
+		fi
+		if test -L $CONF_PATH/$2; then
+			rm -f $CONF_PATH/$2;
+		else
+			echo -n "Unknown project: "
+			colortext GREEN $2;
+			exit -1;
+		fi
+
+		exit 0;
+	;;
+	-l | --ls | --list)
+		echo "	List of projects";
+		ACTIVEPATH="";
+		if test -L $CONF_PATH/$ACTIVE_PROJECT; then
+			cd $CONF_PATH/$ACTIVE_PROJECT;
+			ACTIVEPATH="`pwd -P`";
+		fi
+		for i in `ls $CONF_PATH`; do
+			setfcolor CYAN BOLD;
+			echo -n "$i";
+			resetcolor;
+			echo -n " -> ";
+			cd $CONF_PATH/$i;
+			PROJPATH="`pwd -P`";
+			colortext -n GREEN "$PROJPATH";
+			if test "$ACTIVEPATH" = "$PROJPATH"; then
+				colortext -n YELLOW " [Active]";
+			fi
+			echo "";
+		done
+		cd $START_PATH;
+		exit 0;
+	;;
+	-i | --info)
+		echo "Now not in use";
+		exit 0;
+	;;
+	-h | --help)
+		echo -n "Usage: ";
+		colortext -n GREEN $PROGNAME;
+		echo " <command> | <project name>";
+		echo "	-a | --add <name> <path>";
+		echo "		Register new project with <name>";
+		echo "		Project files are located at <path>";
+		echo "	-r | --rm <name>";
+		echo "		Unregister project named <name>";
+		echo "		Project configuration files are not removed";
+		echo "	-l | --ls | --list";
+		echo "		Listing registered projects";
+		echo "	-i | --info";
+		echo "		Print informations about project";
+		echo "	<project name>";
+		echo "		Set actual project name as active project";
+		echo "";
+		echo -n "				Copyright @ ";
+		colortext CYAN "$FUN_VENDOR_AUTHOR";
+		exit 0;
+	;;
+	*)
+		if test -z "$1"; then
+			# Wypisz pomoc
+			$0 --help;
+
+			# Wypisz aktywny projekt, jaki jest obecnie
+			ACTIVEPATH="";
+			if test -L $CONF_PATH/$ACTIVE_PROJECT; then
+				cd $CONF_PATH/$ACTIVE_PROJECT;
+				ACTIVEPATH="`pwd -P`";
+				for i in `ls $CONF_PATH`; do
+					cd $CONF_PATH/$i;
+					PROJPATH="`pwd -P`";
+					if test "$ACTIVEPATH" = "$PROJPATH"; then
+						setfcolor CYAN BOLD;
+						echo -n "$i";
+						resetcolor;
+						echo -n " -> ";
+						colortext -n GREEN "$PROJPATH";
+						colortext -n YELLOW " [Active]";
+					fi
+					echo "";
+				done
+			else
+				echo "No active project";
+			fi
+			cd $START_PATH;
+
+			exit;
+		fi
+		if test -L $CONF_PATH/$1; then
+			if test -L $CONF_PATH/$ACTIVE_PROJECT; then
+				rm -f $CONF_PATH/$ACTIVE_PROJECT;
+			fi
+			ln -s $1 $CONF_PATH/$ACTIVE_PROJECT;
+		else
+			echo -n "Unknown project: ";
+			colortext GREEN $1;
+			exit -1;
+		fi
+		exit 0;
+	;;
+esac

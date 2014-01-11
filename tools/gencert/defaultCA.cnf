@@ -1,0 +1,30 @@
+[ req ]
+default_bits			= 1024
+distinguished_name	= req_distinguished_name
+x509_extensions		= v3_ca
+
+[ req_distinguished_name ]
+countryName				= PL
+countryName_default	= PL
+countryName_min		= 2
+countryName_max		= 2
+
+localityName			= Unknown
+localityName_default = Unknown
+
+organizationalUnitName = Unknown
+organizationalUnitName_default = Unknown
+
+commonName				= defaultCA
+commonName_default		= defaultCA
+commonName_max			= 64
+
+emailAddress			= unknown@email.pl
+emailAddress_default	= unknown@email.pl
+emailAddress_max		= 40
+
+[ v3_ca ]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints=CA:true
+keyUsage=keyCertSign

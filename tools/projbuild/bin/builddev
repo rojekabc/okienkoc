@@ -1,0 +1,26 @@
+#!/bin/sh
+# Ustalenie ¶cie¿ki z jakiej wykonuje siê program
+path="`dirname $0`";
+# Ustalenie ¶cie¿ki, w jakiej s± fragmenty wykonywania
+sharepath="$path/../share/projbuild"
+tempscript=/tmp/builddev
+conffile=.rojProj/.projbuildrc;
+if test -f $tempscript; then
+	echo "Plik tymczasowy nie zosta³ usuniêty"
+	exit
+fi
+if ! test -f $conffile; then
+	echo "Brak pliku konfiguracyjnego projektu $conffile"
+	exit
+fi
+if ! test -f "$sharepath/builddev"; then
+	echo "Brak pliku dzielonego skryptu - builddev"
+	exit
+fi
+
+echo "#!/bin/sh" > $tempscript
+echo >> $tempscript
+cat $conffile >> $tempscript
+cat $sharepath/builddev >> $tempscript
+sh $tempscript $*
+rm $tempscript
