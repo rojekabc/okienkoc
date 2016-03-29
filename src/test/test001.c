@@ -1,6 +1,6 @@
 #include <okienkoc/nbitpola.h>
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 #include <signal.h>
 #include <string.h>
 
@@ -8,8 +8,8 @@
 #define _lint_(x, y) printf("  log %s = %d\n", x, y);
 #define _luint_(x, y) printf("  log %s = %u\n", x, y);
 
-unsigned int timertick;
-
+//unsigned int timertick;
+/*
 #define starttimer( _int_tickcounter_, _sigalarmfunction_ ) \
 { \
 	struct itimerval tv; \
@@ -28,23 +28,46 @@ unsigned int timertick;
 { \
 	setitimer(ITIMER_REAL, 0, 0); \
 }
+*/
 
-#define testspeed(_pchar_description_, _int_tickcounter_, _fun_sigalarm_, _int_loopcnt_, block_tested) \
+#define testspeed(_pchar_description_, _int_loopcnt_, block_tested) \
 { \
 	int i = 0; \
+	struct timespec start; \
+	struct timespec end; \
 	printf(_pchar_description_); \
 	printf(" ... "); \
-	starttimer(_int_tickcounter_, _fun_sigalarm_); \
+	clock_gettime(CLOCK_REALTIME, &start); \
 	for ( ; i<_int_loopcnt_; i++ ) \
 		block_tested \
-	stoptimer(); \
-	printf(" %d ticks\n", _int_tickcounter_); \
+	clock_gettime(CLOCK_REALTIME, &end); \
+	long s = end.tv_sec - start.tv_sec; \
+	long ns = end.tv_nsec - start.tv_nsec; \
+	if ( ns < 0 ) { \
+		ns += 1000000000; \
+		s -= 1; \
+	} \
+	int us = ns / 1000; \
+	int ms = us / 1000; \
+	ns %= 1000; \
+	us %= 1000; \
+	ms %= 1000; \
+	if ( s > 0 ) { \
+		printf(" %03ld.%03lds\n", s, ms); \
+	} else if ( ms > 0 ) { \
+		printf(" %03ld.%03ldms\n", ms, us); \
+	} else if ( us > 0 ) { \
+		printf(" %03ld.%03ldus\n", us, ns); \
+	} else { \
+		printf(" %03ldns\n", ns); \
+	} \
 }
-
+/*
 void sigtimeralarm(int a)
 {
 	timertick++;
 }
+*/
 
 void testUstawianiaPobierania1(unsigned int lbnw, unsigned int ld)
 {
@@ -241,142 +264,122 @@ void testWstawiania1(
 int main()
 {
 	testspeed(
-		"Test numer 1: Ustawiania i pobieranie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 1: Ustawiania i pobieranie No.1", 1,
 		{
 	testUstawianiaPobierania1(3, 10);
 		}
 	);
 	testUstawianiaPobierania1(3, 10);
 	testspeed(
-		"Test numer 2: Ustawiania i pobieranie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 2: Ustawiania i pobieranie No.1", 1,
 		{
 	testUstawianiaPobierania1(1, 100);
 		}
 	);
 	testspeed(
-		"Test numer 3: Ustawiania i pobieranie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 3: Ustawiania i pobieranie No.1", 1,
 		{
 	testUstawianiaPobierania1(9, 10);
 		}
 	);
 	testspeed(
-		"Test numer 4: Ustawiania i pobieranie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 4: Ustawiania i pobieranie No.1", 1,
 		{
 	testUstawianiaPobierania1(7, 50);
 		}
 	);
 	testspeed(
-		"Test numer 5: Ustawiania i pobieranie No.2",
-		timertick, sigtimeralarm, 1,
+		"Test numer 5: Ustawiania i pobieranie No.2", 1,
 		{
 	testUstawianiaPobierania2(3, 10);
 		}
 	);
 	testspeed(
-		"Test numer 6: Ustawiania i pobieranie No.2",
-		timertick, sigtimeralarm, 1,
+		"Test numer 6: Ustawiania i pobieranie No.2", 1,
 		{
 	testUstawianiaPobierania2(1, 100);
 		}
 	);
 	testspeed(
-		"Test numer 7: Ustawiania i pobieranie No.2",
-		timertick, sigtimeralarm, 1,
+		"Test numer 7: Ustawiania i pobieranie No.2", 1,
 		{
 	testUstawianiaPobierania2(9, 10);
 		}
 	);
 	testspeed(
-		"Test numer 8: Ustawiania i pobieranie No.2",
-		timertick, sigtimeralarm, 1,
+		"Test numer 8: Ustawiania i pobieranie No.2", 1,
 		{
 	testUstawianiaPobierania2(7, 50);
 		}
 	);
 	testspeed(
-		"Test numer 9: Ustawiania i pobieranie No.2",
-		timertick, sigtimeralarm, 1,
+		"Test numer 9: Ustawiania i pobieranie No.2", 1,
 		{
 	testUstawianiaPobierania2(32, 1000);
 		}
 	);
 	testspeed(
-		"Test numer 10: Dodawanie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 10: Dodawanie No.1", 1,
 		{
 	testDodawania1(1, 20);
 		}
 	);
 	testspeed(
-		"Test numer 11: Dodawanie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 11: Dodawanie No.1", 1,
 		{
 	testDodawania1(2, 20);
 		}
 	);
 	testspeed(
-		"Test numer 12: Dodawanie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 12: Dodawanie No.1", 1,
 		{
 	testDodawania1(7, 100);
 		}
 	);
 	testspeed(
-		"Test numer 13: Dodawanie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 13: Dodawanie No.1", 1,
 		{
 	testDodawania1(9, 100);
 		}
 	);
 	testspeed(
-		"Test numer 14: Dodawanie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 14: Dodawanie No.1", 1,
 		{
 	testDodawania1(32, 100);
 		}
 	);
 	testspeed(
-		"Test numer 15: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 15: Wstawianie No.1", 1,
 		{
 	testWstawiania1(1, 10, 5, 20);
 		}
 	);
 	testspeed(
-		"Test numer 16: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 16: Wstawianie No.1", 1,
 		{
 	testWstawiania1(4, 10, 5, 20);
 		}
 	);
 	testspeed(
-		"Test numer 17: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 17: Wstawianie No.1", 1,
 		{
 	testWstawiania1(7, 10, 5, 20);
 		}
 	);
 	testspeed(
-		"Test numer 18: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 18: Wstawianie No.1", 1,
 		{
 	testWstawiania1(9, 10, 5, 20);
 		}
 	);
 	testspeed(
-		"Test numer 19: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 19: Wstawianie No.1", 1,
 		{
 	testWstawiania1(9, 100, 5, 200);
 		}
 	);
 	testspeed(
-		"Test numer 20: Wstawianie No.1",
-		timertick, sigtimeralarm, 1,
+		"Test numer 20: Wstawianie No.1", 1,
 		{
 	testWstawiania1(9, 1000, 5, 2000);
 		}
