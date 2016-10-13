@@ -1,0 +1,9 @@
+# ignore objects, archives and shared libraries
+*.[oa]
+*.so
+*.so.*
+# ignore produces files
+OUT.TXT
+ERRORS
+# ignore vim template and backup files
+*~
