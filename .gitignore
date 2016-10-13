@@ -5,5 +5,7 @@
 # ignore produces files
 OUT.TXT
 ERRORS
+src/.cflags
+src/.lflags
 # ignore vim template and backup files
 *~
