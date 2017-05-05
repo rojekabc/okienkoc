@@ -10,7 +10,7 @@
 static GOC_HOTKEYS _hotkeys = NULL;
 // dodaj nowego hotkey'a do listy
 // TOTHINK: Moze zwracaæ GOC_HOTKEY, jaki zostaje dodany do listy
-int goc_hkAdd(
+GOC_HOTKEY goc_hkAdd(
 	GOC_HANDLER uchwyt, unsigned int key, GOC_FLAGS flag, GOC_FUN_LISTENER *fun)
 {
 	GOC_HOTKEYS *hk;
@@ -25,13 +25,14 @@ int goc_hkAdd(
 	}
 	(*hk)->pHotKey = goc_tableAdd(
 		(*hk)->pHotKey, &((*hk)->nHotKey), sizeof(GOC_HOTKEY) );
-	(*hk)->pHotKey[(*hk)->nHotKey-1] = malloc(sizeof(GOC_StHotKey));
-	(*hk)->pHotKey[(*hk)->nHotKey-1]->key = key;
+	GOC_HOTKEY hotkey = malloc(sizeof(GOC_StHotKey));
+	(*hk)->pHotKey[(*hk)->nHotKey-1] = hotkey;
+	hotkey->key = key;
 	if ( !(flag & (GOC_HKFLAG_USER | GOC_HKFLAG_SYSTEM)) )
 		flag |= GOC_HKFLAG_USER;
-	(*hk)->pHotKey[(*hk)->nHotKey-1]->flag = flag;
-	(*hk)->pHotKey[(*hk)->nHotKey-1]->func = fun;
-	return GOC_ERR_OK;
+	hotkey->flag = flag;
+	hotkey->func = fun;
+	return hotkey;
 }
 
 int goc_hkClear(

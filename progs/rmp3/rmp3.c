@@ -12,6 +12,9 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+//#if LIBAVCODEC_VERSION_MAJOR == 54
+//#	include <libavutil/avutil.h>
+//#endif
 #include <ao/ao.h>
 
 #include <errno.h>
@@ -201,8 +204,12 @@ static void closeAudioFile()
 	filename = NULL;
 	if ( pFormatCtx )
 	{
+#if LIBAVFORMAT_VERSION_MAJOR < 56
 		av_close_input_file( pFormatCtx );
 		pFormatCtx = NULL;
+#else
+		avformat_close_input( &pFormatCtx );
+#endif
 	}
 	if ( pCodecCtx )
 	{
@@ -239,6 +246,9 @@ static int openAudioFile(const char *cfilename)
 {
 	int err;
 	int i;
+#if LIBAVFORMAT_VERSION_MAJOR >= 56
+	char* url = NULL;
+#endif
 	// wstepne inicjowanie i sprzatanie
 	closeAudioFile();
 
@@ -253,13 +263,23 @@ static int openAudioFile(const char *cfilename)
 	// ustawienie nowego pliku odtwarzanego
 	filename = cfilename;
 	// otworz plik
+#if LIBAVFORMAT_VERSION_MAJOR < 56
 	err = av_open_input_file( &pFormatCtx, filename, NULL, 0, NULL);
+#else // 58
+	url = goc_stringMultiAdd(NULL, "file:", filename);
+	err = avformat_open_input( &pFormatCtx, url, NULL, NULL);
+	url = goc_stringFree(url);
+#endif
 	if ( err != 0 )
 	{
 		filename = NULL;
 		return logAVError(err);
 	}
+#if LIBAVFORMAT_VERSION_MAJOR < 56
 	err = av_find_stream_info( pFormatCtx );
+#else
+	err = avformat_find_stream_info( pFormatCtx, NULL );
+#endif
 	if ( err < 0 )
 	{
 		filename = NULL;
@@ -270,7 +290,11 @@ static int openAudioFile(const char *cfilename)
 	{
 		switch (pFormatCtx->streams[i]->codec->codec_type)
 		{
+#if LIBAVCODEC_VERSION_MAJOR == 52
 			case CODEC_TYPE_AUDIO:
+#elif LIBAVCODEC_VERSION_MAJOR >= 54
+			case AVMEDIA_TYPE_AUDIO:
+#endif
 				pCodecCtx = pFormatCtx->streams[i]->codec;
 				if ( pCodecCtx->channels > 0 )
 					pCodecCtx->request_channels = pCodecCtx->channels <= 2 ? pCodecCtx->channels : 2;
@@ -288,7 +312,11 @@ static int openAudioFile(const char *cfilename)
 				if ( !pCodec )
 					return -1; // TODO: Log error
 
+#if LIBAVFORMAT_VERSION_MAJOR < 56
 				err = avcodec_open(pCodecCtx, pCodec);
+#else
+				err = avcodec_open2(pCodecCtx, pCodec, NULL);
+#endif
 				if ( err < 0 )
 					return logAVError(err);
 				audioStream = i;
@@ -304,8 +332,13 @@ static int openAudioFile(const char *cfilename)
 		filename = NULL;
 		return -1; // TODO: Log error
 	}
+	// TODO: Choose MONO / STEREO or other
+#if LIBAVCODEC_VERSION_MAJOR == 52
 //	pCodecCtx->request_channel_layout = CH_LAYOUT_STEREO_DOWNMIX;
 	pCodecCtx->request_channel_layout = CH_LAYOUT_MONO;
+#elif LIBAVCODEC_VERSION_MAJOR >= 54
+	pCodecCtx->request_channel_layout = AV_CH_LAYOUT_MONO;
+#endif
 	eventChangeSongPlaying();
 	return openOutputDevice();
 }
@@ -677,11 +710,16 @@ int doAction(unsigned int action, void *param)
 			}
 			return 0;
 		case ACTION_INFO:
+		{
+#if LIBAVCODEC_VERSION_MAJOR >= 54
+			const char* keyname = NULL;
+#endif
 			switch ( *(int*)param )
 			{
 				case INFO_FILE:
 					*(int*)param = (int)strdup(filename);
 					break;
+#if LIBAVCODEC_VERSION_MAJOR == 52
 				case INFO_TITLE:
 					*(int*)param = (int)(strdup(pFormatCtx->title));
 					break;
@@ -698,12 +736,34 @@ int doAction(unsigned int action, void *param)
 				case INFO_COMMENT:
 					*(int*)param = (int)(strdup(pFormatCtx->comment));
 					break;
+#elif LIBAVCODEC_VERSION_MAJOR >= 54
+				case INFO_TITLE:
+					keyname = "title";
+					break;
+				case INFO_ARTIST:
+					keyname = "artist";
+					break;
+				case INFO_ALBUM:
+					keyname = "album";
+					break;
+				case INFO_YEAR:
+					keyname = "year";
+					break;
+				case INFO_COMMENT:
+					keyname = "comment";
+					break;
+#endif
 				default:
 					*(int*)param = (int)strdup("NONE");
 					GOC_ERROR("Nieznany parametr informacji ACTION_INFO");
 					return -1;
 			}
+#if LIBAVCODEC_VERSION_MAJOR >= 54
+			// assign value from dictionary
+			*(int*)param = (int)strdup(av_dict_get(pFormatCtx->metadata, "title", NULL, 0)->value);
+#endif
 			return 0;
+		}
 		case ACTION_SHUFFLE:
 			switch ( *(int*)param )
 			{

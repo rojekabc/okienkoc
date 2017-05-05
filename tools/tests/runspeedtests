@@ -10,7 +10,7 @@ echo -n '   calling by $(function) ';
 (time shellcall/testtwo > /dev/null) 2>&1 | grep "real"
 echo -n '   calling by `function` ';
 (time shellcall/testone > /dev/null) 2>&1 | grep "real"
-echo -n '   calling by function ';
+echo -n '   calling by function and use return';
 (time shellcall/testthree > /dev/null) 2>&1 | grep "real"
-echo -n '   calling by function ';
+echo -n '   calling by function and use eval';
 (time shellcall/testfour > /dev/null) 2>&1 | grep "real"

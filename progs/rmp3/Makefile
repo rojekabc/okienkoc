@@ -4,7 +4,7 @@ BINDIR=$(PREFIX)/bin
 SHAREDIR=$(PREFIX)/share/rmp3
 
 linux:
-	$(MAKE) CC=gcc LDFLAGS="-ldl -lpthread -lavcodec -lavformat -lao -lokienkoc -lm" \
+	$(MAKE) CC=gcc LDFLAGS="-ldl -lpthread -lavcodec -lavformat -lao -lokienkoc -lm -lavutil" \
 		OBJECTS='aumix.o rmp3.o' \
 		CFLAGS='$(CFLAGS) -DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX \
 			-DOSS -DTERM_CONTROL\

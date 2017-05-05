@@ -91,8 +91,8 @@ uninstall:
 
 libterm-linux.so: term-linux.c
 	@echo "--- Compile $< ---" >> $(OUTERROR)
-	@gcc -o $@ -shared `cat $(CFLAGSFILE)` -lokienkoc $< 2>> $(OUTERROR)
+	@gcc -o $@ -shared `cat $(CFLAGSFILE)` $< 2>> $(OUTERROR)
 
 libterm-xterm.so: term-xterm.c
 	@echo "--- Compile $< ---" >> $(OUTERROR)
-	@gcc -o $@ -shared `cat $(CFLAGSFILE)` -lokienkoc $< -lX11 2>> $(OUTERROR)
+	@gcc -o $@ -shared `cat $(CFLAGSFILE)` $< -lX11 2>> $(OUTERROR)

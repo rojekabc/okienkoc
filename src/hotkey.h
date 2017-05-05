@@ -16,7 +16,7 @@ typedef struct GOC_StHotKeys
 	int nHotKey;
 } GOC_StHotKeys, *GOC_HOTKEYS;
 
-int goc_hkAdd(
+GOC_HOTKEY goc_hkAdd(
 	GOC_HANDLER uchwyt, unsigned int key, GOC_FLAGS flag, GOC_FUN_LISTENER *fun);
 int goc_hkRemove(
 	GOC_HANDLER uchwyt, const GOC_HOTKEY hotkey);
