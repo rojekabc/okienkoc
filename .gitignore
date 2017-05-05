@@ -2,7 +2,6 @@
 **/.*.un~
 **/*.so
 **/*.so.*
-src/samples/sample-??
 **/ERRORS
 **/.lflags
 **/.cflags

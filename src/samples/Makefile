@@ -28,14 +28,19 @@ TESTPROG = sample-00 sample-01 sample-02 sample-03 sample-04 sample-05 \
 	   sample-06 sample-07 sample-08 sample-09 sample-10 \
 	   sample-11 sample-12 sample-13 sample-14 sample-15 sample-16 \
 	   sample-17 sample-18 sample-19 sample-20
+TARGETPATH=target
+TARGETPROG = $(patsubst %, $(TARGETPATH)/%, $(TESTPROG))
 
-all: prepare $(TESTPROG)
 
-debug: preparedebug $(TESTPROG)
+all: prepare $(TARGETPROG)
+
+debug: preparedebug $(TARGETPROG)
 
 prepare:
 	@echo "Preparing..."
 	@rm -f ERRORS
+	@rm -rf $(TARGETPATH)
+	@mkdir $(TARGETPATH)
 	@echo "$(NORMALCFLAGS)" > $(CFLAGSFILE)
 	@echo "$(NORMALLFLAGS)" > $(LFLAGSFILE)
 
@@ -47,9 +52,9 @@ preparedebug:
 
 clean:
 	@echo $"Cleaning$"
-	@rm -f $(OUTERROR) $(TESTPROG) .cflags .lflags *.log *~
+	@rm -f $(OUTERROR) $(TARGETPROG) .cflags .lflags *.log *~ .*.un~
 
-$(TESTPROG): %: %.c
+$(TARGETPROG): $(TARGETPATH)/%: %.c
 	@echo $"--- Compile $< ---$" >> $(OUTERROR)
 	@echo $"Compile $<$"
 	@gcc -o $@ $< -lokienkoc -L. `cat $(CFLAGSFILE)` 2>> $(OUTERROR)
