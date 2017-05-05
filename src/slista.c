@@ -136,7 +136,7 @@ int goc_sellistGetSelectPos(GOC_HANDLER uchwyt, int numer)
 	return -1;
 }
 
-int goc_sellistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_sellistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

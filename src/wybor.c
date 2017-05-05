@@ -64,7 +64,7 @@ static int choiceFreeFocus(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int choiceHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int choiceHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	goc_systemSendMsg(uchwyt, GOC_MSG_ACTION, 0, 0);
 	return GOC_ERR_OK;
@@ -81,7 +81,7 @@ static int choiceAction(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-int goc_choiceListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_choiceListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

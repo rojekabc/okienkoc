@@ -89,7 +89,7 @@ static unsigned int keyboardFlags = 0;
 
 static void systemInit();
 static void systemRunWork();
-static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf);
+static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
 
 static GOC_FUN_LISTENER* systemListenerFunc(GOC_HANDLER uchwyt)
 {
@@ -413,7 +413,7 @@ static const char *interpretReturn(int retCode)
 	return errCodesTable[retCode];
 }
 
-static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	char *result = NULL;
 	result = goc_stringAdd(result, "GOC_HANDLER=");
@@ -527,7 +527,7 @@ static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBu
 #endif // ifdef GOC_PRINTDEBUG
 
 // Wykonywanie wie¶ci dopóty code powrotu nie bêdzie inny ni¿ GOC_ERR_UNKNOWNMSG
-int goc_systemBroadcastMsg(GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int goc_systemBroadcastMsg(GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	GOC_FUN_LISTENER *pFun = systemListenerFunc(_focusElement);
 	int ret = GOC_ERR_UNKNOWNMSG;
@@ -550,7 +550,7 @@ int goc_systemBroadcastMsg(GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
 	return ret;
 }
 
-int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	int ret = GOC_ERR_OK;
 	GOC_FUN_LISTENER *defFun = NULL;
@@ -604,12 +604,12 @@ int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsig
 	return ret;
 }
 
-static int systemHotKeyESC(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int systemHotKeyESC(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	return goc_systemBroadcastMsg( GOC_MSG_FINISH, 0, GOC_ERR_OK );
 }
 
-static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( keyboardFlags & GOC_KBD_ANYSHIFT )
 		return goc_systemBroadcastMsg(GOC_MSG_FOCUSPREV, 0, 0 );
@@ -618,14 +618,14 @@ static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsign
 }
 
 static int systemHotKeySwitchTerm(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( keyboardFlags & GOC_KBD_ALTL )
 		goc_termSwitchTo(nBuf-0xFF);
 	return GOC_ERR_OK;
 }
 
-static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_FINISH )
 	{
@@ -677,7 +677,7 @@ static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigne
 	return GOC_ERR_UNKNOWNMSG;
 }
 
-int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	GOC_FUN_LISTENER *pFun = NULL;
 	int ret;
@@ -935,7 +935,7 @@ GOC_HANDLER goc_elementCreate(
 	elem.flag = f;
 	elem.color = k;
 	elem.ojciec = ojciec;
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_CREATE, &elem, (int)(&uchwyt));
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_CREATE, &elem, (GOC_HANDLER)(&uchwyt));
 	if ( uchwyt )
 	{
 		pElements = goc_handlerAdd( pElements, uchwyt );

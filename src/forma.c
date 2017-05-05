@@ -31,7 +31,7 @@ static int goc_formPaint(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-int goc_formHotKeyEsc(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_formHotKeyEsc(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	int ret;
 	GOC_DEBUG("-> goc_formHotKeyEsc");
@@ -40,7 +40,7 @@ int goc_formHotKeyEsc(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned in
 	return ret;
 }
 
-int goc_formHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_formHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	int ret;
 	GOC_DEBUG("-> goc_formHotKeyTab");
@@ -96,7 +96,7 @@ int goc_formHide(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-int goc_formListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_formListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	int ret = GOC_ERR_OK;
 	GOC_DEBUG("-> goc_formListener");

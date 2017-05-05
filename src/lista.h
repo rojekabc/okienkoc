@@ -72,7 +72,7 @@ typedef struct GOC_StList
 	GOC_STRUCT_LIST;
 } GOC_StList;
 
-int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_listAddText(GOC_HANDLER u, const char *tekst);
 int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
 int goc_listSetColumnText(GOC_HANDLER u, const char *tekst, int kolumna);

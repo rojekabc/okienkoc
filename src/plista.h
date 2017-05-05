@@ -70,6 +70,6 @@ typedef struct GOC_StFileList
 
 int goc_filelistSetFolder(GOC_HANDLER uchwyt, const char *dirname);
 const char *goc_filelistGetFolder(GOC_HANDLER uchwyt);
-int goc_filelistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_filelistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 
 #endif // ifndef _GOC_SELLIST_H_

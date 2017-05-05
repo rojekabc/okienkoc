@@ -56,7 +56,7 @@ static int barPaint(GOC_HANDLER uchwyt)
 
 // TODO: Przemieszczenie punktu startowego przy ilosci pól wykraczaj±cych
 // poza dostêpny obszar
-static int barHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int barHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StBar *pasek = (GOC_StBar*)uchwyt;
 	if ( pasek->kursor < (int)(pasek->nText-1) )
@@ -66,7 +66,7 @@ static int barHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned
 }
 // TODO: Przemieszczenie punktu startowego przy ilosci pól wykraczaj±cych
 // poza dostêpny obszar
-static int barHotKeyPrev(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int barHotKeyPrev(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StBar *pasek = (GOC_StBar*)uchwyt;
 	if ( pasek->kursor > 0 )
@@ -95,7 +95,7 @@ static int barFreeFocus(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-int goc_barListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_barListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

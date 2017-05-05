@@ -510,7 +510,7 @@ static int listCursorPrev(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int lisyHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int lisyHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int retCode = GOC_ERR_OK;
@@ -522,7 +522,7 @@ static int lisyHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigne
 	return GOC_ERR_OK;
 }
 
-static int listHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int listHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int retCode = GOC_ERR_OK;
@@ -535,7 +535,7 @@ static int listHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned
 }
 
 static int listHotKeyPgUp(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int n = goc_listGetRowsAmmount(uchwyt);
@@ -571,7 +571,7 @@ static int listHotKeyPgUp(
 }
 
 static int listHotKeyPgDown(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int n = goc_listGetRowsAmmount(uchwyt);
@@ -605,12 +605,12 @@ static int listHotKeyPgDown(
 	return retCode;
 }
 
-static int listHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int listHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	return listCursorNext(uchwyt);
 }
 
-static int listHotKeyPrev(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int listHotKeyPrev(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	return listCursorPrev(uchwyt);
 }
@@ -748,7 +748,7 @@ static int goc_listDestroy(GOC_HANDLER uchwyt)
 	return goc_elementDestroy(uchwyt);
 }
 
-int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

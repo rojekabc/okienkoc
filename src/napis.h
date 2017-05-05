@@ -26,7 +26,7 @@ typedef struct GOC_StLabel
 	GOC_STRUCT_LABEL;
 } GOC_StLabel;
 
-int goc_labelListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_labelListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_labelAddLine(GOC_HANDLER u, const char *Tekst);
 int goc_labelSetFlag(GOC_HANDLER u, unsigned short line, GOC_FLAGS flag);
 int goc_labelSetColor(GOC_HANDLER u, unsigned short line, GOC_COLOR color);

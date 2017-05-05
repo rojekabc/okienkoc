@@ -24,7 +24,7 @@ GOC_COLOR slistaDajKolorKursorZaznaczony(GOC_HANDLER uchwyt);
 int slistaDajZaznaczonyLiczba(GOC_HANDLER uchwyt);
 int goc_sellistGetSelectPos(GOC_HANDLER uchwyt, int numer);
 char *slistaDajZaznaczony(GOC_HANDLER uchwyt, int numer);
-int goc_sellistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_sellistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_sellistSelect(GOC_HANDLER uchwyt, int pos);
 int goc_sellistUnselect(GOC_HANDLER uchwyt, int pos);
 

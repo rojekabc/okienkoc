@@ -92,7 +92,7 @@ typedef struct GOC_StMask
 	GOC_STRUCT_MASK;
 } GOC_StMask;
 
-int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_maskSetRealArea(GOC_HANDLER uchwyt, int d, int w);
 int goc_maskSet(GOC_HANDLER uchwyt, unsigned char x, unsigned char y, int val);
 int goc_maskGet(GOC_HANDLER uchwyt, int x, int y);

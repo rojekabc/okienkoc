@@ -6,9 +6,11 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/keyboard.h>
+#ifndef __CYGWIN__
+#	include <linux/kd.h>
+#	include <linux/vt.h>
+#	include <linux/keyboard.h>
+#endif
 #include <errno.h>
 #ifndef _DEBUG
 #	include <string.h>

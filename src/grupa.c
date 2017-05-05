@@ -30,7 +30,7 @@ int grupaHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int n
 	return goc_systemSendMsg(uchwyt, GOC_MSGFOCUSNEXT, 0, 0);
 }
 */
-int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 #ifdef _DEBUG
 	fprintf(stderr, "%s:%d goc_groupListener.\n", __FILE__, __LINE__);

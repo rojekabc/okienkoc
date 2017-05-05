@@ -28,7 +28,7 @@ typedef struct GOC_StMapPos
 } GOC_StMapPos;
 
 int goc_mapaposListener(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf);
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
 int goc_mapaposAddChar(GOC_HANDLER uchwyt, char znak, GOC_COLOR color, int pozycja);
 int goc_mapaposRemPoint(GOC_HANDLER uchwyt, int x, int y);
 int goc_mapposAddPoint(GOC_HANDLER uchwyt, int x, int y);

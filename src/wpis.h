@@ -26,7 +26,7 @@ typedef struct GOC_StEdit
 	GOC_STRUCT_EDIT;
 } GOC_StEdit;
 
-int goc_editListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_editListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_editSetText( GOC_HANDLER u, const char *tekst );
 const char *goc_editGetText( GOC_HANDLER u );
 

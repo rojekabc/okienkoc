@@ -69,7 +69,7 @@ static int framePaint(GOC_StFrame *ramka)
 	return GOC_ERR_OK;
 }
 
-int goc_frameListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_frameListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

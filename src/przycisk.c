@@ -67,12 +67,12 @@ static int buttonFocus(GOC_StButton *przycisk)
 	return GOC_ERR_OK;
 }
 
-static int buttonHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int buttonHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	return goc_systemSendMsg(uchwyt, GOC_MSG_ACTION, 0, 0);
 }
 
-int goc_buttonListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_buttonListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

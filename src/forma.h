@@ -14,7 +14,7 @@ typedef struct GOC_StForm
 	GOC_STRUCT_FORM;
 } GOC_StForm;
 
-int goc_formListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf);
+int goc_formListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
 int goc_formShow(GOC_HANDLER uchwyt);
 int goc_formHide(GOC_HANDLER uchwyt);
 int goc_formShowLock(GOC_HANDLER uchwyt, int flags);

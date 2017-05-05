@@ -45,7 +45,7 @@ int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
 		// sprawdz, czy znajduje sie na rysowanym obszarze
 		if ( goc_areaIsInside( (*area), (*pointDraw) ) )
 		{
-			goc_systemSendMsg(handler, GOC_MSG_MAPGETCHAR, &znak, (unsigned int)pointDraw);
+			goc_systemSendMsg(handler, GOC_MSG_MAPGETCHAR, &znak, (uintptr_t)pointDraw);
 			if ( znak.code )
 			{
 				area->pElement[(pointDraw->y - area->y)*area->width + (pointDraw->x - area->x)] = znak;
@@ -73,7 +73,7 @@ int goc_mapaposPaint(GOC_HANDLER uchwyt, GOC_StArea *obszar, GOC_StPoint *punkt)
 		// sprawdz, czy znajduje sie na rysowanym obszarze
 		if ( goc_areaIsInside( (*obszar), (*pointDraw) ) )
 		{
-			goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETCHAR, &znak, (unsigned int)pointDraw);
+			goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETCHAR, &znak, (uintptr_t)pointDraw);
 			if ( znak.code )
 			{
 				goc_gotoxy(
@@ -145,7 +145,7 @@ int goc_mapposGetPoint(GOC_HANDLER uchwyt, int x, int y)
 	punkt.x = x;
 	punkt.y = y;
 
-	if ( goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETPOINT, &punkt, (unsigned int)(&value)) == GOC_ERR_OK )
+	if ( goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETPOINT, &punkt, (uintptr_t)(&value)) == GOC_ERR_OK )
 		return value;
 	else
 		return 0;
@@ -234,7 +234,7 @@ int goc_mapaposAddPoint(GOC_HANDLER uchwyt, GOC_StValuePoint *vpunkt)
 	return GOC_ERR_OK;
 }
 
-static int mapaposAddChar(GOC_HANDLER uchwyt, GOC_StChar* znak, unsigned int nBuf)
+static int mapaposAddChar(GOC_HANDLER uchwyt, GOC_StChar* znak, uintptr_t nBuf)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
 	GOC_StValuePoint* punkt = (GOC_StValuePoint*)nBuf;
@@ -245,7 +245,7 @@ static int mapaposAddChar(GOC_HANDLER uchwyt, GOC_StChar* znak, unsigned int nBu
 }
 
 int goc_mapaposListener(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	GOC_DEBUG("-> goc_mapaposListener");
 	if ( wiesc == GOC_MSG_CREATE )

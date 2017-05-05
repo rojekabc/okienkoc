@@ -124,12 +124,12 @@ int goc_maparawGetPoint(GOC_HANDLER uchwyt, int x, int y)
 	int value;
 	punkt.x = x;
 	punkt.y = y;
-	goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETPOINT, &punkt, (int)&value);
+	goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETPOINT, &punkt, (uintptr_t)&value);
 	return value;
 }
 
 int goc_maparawListener(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	int retCode = GOC_ERR_OK;
 	GOC_DEBUG("-> goc_maparawListener");
@@ -152,7 +152,7 @@ int goc_maparawListener(
 	}
 	else if ( wiesc == GOC_MSG_MAPSETSIZE )
 	{
-		retCode = goc_maparaw_SetSize(uchwyt, (int)pBuf, (int)nBuf);
+		retCode = goc_maparaw_SetSize(uchwyt, (uintptr_t)pBuf, (uintptr_t)nBuf);
 	}
 	else if ( wiesc == GOC_MSG_MAPGETCHARAT )
 	{
@@ -178,7 +178,7 @@ int goc_maparawListener(
 	{
 		GOC_StPoint *punkt = (GOC_StPoint*)pBuf;
 		GOC_StMapRaw *map = (GOC_StMapRaw*)uchwyt;
-		int *value = (int *)nBuf;
+		uintptr_t *value = (uintptr_t *)nBuf;
 		if ( value )
 			*value = goc_nbitFieldGet( map->dane, map->width*punkt->y + punkt->x );
 	}

@@ -62,13 +62,13 @@ static int slidebarPaint(GOC_HANDLER h)
 	return GOC_ERR_OK;
 }
 
-static int slideHotKeyHome(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyHome(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	slidebarMove(h, 0);
 	return GOC_ERR_OK;
 }
 
-static int slideHotKeyEnd(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyEnd(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_POSITION width = goc_elementGetWidth(h);
 	GOC_POSITION height = goc_elementGetHeight(h);
@@ -79,7 +79,7 @@ static int slideHotKeyEnd(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int
 	return GOC_ERR_OK;
 }
 
-static int slideHotKeyLeft(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyLeft(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StSlideBar* slide = (GOC_StSlideBar*)h;
 	GOC_POSITION height = goc_elementGetHeight(h);
@@ -88,7 +88,7 @@ static int slideHotKeyLeft(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned in
 	return GOC_ERR_OK;
 }
 
-static int slideHotKeyRight(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyRight(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StSlideBar* slide = (GOC_StSlideBar*)h;
 	GOC_POSITION width = goc_elementGetWidth(h);
@@ -97,7 +97,7 @@ static int slideHotKeyRight(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned i
 		slidebarMove( h, slide->position + 1 );
 	return GOC_ERR_OK;
 }
-static int slideHotKeyUp(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyUp(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StSlideBar* slide = (GOC_StSlideBar*)h;
 	GOC_POSITION width = goc_elementGetWidth(h);
@@ -105,7 +105,7 @@ static int slideHotKeyUp(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int 
 		slidebarMove( h, slide->position - 1 );
 	return GOC_ERR_OK;
 }
-static int slideHotKeyDown(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int slideHotKeyDown(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StSlideBar* slide = (GOC_StSlideBar*)h;
 	GOC_POSITION width = goc_elementGetWidth(h);
@@ -115,7 +115,7 @@ static int slideHotKeyDown(GOC_HANDLER h, GOC_MSG wiesc, void* pBuf, unsigned in
 	return GOC_ERR_OK;
 }
 
-int goc_slidebarListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_slidebarListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_PAINT )
 	{

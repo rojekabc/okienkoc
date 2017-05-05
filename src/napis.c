@@ -267,7 +267,7 @@ static int labelPaint(GOC_StLabel *napis)
 	return GOC_ERR_OK;
 }
 
-int goc_labelListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_labelListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

@@ -66,7 +66,7 @@ static int filelistGetFolderName(GOC_HANDLER uchwyt, char **name)
 }
 
 static int filelistHotKeyFolder(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	GOC_StFileList *plista = (GOC_StFileList*)uchwyt;
 	char *name = goc_listGetUnderCursor(uchwyt);
@@ -316,7 +316,7 @@ static GOC_COLOR filelistGetColor(GOC_HANDLER uchwyt, unsigned int nBuf)
 	return GOC_WHITE;
 }
 
-int goc_filelistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_filelistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

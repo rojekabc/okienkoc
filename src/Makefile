@@ -6,10 +6,14 @@ OBJS = system.o tablica.o term.o ramka.o screen.o element.o napis.o wpis.o \
 	mapapos.o signals.o istream.o fileistream.o memistream.o tableiterator.o \
 	iterator.o properties.o arguments.o memostream.o ostream.o mempipestream.o \
 	slidebar.o
+TARGETPATH=target
+TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))
 
 	
 OUTLIB = libokienkoc.so.0.0
+TARGETOUTLIB = $(TARGETPATH)/$(OUTLIB)
 LIBLINK = libokienkoc.so
+TARGETLIBLINK = $(TARGETPATH)/$(LIBLINK)
 
 # Wynikowy plik bledow
 OUTERROR = ERRORS
@@ -26,8 +30,8 @@ PREFIXINCLUDE = $(PREFIX)/include/okienkoc
 
 # Flagi kompilacji i linkowania
 # DEBUGCFLAGS = -Wall -g -D_DEBUG -I.
-DEBUGCFLAGS = -Wall -g -O0 -D_DEBUG
-NORMALCFLAGS = -Wall -O2 -s
+DEBUGCFLAGS = -Wall -g -O0 -D_DEBUG -fPIC
+NORMALCFLAGS = -Wall -O2 -s -fPIC
 # DEBUGLFLAGS = -shared
 # DEBUGLFLAGS = -shared -lxml2
 DEBUGLFLAGS = -shared -lpthread memwatch.o
@@ -39,13 +43,15 @@ LFLAGSFILE = .lflags
 
 TERMINALLIBS=libterm-linux.so libterm-xterm.so
 
-all: prepare $(OUTLIB) $(TERMINALLIBS)
+all: prepare $(TARGETOUTLIB) $(TERMINALLIBS)
 
-debug: preparedebug memwatch.o $(OUTLIB) $(TERMINALLIBS)
+debug: preparedebug memwatch.o $(TARGETOUTLIB) $(TERMINALLIBS)
 
 prepare:
 	@echo "Preparing..."
 	@rm -f ERRORS
+	@rm -rf target
+	@mkdir target
 	@echo "$(NORMALCFLAGS)" > $(CFLAGSFILE)
 	@echo "$(NORMALLFLAGS)" > $(LFLAGSFILE)
 
@@ -55,23 +61,23 @@ preparedebug:
 	@echo "$(DEBUGCFLAGS)" > $(CFLAGSFILE)
 	@echo "$(DEBUGLFLAGS)" > $(LFLAGSFILE)
 
-$(OBJS): %.o: %.c $(INCLUDEFILE)
+$(TARGETOBJS): target/%.o: %.c $(INCLUDEFILE)
 	@echo "--- Compile $< ---" >> $(OUTERROR)
 	@echo $"Compile $<$"
 	@gcc $< `cat $(CFLAGSFILE)` -c -o $@ $(INCLUDEPATHS) $(DEBUGFLAGS) 2>> $(OUTERROR)
 
-$(OUTLIB): $(OBJS)
+$(TARGETOUTLIB): $(TARGETOBJS)
 	@echo $"--- Link $@ ---$" >> $(OUTERROR)
 	@echo $"Link $@$"
-	@gcc `cat $(LFLAGSFILE)` -o $@ $(OBJS) $(LIBSIN) 2>> $(OUTERROR)
-	@ln -sf $(OUTLIB) $(LIBLINK)
+	@gcc `cat $(LFLAGSFILE)` -o $@ $(TARGETOBJS) $(LIBSIN) 2>> $(OUTERROR)
+	@ln -sf $(OUTLIB) $(TARGETLIBLINK)
 
 clean:
 	@echo $"Cleaning$"
-	@rm -f $(OBJS) $(OUTLIB) $(OUTERROR) $(LIBLINK) .cflags .lflags *.log *~ $(TERMINALLIBS)
+	@rm -f $(TARGETOBJS) $(TARGETOUTLIB) $(OUTERROR) $(TARGETLIBLINK) .cflags .lflags *.log *~ $(TERMINALLIBS) .*.un~
 
 install:
-	install  $(OUTLIB) $(PREFIXLIB)
+	install  $(TARGETOUTLIB) $(PREFIXLIB)
 	ln -sf $(OUTLIB) $(PREFIXLIB)/$(LIBLINK)
 	install -d $(PREFIXINCLUDE)
 	install -m 0644 *.h $(PREFIXINCLUDE)

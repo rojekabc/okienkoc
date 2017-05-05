@@ -56,7 +56,7 @@ int goc_precentFreeFocus(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int precentHotKeyPlus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int precentHotKeyPlus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StPrecent* procent = (GOC_StPrecent*)uchwyt;
 		if ( procent->pozycja < procent->max )
@@ -64,7 +64,7 @@ static int precentHotKeyPlus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsi
 	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
 	return GOC_ERR_OK;
 }
-static int precentHotKeyMinus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int precentHotKeyMinus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StPrecent* procent = (GOC_StPrecent*)uchwyt;
 		if ( procent->pozycja > procent->min )
@@ -73,7 +73,7 @@ static int precentHotKeyMinus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uns
 	return GOC_ERR_OK;
 }
 
-int goc_precentListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_precentListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

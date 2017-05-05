@@ -49,7 +49,7 @@ int goc_maskSetRealArea(GOC_HANDLER uchwyt, int d, int w)
 	for (k=0; k<maska->nMapa; k++)
 	{
 		goc_systemSendMsg( maska->pMapa[k],
-			GOC_MSG_MAPSETSIZE, (void*)d, w );
+			GOC_MSG_MAPSETSIZE, (void*)(uintptr_t)d, w );
 	}
 //	lbnw = maska->dane->lbnw;
 //	goc_nbitFieldRemove(maska->dane);
@@ -68,7 +68,7 @@ static int maskPaintMap(GOC_HANDLER uchwyt, GOC_StArea* obszar, GOC_StPoint* pun
 	for (k=0; k<maska->nMapa; k++)
 	{
 		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPPAINT, obszar, (unsigned int)punkt);
+			GOC_MSG_MAPPAINT, obszar, (uintptr_t)punkt);
 	}
 	fflush(stdout);
 	GOC_DEBUG("<- maskPaintMap");
@@ -178,7 +178,7 @@ int goc_maskGet(GOC_HANDLER uchwyt, int x, int y)
 		punkt.y = y;
 		goc_systemSendMsg(maska->pMapa[k],
 			GOC_MSG_MAPGETPOINT,
-			&punkt, (unsigned int)(&value));
+			&punkt, (uintptr_t)(&value));
 	}
 	return value;
 }
@@ -206,7 +206,7 @@ int goc_maskPaintPoint(GOC_HANDLER uchwyt, int x, int y)
 	for (k=0; k<maska->nMapa; k++)
 	{
 		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPPAINT, &obszar, (unsigned int)(&punkt));
+			GOC_MSG_MAPPAINT, &obszar, (uintptr_t)(&punkt));
 	}
 	goc_loadXY();
 	fflush(stdout);
@@ -247,7 +247,7 @@ static int maskFreeFocus(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	if ( maska->kursor.y > 0 )
@@ -272,7 +272,7 @@ static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned 
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyDown(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int maskHotKeyDown(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 		if ( maska->kursor.y < maska->w-1 )
@@ -294,7 +294,7 @@ static int maskHotKeyDown(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigne
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int maskHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 		if ( maska->kursor.x < maska->d-1 )
@@ -316,7 +316,7 @@ static int maskHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsign
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int maskHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 		if ( maska->kursor.x > 0 )
@@ -392,7 +392,7 @@ void goc_maskRemMaps(GOC_HANDLER uchwyt)
 	GOC_DEBUG("<- goc_maskRemMaps");
 }
 
-int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_DEBUG("-> goc_maskListener");
 	int errCode = GOC_ERR_OK;

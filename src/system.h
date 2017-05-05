@@ -74,14 +74,14 @@ int goc_systemRegisterMsgGenerator(
 	const char *libname, void (*event)(GOC_EVENTTYPE, GOC_EVENTDATA));
 int goc_systemRegisterElement(GOC_IDENTIFIER id, GOC_FUN_LISTENER* func);
 int goc_systemCheckMsg(GOC_MSG *wiesc);
-int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf);
+int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
 GOC_HANDLER goc_elementCreate(
 		GOC_IDENTIFIER id,
 		GOC_POSITION x, GOC_POSITION y, GOC_POSITION d, GOC_POSITION w,
 		GOC_FLAGS f,	GOC_COLOR k, GOC_HANDLER ojciec);
 int goc_systemFindChildNext(GOC_HANDLER u, GOC_HANDLER *d, GOC_BOOL czyStart);
 int goc_systemFindChildPrev(GOC_HANDLER u, GOC_HANDLER *c, GOC_BOOL czyStart);
-int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf);
+int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
 void goc_systemSetListenerFunc(GOC_FUN_LISTENER *pFun);
 int goc_systemFocusNext(GOC_HANDLER ojciec);
 int goc_systemFocusPrev(GOC_HANDLER ojciec);

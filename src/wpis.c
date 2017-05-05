@@ -70,7 +70,7 @@ static void editInsertChar(GOC_StEdit *wpis, int pozycja, char znak)
 	wpis->tekst = goc_stringInsertCharAt(wpis->tekst, pozycja, znak);
 }
 
-static int editHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -89,7 +89,7 @@ static int editHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigne
 	goc_systemSendMsg((GOC_HANDLER)wpis, GOC_MSG_PAINT, 0, 0);
 	return GOC_ERR_OK;
 }
-static int editHotKeyDel(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyDel(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -111,7 +111,7 @@ static int editHotKeyDel(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned
 	goc_systemSendMsg((GOC_HANDLER)wpis, GOC_MSG_PAINT, 0, 0);
 	return GOC_ERR_OK;
 }
-static int editHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -131,7 +131,7 @@ static int editHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned
 	return GOC_ERR_OK;
 }
 
-static int editHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -152,7 +152,7 @@ static int editHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsign
 	return GOC_ERR_OK;
 }
 
-static int editHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -173,7 +173,7 @@ static int editHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigne
 	return GOC_ERR_OK;
 }
 
-static int editHotKeyBacksp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+static int editHotKeyBacksp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	GOC_StEdit *wpis = (GOC_StEdit*)uchwyt;
 	GOC_POSITION wOff;
@@ -230,7 +230,7 @@ static int editGetChar(GOC_StEdit *wpis, int znak)
 	return GOC_ERR_OK;
 }
 
-int goc_editListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int nBuf)
+int goc_editListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CREATE )
 	{

@@ -5,7 +5,9 @@
 #define GOC_ENCODING "iso-8859-2"
 #define GOC_AUTHOR "Piotr Rojewski <piotr4rojewski@gmail.com>"
 
-typedef unsigned int GOC_HANDLER;
+// typedef unsigned int GOC_HANDLER;
+#include <stdint.h>
+typedef uintptr_t GOC_HANDLER;
 typedef const char* GOC_MSG;
 typedef const char* GOC_IDENTIFIER;
 typedef short GOC_POSITION;
@@ -13,7 +15,7 @@ typedef short GOC_POSITION;
 typedef unsigned char GOC_COLOR;
 typedef unsigned int GOC_FLAGS;
 typedef unsigned char GOC_BOOL;
-typedef int (GOC_FUN_LISTENER)(GOC_HANDLER, GOC_MSG, void*, unsigned int);
+typedef int (GOC_FUN_LISTENER)(GOC_HANDLER, GOC_MSG, void*, uintptr_t);
 
 #define GOC_TRUE 1
 #define GOC_FALSE 0
