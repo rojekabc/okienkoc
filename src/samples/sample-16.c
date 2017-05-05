@@ -9,7 +9,7 @@
 GOC_HANDLER zegar = 0;
 int counter = 0;
 
-static int nasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if (( wiesc == GOC_MSG_TIMERTICK ) && ( uchwyt == zegar ))
 	{
