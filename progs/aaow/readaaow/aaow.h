@@ -1,4 +1,7 @@
 #include "fobHeader.h"
+fobElement *fobAlloc(const char* cname);
+void fobSerialize(fobElement* fob, FILE* out);
+fobElement *fobDeserialize(xmlNode* node);
 extern const char *cn_Configuration;
 
 typedef struct StConfiguration

@@ -206,7 +206,7 @@ void readMemo()
 #define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+4)
 #define FROMGOC(variable) (((char*)variable)-4)
 
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_MAPGETCHAR )
 	{
@@ -661,7 +661,7 @@ void readPilots()
 
 GOC_HANDLER labelDesc;
 
-int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CURSORCHANGE )
 	{
@@ -786,7 +786,7 @@ int main(int argc, char **argv)
 	outFilename = goc_stringAdd(outFilename, ".xml");
 	out = fopen(outFilename, "wb");
 	outFilename = goc_stringFree(outFilename);
-	gameData = fobAlloc(cn_GameData);
+	gameData = (StGameData*)fobAlloc(cn_GameData);
 
 	maska = goc_elementCreate( GOC_ELEMENT_MASK, 1, 1, MAPWIDTH, MAPHEIGHT, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
 			GOC_WHITE, GOC_HANDLER_SYSTEM );
@@ -810,7 +810,7 @@ int main(int argc, char **argv)
 	goc_maskAddMap(maska, front);
 	goc_elementSetFunc(maska, GOC_FUNID_LISTENER, mapaNasluch);
 	// uzupelnianie danych w strukturze gameData
-	fobSerialize(gameData, out);
+	fobSerialize((fobElement*)gameData, out);
 	// gamedataSerialize(gameData, out);
 	while (goc_systemCheckMsg( &wiesc ));
 	// TODO: gamedataFree(gameData);

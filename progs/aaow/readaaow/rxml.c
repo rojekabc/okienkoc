@@ -9,10 +9,13 @@
 #define MAPHEIGHT 20
 #define MAPWIDTH 20
 
-#define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+4)
-#define FROMGOC(variable) (((char*)variable)-4)
+// Mamy strukture StBuild, ktora posiada na poczatku nazwe onst char* a nastepnie
+// typowa strukture goc dla StValuePoint. Dzieki temu mozemy utrzymujac jedna strukture
+// poslugiwac sie nia po obu stronach. Pomyslec o lepszym rozwiazaniu.
+#define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+sizeof(const char*))
+#define FROMGOC(variable) (((char*)variable)-sizeof(const char*))
 
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_MAPGETCHAR )
 	{

@@ -9,8 +9,8 @@
 #define MAPHEIGHT 20
 #define MAPWIDTH 20
 
-#define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+4)
-#define FROMGOC(variable) (((char*)variable)-4)
+#define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+sizeof(const char*))
+#define FROMGOC(variable) (((char*)variable)-sizeof(const char*))
 
 #define FLAG_GREEN 0x10
 #define FLAG_RED 0x20
@@ -27,7 +27,7 @@ typedef struct StPlayer {
 
 StPlayer player;
 
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_MAPGETCHAR )
 	{
@@ -112,7 +112,7 @@ const char* flyMission[] = {
 };
 short selectedMission;
 
-int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CHAR )
 	{
@@ -177,7 +177,7 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int 
 	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
 }
 
-int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 {
 	if ( wiesc == GOC_MSG_CURSORCHANGE )
 	{
