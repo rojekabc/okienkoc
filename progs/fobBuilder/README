@@ -1,0 +1,6 @@
+Enter command autoconf to generate configure.
+Enter command configure to generate Makefile.
+Enter command make to generate fobBuilder.
+Enter command ./fobBuilder aaow.xml to generate aaow.c and aaow.h.
+Enter command make cleanall to clean all files from building project
+(generated aaow.c and aaow.h will stay).

@@ -432,6 +432,10 @@ int generateHeader(FILE* header)
 	fprintf(header, "#include \"fobHeader.h\"\n");
 	// fprintf(header, "#include <stdio.h>\n", defName);
 	// fprintf(header, "#include <libxml/parser.h>\n");
+	// definicje metod
+	fprintf(header, "fobElement *fobAlloc(const char* cname);\n");
+	fprintf(header, "void fobSerialize(fobElement* fob, FILE* out);\n");
+	fprintf(header, "fobElement *fobDeserialize(xmlNode* node);\n");
 	// definiowanie struktury
 
 	for ( i = 0; i<nClass; i++ )
