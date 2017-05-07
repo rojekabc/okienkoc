@@ -10,6 +10,7 @@
 #include <okienkoc/log.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <string.h>
 #include <math.h>
 #include "system-drops.h"
 #include "rlandgener.h"
@@ -102,7 +103,7 @@ void petlaCount(GOC_HANDLER maska, const stChange **pStartPoints, int *nStartPoi
 {
 	int i, j, k;
 	int o, v;
-	stChange *tmp;
+	const stChange *tmp;
 
 	// rozpoczecie wykonywania obliczen
 	for ( j=0; j<context.configuration.maxx; j++ )
@@ -526,8 +527,8 @@ static void rainGeneration(GOC_HANDLER mapa, int numStartPoints)
 	GOC_BINFO("Raind landmass %d", landMass);
 	while ( landMass-- )
 	{
-		int x = point.x = goc_random(context.configuration.maxx);
-		int y = point.y = goc_random(context.configuration.maxy);
+		point.x = goc_random(context.configuration.maxx);
+		point.y = goc_random(context.configuration.maxy);
 		int v = goc_maparawGetPoint(mapa, point.x, point.y);
 		if ( v >= 9 )
 			continue;
@@ -607,7 +608,7 @@ static void setUpBiomeModeView(GOC_HANDLER maska)
 }
 
 static int hotkeyModeView(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, unsigned int nBuf)
+	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
 {
 	if ( modeView == MODE_VIEW_CHARS )
 	{
@@ -623,7 +624,7 @@ static int hotkeyModeView(
 
 int nBiomeTurn = 0;
 static int hotkeyNextTurnBactery(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, unsigned int nBuf)
+	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
 {
 	int randomAtOneTurn = 100;
 	int nKill = 0;
@@ -803,7 +804,7 @@ int main(int argc, char **argv)
 	{
 		goc_hkAdd(GOC_HANDLER_SYSTEM, 'V', GOC_EFLAGA_ENABLE, hotkeyModeView);
 		goc_hkAdd(GOC_HANDLER_SYSTEM, 'v', GOC_EFLAGA_ENABLE, hotkeyModeView);
-		petlaCount(context.mapa, randomStartPoints(&nStartPoints, numberOfStartPoints), &nStartPoints);
+		petlaCount(context.mapa, (const stChange**)randomStartPoints(&nStartPoints, numberOfStartPoints), &nStartPoints);
 	}
 	else if ( goc_stringEquals( genSystem, "civ" ) )
 	{

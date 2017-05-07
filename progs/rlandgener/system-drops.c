@@ -116,7 +116,7 @@ static void generateLandMass(
 }
 
 static int hotkeyNextTurnDrops(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, unsigned int nBuf)
+	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
 {
 	// TODO: Setting max and min landmass for forest/hills/land seperate
 	GOC_BINFO("Turn: %3d", nBiomeTurn);
@@ -176,7 +176,7 @@ static int hotkeyNextTurnDrops(
 	return GOC_ERR_OK;
 }
 
-void systemDropsAddArgs(GOC_Argument* args)
+void systemDropsAddArgs(GOC_Arguments* args)
 {
 	args = goc_argumentsAdd(args,
 		"--drops-land", "Set ammount of lands", goc_argumentIntFunction, &biome.lands);
