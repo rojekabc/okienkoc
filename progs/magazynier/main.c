@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 #ifdef _DEBUG
 #include <mpatrol.h>
 #else
@@ -97,6 +98,7 @@ StBazowaScena *_scena;
 StOknoPlansza *_plan;
 
 
+int planLiczDlugosc(const char **pString, unsigned int nString);
 // utworzenie nazwy pliku logowania na podtawie nazwy aktualnego u¿ytkownika
 // oraz rozszerzenia log
 char *dajRekordPlik(char *pBuf, unsigned int nBuf)
@@ -350,7 +352,7 @@ StKonfPlik *konfplikKreuj( const char *nazwa, const char *delim )
 		tabplikTworzPlik(tp);
 		konfplikUstParametr( tmp, KONFKLUCZ_FOLDER, "domyslny" );
 		for ( i=0; i<tmp->nKonf; i++, i++ )
-			tabplikDodajWiersz(tp, (tmp->pKonf)+i, 2, ':');
+			tabplikDodajWiersz(tp, (const char**)(tmp->pKonf)+i, 2, ':');
 	}
 	if ( tp )
 		tabplikUsun(tp);
@@ -372,7 +374,7 @@ void konfplikUsun(StKonfPlik *kp)
 
 GOC_HANDLER wprow, ok;
 
-int fpoziomNasluch(GOC_HANDLER u, GOC_MSG w, void* pBuf, unsigned int nBuf)
+int fpoziomNasluch(GOC_HANDLER u, GOC_MSG w, void* pBuf, uintptr_t nBuf)
 {
 	if ( (u == wprow) && (w == GOC_MSG_CHAR) )
 	{
@@ -643,7 +645,7 @@ void planZaladujGre(const char *folder, unsigned int poziom)
 	}
 	fclose(plik);
 
-	_plan->dpl = planLiczDlugosc( pInfo, nInfo );
+	_plan->dpl = planLiczDlugosc( (const char **)pInfo, nInfo );
 	_plan->wpl = nInfo;
 	goc_maskSetRealArea( _plan->gra, _plan->dpl, _plan->wpl );
 	goc_elementSetX( _plan->gra, (goc_screenGetWidth()>>1)-(_plan->dpl>>1));
@@ -844,7 +846,7 @@ void planNadajWartosc( const char *klucz, unsigned int pozycja, char znak, GOC_C
 		goc_maskSetValue( _plan->gra, pozycja, znak, color );
 }
 
-int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, unsigned int nBuf)
+int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, uintptr_t nBuf)
 {
 	if ( u == _plan->gra )
 	{
@@ -992,7 +994,7 @@ const char *liczPoziomy(const char *path)
 	return buftmp;
 }
 
-int bazowaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, char *pBuf, unsigned int nBuf)
+int bazowaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 {
 	if ( uchwyt == GOC_HANDLER_SYSTEM )
 	{
