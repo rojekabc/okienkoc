@@ -23,9 +23,18 @@ INCLUDEPATH =
 #INCLUDEFILE = $(INCLUDEPATH)okienko.h
 INCLUDEPATHS =
 
+# number of bits
+LBITS = $(shell getconf LONG_BIT)
+
 # Miejsca instalacji
 PREFIX = /usr/local
-PREFIXLIB = $(PREFIX)${exec_prefix}/lib
+ifeq ($(LBITS), 64)
+	PREFIXLIB = $(PREFIX)${exec_prefix}/lib64
+else ifeq ($(LBITS), 32)
+	PREFIXLIB = $(PREFIX)${exec_prefix}/lib
+else
+	$(error Unknown $(LBITS)-bit system)
+endif
 PREFIXINCLUDE = $(PREFIX)/include/okienkoc
 
 # Flagi kompilacji i linkowania
