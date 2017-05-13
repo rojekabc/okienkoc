@@ -2,7 +2,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER wybor;
 	wybor = goc_elementCreate(GOC_ELEMENT_CHOICE, 1, 1, 25, 1, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
 			GOC_WHITE, GOC_HANDLER_SYSTEM );

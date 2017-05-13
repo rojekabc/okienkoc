@@ -23,7 +23,7 @@ typedef struct GOC_StPrecent
 	GOC_STRUCT_PRECENT;
 } GOC_StPrecent;
 
-int goc_precentListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_precentListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 #define goc_precentPositionPlus(_uchwyt_) \
 	if ( ((GOC_StPrecent*)_uchwyt_)->pozycja < ((GOC_StPrecent*)_uchwyt_)->max ) \
 		(((GOC_StPrecent*)_uchwyt_)->pozycja)++;

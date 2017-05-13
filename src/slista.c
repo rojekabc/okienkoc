@@ -9,6 +9,7 @@
 //#include "ramka.h"
 //#include "hotkey.h"
 #include "global-inc.h"
+#include "system.h"
 
 const char* GOC_ELEMENT_SELLIST = "GOC_SelectionList";
 
@@ -16,13 +17,15 @@ static int sellistDestroy(GOC_HANDLER uchwyt)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
 	slista->pZaznaczony = goc_nbitFieldRemove(slista->pZaznaczony);
-	return goc_listListener(uchwyt, GOC_MSG_DESTROY, NULL, 0);
+	GOC_MSG_DESTROY( msg );
+	return goc_listListener(uchwyt, msg);
 }
 
 static int sellistInit(GOC_HANDLER uchwyt)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	goc_listListener(uchwyt, GOC_MSG_INIT, slista, 0);
+	GOC_MSG_INIT( msg );
+	goc_listListener(uchwyt, msg);
 	slista->kolorPoleZaznaczony = GOC_GREEN;
 	slista->kolorPoleKursorZaznaczony = GOC_GREEN | GOC_FBOLD;
 	slista->pZaznaczony = goc_nbitFieldCreate(1, 0);
@@ -88,7 +91,8 @@ static int sellistAddText(GOC_HANDLER uchwyt, char *pText)
 {
 	int ret;
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	ret = goc_listListener(uchwyt, GOC_MSG_LISTADDTEXT, pText, 0);
+	GOC_MSG_LISTADDTEXT( msg, pText );
+	ret = goc_listListener(uchwyt, msg);
 	if ( ret == GOC_ERR_OK )
 		goc_nbitFieldAdd(slista->pZaznaczony, 0);
 	return ret;
@@ -97,7 +101,8 @@ static int sellistAddText(GOC_HANDLER uchwyt, char *pText)
 static int sellistClear(GOC_HANDLER uchwyt)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	int ret = goc_listListener(uchwyt, GOC_MSG_LISTCLEAR, NULL, 0);
+	GOC_MSG_LISTCLEAR( msg );
+	int ret = goc_listListener(uchwyt, msg);
 	if ( ret == GOC_ERR_OK )
 		goc_nbitFieldClear(slista->pZaznaczony);
 	return ret;
@@ -107,7 +112,8 @@ static int sellistSetExt(
 	GOC_HANDLER uchwyt, const char **pText, unsigned int size)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	int ret=goc_listListener(uchwyt, GOC_MSG_LISTSETEXTERNAL, pText, size);
+	GOC_MSG_LISTSETEXTERNAL( msg, pText, size );
+	int ret=goc_listListener(uchwyt, msg);
 	if ( ret == GOC_ERR_OK )
 	{
 		unsigned int i;
@@ -136,43 +142,30 @@ int goc_sellistGetSelectPos(GOC_HANDLER uchwyt, int numer)
 	return -1;
 }
 
-int goc_sellistListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_sellistListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
-	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StSelList* slista = (GOC_StSelList*)malloc(sizeof(GOC_StSelList));
-		memcpy(slista, elem, sizeof(GOC_StElement));
-		*retuchwyt = (GOC_HANDLER)slista;
-		return goc_systemSendMsg(*retuchwyt, GOC_MSG_INIT, slista, 0);
-	}
-	else if ( wiesc == GOC_MSG_DESTROY )
-	{
+	if ( msg->id == GOC_MSG_CREATE_ID ) {
+		GOC_CREATE_ELEMENT(GOC_StSelList, slista, msg);
+		GOC_MSG_INIT( msginit );
+		return goc_systemSendMsg((GOC_HANDLER)slista, msginit);
+	} else if ( msg->id == GOC_MSG_DESTROY_ID ) {
 		return sellistDestroy(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_LISTSETCOLOR )
-	{
-		*((GOC_COLOR*)pBuf) = goc_sellistSetColor(uchwyt, nBuf);
+	} else if ( msg->id == GOC_MSG_LISTSETCOLOR_ID ) {
+		GOC_StMsgListSetColor* msgcolor = (GOC_StMsgListSetColor*)msg;
+		msgcolor->color = goc_sellistSetColor(uchwyt, msgcolor->position);
 		return GOC_ERR_OK;
-	}
-	else if ( wiesc == GOC_MSG_INIT )
-	{
+	} else if ( msg->id == GOC_MSG_INIT_ID ) {
 		return sellistInit(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_LISTADDTEXT )
-	{
-		return sellistAddText(uchwyt, pBuf);
-	}
-	else if ( wiesc == GOC_MSG_LISTCLEAR )
-	{
+	} else if ( msg->id == GOC_MSG_LISTADDTEXT_ID ) {
+		GOC_StMsgListAddText* msgadd = (GOC_StMsgListAddText*) msg;
+		return sellistAddText(uchwyt, msgadd->pText);
+	} else if ( msg->id == GOC_MSG_LISTCLEAR_ID ) {
 		return sellistClear(uchwyt);
+	} else if ( msg->id == GOC_MSG_LISTSETEXTERNAL_ID ) {
+		GOC_StMsgListSetExternal* msgext = (GOC_StMsgListSetExternal*)msg;
+		return sellistSetExt(uchwyt, msgext->pTextArray, msgext->nTextArray);
+	} else {
+		return goc_listListener(uchwyt, msg);
 	}
-	else if ( wiesc == GOC_MSG_LISTSETEXTERNAL )
-	{
-		return sellistSetExt(uchwyt, pBuf, nBuf);
-	}
-	else
-		return goc_listListener(uchwyt, wiesc, pBuf, nBuf);
 	return GOC_ERR_UNKNOWNMSG;
 }

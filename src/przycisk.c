@@ -3,6 +3,7 @@
 #include "napis.h"
 #include "screen.h"
 #include "mystr.h"
+#include "system.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +48,8 @@ static int goc_buttonFreeFocus(GOC_StButton *przycisk)
 {
 	przycisk->color = przycisk->kolorPoleNieaktywny;
 	przycisk->kolorRamka = przycisk->kolorRamkaNieaktywny;
-	goc_systemSendMsg((GOC_HANDLER)przycisk, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg((GOC_HANDLER)przycisk, msg);
 	return GOC_ERR_OK;
 }
 
@@ -62,24 +64,23 @@ static int buttonFocus(GOC_StButton *przycisk)
 	goc_gotoxy(
 		goc_elementGetScreenX( (GOC_HANDLER)przycisk ) + 1,
 		goc_elementGetScreenY( (GOC_HANDLER)przycisk ) );
-	goc_systemSendMsg((GOC_HANDLER)przycisk, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg((GOC_HANDLER)przycisk, msg);
 	fflush(stdout);
 	return GOC_ERR_OK;
 }
 
-static int buttonHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int buttonHotKeyAction(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	return goc_systemSendMsg(uchwyt, GOC_MSG_ACTION, 0, 0);
+	GOC_MSG_ACTION( msgaction );
+	return goc_systemSendMsg(uchwyt, msgaction);
 }
 
-int goc_buttonListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_buttonListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StButton* przycisk = (GOC_StButton*)malloc(sizeof(GOC_StButton));
-		memcpy(przycisk, elem, sizeof(GOC_StElement));
+		GOC_CREATE_ELEMENT(GOC_StButton, przycisk, msg);
 		przycisk->tekst = NULL;
 		przycisk->kolorRamkaAktywny = 0x07;
 		przycisk->kolorRamkaNieaktywny = 0x07;
@@ -88,29 +89,28 @@ int goc_buttonListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t 
 		przycisk->kolorRamka = przycisk->kolorRamkaNieaktywny;
 		przycisk->color = przycisk->kolorPoleNieaktywny;
 		przycisk->typ = GOC_BUTTONTYPE_BRACKET;
-		*retuchwyt = (GOC_HANDLER)przycisk;
-		goc_hkAdd( *retuchwyt, 0x0D, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd( (GOC_HANDLER)przycisk, 0x0D, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			buttonHotKeyAction );
-		goc_hkAdd( *retuchwyt, 0x20, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd( (GOC_HANDLER)przycisk, 0x20, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			buttonHotKeyAction );
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		GOC_StButton *przycisk = (GOC_StButton*)uchwyt;
 		if ( przycisk->tekst )
 			free( przycisk->tekst );
 		return goc_elementDestroy(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		return buttonPaint((GOC_StButton*)uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
+	else if ( msg->id == GOC_MSG_FOCUSFREE_ID )
 	{
 		return goc_buttonFreeFocus((GOC_StButton*)uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUS )
+	else if ( msg->id == GOC_MSG_FOCUS_ID )
 	{
 		return buttonFocus((GOC_StButton*)uchwyt);
 	}

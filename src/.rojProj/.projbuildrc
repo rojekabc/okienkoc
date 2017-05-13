@@ -1,5 +1,5 @@
 PACKAGENAME="okienkoc"
-VERSION="0.5"
+VERSION="0.6"
 COPYCHANGEFILE="*.c *.h"
 COPYFILE="Makefile"
 COPYDIR="doc"

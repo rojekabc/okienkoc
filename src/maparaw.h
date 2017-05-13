@@ -19,7 +19,7 @@ typedef struct GOC_StMapRaw
 } GOC_StMapRaw;
 
 int goc_maparawListener(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
+	GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_maparawAddChar(GOC_HANDLER uchwyt, char znak, GOC_COLOR color, int pozycja);
 int goc_maparawSetBPV(GOC_HANDLER uchwyt, int bpv);
 int goc_maparawAddChar(GOC_HANDLER uchwyt, char znak, GOC_COLOR color, int pozycja);

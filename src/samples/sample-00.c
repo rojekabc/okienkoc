@@ -2,7 +2,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
-	while (goc_systemCheckMsg( &wiesc ));
+	GOC_StMessage msg;
+	while (goc_systemCheckMsg( &msg ));
 	return 0;
 }

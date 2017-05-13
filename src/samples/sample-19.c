@@ -10,7 +10,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER napis;
 	int i, w, h;
 	char left[11] = "- Left A -";

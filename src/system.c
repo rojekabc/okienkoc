@@ -18,24 +18,24 @@
 #define GOC_SFLAG_INIT 2
 
 const char* GOC_ELEMENT_SYSTEM = "GOC_System";
-const char* GOC_MSG_NULL = "GOC_MsgNull";
-const char* GOC_MSG_FOCUS = "GOC_MsgFocus";
-const char* GOC_MSG_FOCUSFREE = "GOC_MsgFocusFree";
-const char* GOC_MSG_CHAR = "GOC_MsgChar";
-const char* GOC_MSG_REMOVE = "GOC_MsgRemove";
-const char* GOC_MSG_PAINT = "GOC_MsgPaint";
-const char* GOC_MSG_FINISH = "GOC_MsgFinish";
-const char* GOC_MSG_CREATE = "GOC_MsgCreate";
-const char* GOC_MSG_DESTROY = "GOC_MsgDestroy";
-const char* GOC_MSGFOCUSNEXT = "GOC_MsgFocusNext";
-const char* GOC_MSG_FOCUSPREV = "GOC_MsgForcusPrev";
-const char* GOC_MSG_ACTION = "GOC_MsgAction";
-const char* GOC_MSG_HOTKEY = "GOC_MsgHotKey";
-const char* GOC_MSG_SYSTEMINITIATED = "GOC_MsgSystemInitiated";
-const char* GOC_MSG_INIT = "GOC_MsgInit";
-const char* GOC_MSG_CHARFREE = "GOC_MsgCharFree";
-const char* GOC_MSG_KBDSTATECHANGE = "GOC_MsgKeyboardStateChange";
-const char* GOC_MSG_CATCHSIGNAL = "GOC_MsgCatchSignal";
+const char* GOC_MSG_NULL_ID = "GOC_MsgNull";
+const char* GOC_MSG_FOCUS_ID = "GOC_MsgFocus";
+const char* GOC_MSG_FOCUSFREE_ID = "GOC_MsgFocusFree";
+const char* GOC_MSG_CHAR_ID = "GOC_MsgChar";
+const char* GOC_MSG_REMOVE_ID = "GOC_MsgRemove";
+const char* GOC_MSG_PAINT_ID = "GOC_MsgPaint";
+const char* GOC_MSG_FINISH_ID = "GOC_MsgFinish";
+const char* GOC_MSG_CREATE_ID = "GOC_MsgCreate";
+const char* GOC_MSG_DESTROY_ID = "GOC_MsgDestroy";
+const char* GOC_MSG_FOCUSNEXT_ID = "GOC_MsgFocusNext";
+const char* GOC_MSG_FOCUSPREV_ID = "GOC_MsgForcusPrev";
+const char* GOC_MSG_ACTION_ID = "GOC_MsgAction";
+const char* GOC_MSG_HOTKEY_ID = "GOC_MsgHotKey";
+const char* GOC_MSG_SYSTEMINITIATED_ID = "GOC_MsgSystemInitiated";
+const char* GOC_MSG_INIT_ID = "GOC_MsgInit";
+const char* GOC_MSG_CHARFREE_ID = "GOC_MsgCharFree";
+const char* GOC_MSG_KBDSTATECHANGE_ID = "GOC_MsgKeyboardStateChange";
+const char* GOC_MSG_CATCHSIGNAL_ID = "GOC_MsgCatchSignal";
 
 typedef struct
 {
@@ -89,7 +89,7 @@ static unsigned int keyboardFlags = 0;
 
 static void systemInit();
 static void systemRunWork();
-static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf);
+static int systemListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 
 static GOC_FUN_LISTENER* systemListenerFunc(GOC_HANDLER uchwyt)
 {
@@ -209,7 +209,8 @@ int goc_systemRepaintUnder(GOC_HANDLER uchwyt)
 	element->flag &= ~GOC_EFLAGA_PAINTED;
 	goc_systemClearGroupArea(uchwyt);
 	// odrysuj tlo
-	goc_systemSendMsg(element->ojciec, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT(msg);
+	goc_systemSendMsg(element->ojciec, msg);
 	element->flag = flag;
 	return GOC_ERR_OK;
 }
@@ -232,7 +233,8 @@ int goc_systemDestroyElement(GOC_HANDLER uchwyt)
 	{
 		if ( pElements->pElement[i] == uchwyt )
 		{
-			goc_systemSendMsg(uchwyt, GOC_MSG_DESTROY, 0, 0);
+			GOC_MSG_DESTROY(msg);
+			goc_systemSendMsg(uchwyt, msg);
 			pElements = goc_handlerRemove(pElements, i);
 			break;
 		}
@@ -255,7 +257,8 @@ static int systemFocusNext(GOC_HANDLER ojciec, GOC_FLAGS f)
 	{
 		if ( _focusElement != ojciec )
 		{
-			retCode = goc_systemSendMsg( _focusElement, GOC_MSG_FOCUSFREE, 0, 0 );
+			GOC_MSG_FOCUSFREE(msg);
+			retCode = goc_systemSendMsg( _focusElement, msg);
 			if ( retCode != GOC_ERR_OK )
 				return retCode;
 //			_focusElement = 0;
@@ -271,8 +274,9 @@ static int systemFocusNext(GOC_HANDLER ojciec, GOC_FLAGS f)
 	/* znajdz nastepny element do przejêcia focus'a */
 	while ( goc_systemFindChildNext(ojciec, &c, start ) == GOC_ERR_OK )
 	{
+		GOC_MSG_FOCUS(msg);
 		start = GOC_FALSE;
-		if ( goc_systemSendMsg(c, GOC_MSG_FOCUS, 0, 0) == GOC_ERR_OK )
+		if ( goc_systemSendMsg(c, msg) == GOC_ERR_OK )
 		{
 			if ( _focusElement == of )
 			{
@@ -297,8 +301,9 @@ static int systemFocusNext(GOC_HANDLER ojciec, GOC_FLAGS f)
 		start = GOC_TRUE;
 		while ( goc_systemFindChildNext(ojciec, &c, start) == GOC_ERR_OK )
 		{
+			GOC_MSG_FOCUS(msg);
 			start = GOC_FALSE;
-			if ( goc_systemSendMsg(c, GOC_MSG_FOCUS, 0, 0) == GOC_ERR_OK )
+			if ( goc_systemSendMsg(c, msg) == GOC_ERR_OK )
 			{
 				if ( _focusElement == of )
 				{
@@ -349,7 +354,8 @@ int goc_systemFocusPrev(GOC_HANDLER ojciec)
 	{
 		if ( _focusElement != ojciec )
 		{
-			retCode = goc_systemSendMsg( _focusElement, GOC_MSG_FOCUSFREE, 0, 0 );
+			GOC_MSG_FOCUSFREE(msg);
+			retCode = goc_systemSendMsg( _focusElement, msg );
 			if ( retCode != GOC_ERR_OK )
 				return retCode;
 //			_focusElement = 0;
@@ -366,7 +372,8 @@ int goc_systemFocusPrev(GOC_HANDLER ojciec)
 	while ( goc_systemFindChildPrev(ojciec, &c, start ) == GOC_ERR_OK )
 	{
 		start = GOC_FALSE;
-		if ( goc_systemSendMsg(c, GOC_MSG_FOCUS, 0, 0) == GOC_ERR_OK )
+		GOC_MSG_FOCUS(msg);
+		if ( goc_systemSendMsg(c, msg) == GOC_ERR_OK )
 		{
 			if ( _focusElement == of )
 				_focusElement = c;
@@ -385,7 +392,8 @@ int goc_systemFocusPrev(GOC_HANDLER ojciec)
 		while ( goc_systemFindChildPrev(ojciec, &c, start) == GOC_ERR_OK )
 		{
 			start = GOC_FALSE;
-			if ( goc_systemSendMsg(c, GOC_MSG_FOCUS, 0, 0) == GOC_ERR_OK )
+			GOC_MSG_FOCUS(msg);
+			if ( goc_systemSendMsg(c, msg) == GOC_ERR_OK )
 			{
 				if ( _focusElement == of )
 					_focusElement = c;
@@ -399,7 +407,7 @@ int goc_systemFocusPrev(GOC_HANDLER ojciec)
 }
 
 #ifdef GOC_PRINTDEBUG
-
+// TODO TODO TODO (adopt to changes)
 static const char *errCodesTable[] = 
 {
 	"GOC_ERR_OK", "GOC_ERR_UNKNOWNMSG", "GOC_ERR_UNKNOWNID",
@@ -413,7 +421,7 @@ static const char *interpretReturn(int retCode)
 	return errCodesTable[retCode];
 }
 
-static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_StMessage *msg)
 {
 	char *result = NULL;
 	result = goc_stringAdd(result, "GOC_HANDLER=");
@@ -421,104 +429,101 @@ static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBu
 	result = goc_stringAdd(result, "(");
 	result = goc_stringAddInt(result, uchwyt);
 	result = goc_stringAdd(result, ") GOC_MSG=");
-	result = goc_stringAdd(result, wiesc);
-	result = goc_stringAdd(result, "(");
-	result = goc_stringAddInt(result, wiesc);
-	result = goc_stringAdd(result, ")");
-	switch (wiesc)
+	result = goc_stringAdd(result, msg->id);
+	switch (msg->id)
 	{
-		case GOC_MSG_NULL:
+		case GOC_MSG_NULL_ID:
 			break;
-		case GOC_MSG_FOCUS:
+		case GOC_MSG_FOCUS_ID:
 			break;
-		case GOC_MSG_FOCUSFREE:
+		case GOC_MSG_FOCUSFREE_ID:
 			break;
-		case GOC_MSG_CHAR:
+		case GOC_MSG_CHAR_ID:
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_REMOVE:
+		case GOC_MSG_REMOVE_ID:
 			break;
-		case GOC_MSG_CREATE:
+		case GOC_MSG_CREATE_ID:
 			result = goc_stringAdd(result, " PBUF=GOC_StElement{TODO}");
 			break;
-		case GOC_MSG_FINISH:
+		case GOC_MSG_FINISH_ID:
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_DESTROY:
+		case GOC_MSG_DESTROY_ID:
 			break;
-		case GOC_MSG_PAINT:
+		case GOC_MSG_PAINT_ID:
 			break;
-		case GOC_MSGFOCUSNEXT:
+		case GOC_MSG_FOCUSNEXT_ID:
 			break;
-		case GOC_MSG_FOCUSPREV:
+		case GOC_MSG_FOCUSPREV_ID:
 			break;
-		case GOC_MSG_ACTION:
+		case GOC_MSG_ACTION_ID:
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_INIT:
+		case GOC_MSG_INIT_ID:
 			break;
-		case GOC_MSG_HOTKEY:
+		case GOC_MSG_HOTKEY_ID:
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_SYSTEMINITIATED:
+		case GOC_MSG_SYSTEMINITIATED_ID:
 			break;
-		case GOC_MSG_LISTCHANGE:
+		case GOC_MSG_LISTCHANGE_ID:
 			result = goc_stringAdd(result, " PBUF=");
 			result = goc_stringAdd(result, pBuf);
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_LISTSETCOLOR:
+		case GOC_MSG_LISTSETCOLOR_ID:
 			break;
-		case GOC_MSG_LISTADDTEXT:
+		case GOC_MSG_LISTADDTEXT_ID:
 			break;
-		case GOC_MSG_LISTCLEAR:
+		case GOC_MSG_LISTCLEAR_ID:
 			break;
-		case GOC_MSG_LISTSETEXTERNAL:
+		case GOC_MSG_LISTSETEXTERNAL_ID:
 			break;
-		case GOC_MSG_FILELISTISFOLDER:
+		case GOC_MSG_FILELISTISFOLDER_ID:
 			break;
-		case GOC_MSG_FILELISTADDFILE:
+		case GOC_MSG_FILELISTADDFILE_ID:
 			break;
-		case GOC_MSG_FILELISTLISTFOLDER:
+		case GOC_MSG_FILELISTLISTFOLDER_ID:
 			break;
-		case GOC_MSG_FILELISTSETFOLDER:
+		case GOC_MSG_FILELISTSETFOLDER_ID:
 			break;
-		case GOC_MSG_LISTADDROW:
+		case GOC_MSG_LISTADDROW_ID:
 			break;
-		case GOC_MSG_TIMERTICK:
+		case GOC_MSG_TIMERTICK_ID:
 			break;
-		case GOC_MSG_FILELISTISUPFOLDER:
+		case GOC_MSG_FILELISTISUPFOLDER_ID:
 			break;
-		case GOC_MSG_FILELISTGETFOLDERNAME:
+		case GOC_MSG_FILELISTGETFOLDERNAME_ID:
 			break;
-		case GOC_MSG_MAPSETSIZE:
+		case GOC_MSG_MAPSETSIZE_ID:
 			break;
-		case GOC_MSG_MAPGETCHARAT:
+		case GOC_MSG_MAPGETCHARAT_ID:
 			break;
-		case GOC_MSG_MAPADDCHAR:
+		case GOC_MSG_MAPADDCHAR_ID:
 			break;
-		case GOC_MSG_MAPSETPOINT:
+		case GOC_MSG_MAPSETPOINT_ID:
 			break;
-		case GOC_MSG_MAPPAINT:
+		case GOC_MSG_MAPPAINT_ID:
 			break;
-		case GOC_MSG_CHARFREE:
+		case GOC_MSG_CHARFREE_ID:
 			result = goc_stringAdd(result, " NBUF=");
 			result = goc_stringAddInt(result, nBuf);
 			break;
-		case GOC_MSG_KBDSTATECHANGE:
+		case GOC_MSG_KBDSTATECHANGE_ID:
 			break;
-		case GOC_MSG_CATCHSIGNAL:
+		case GOC_MSG_CATCHSIGNAL_ID:
 			break;
-		case GOC_MSG_MAPGETPOINT:
+		case GOC_MSG_MAPGETPOINT_ID:
 			break;
-		case GOC_MSG_MAPGETCHAR:
+		case GOC_MSG_MAPGETCHAR_ID:
 			break;
-		case GOC_MSG_POSMAPFREEPOINT:
+		case GOC_MSG_POSMAPFREEPOINT_ID:
 			break;
 		default:
 			break;
@@ -527,21 +532,21 @@ static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBu
 #endif // ifdef GOC_PRINTDEBUG
 
 // Wykonywanie wie¶ci dopóty code powrotu nie bêdzie inny ni¿ GOC_ERR_UNKNOWNMSG
-int goc_systemBroadcastMsg(GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int goc_systemBroadcastMsg(GOC_StMessage* msg)
 {
 	GOC_FUN_LISTENER *pFun = systemListenerFunc(_focusElement);
 	int ret = GOC_ERR_UNKNOWNMSG;
 	//GOC_HANDLER uchwyt = GOC_HANDLER_SYSTEM;
 	GOC_HANDLER uchwyt = _focusElement;
-	GOC_BDEBUG( "-> goc_systemBroadcastMsg %s", interpretMsgFull(uchwyt, wiesc, pBuf, nBuf) );
+	GOC_BDEBUG( "-> goc_systemBroadcastMsg %s", interpretMsgFull(uchwyt, msg) );
 	if ( pFun != NULL )
 	{
-		ret = pFun(_focusElement, wiesc, pBuf, nBuf);
+		ret = pFun(_focusElement, msg);
 	}
 	uchwyt = _focusElement;
 	while ( ret == GOC_ERR_UNKNOWNMSG )
 	{
-		ret = goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+		ret = goc_systemDefaultAction(uchwyt, msg);
 		if ( uchwyt == GOC_HANDLER_SYSTEM )
 			break;
 		uchwyt = ((GOC_StElement*)uchwyt)->ojciec;
@@ -550,15 +555,16 @@ int goc_systemBroadcastMsg(GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 	return ret;
 }
 
-int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	int ret = GOC_ERR_OK;
 	GOC_FUN_LISTENER *defFun = NULL;
-	GOC_BDEBUG( "-> goc_systemDefaultAction %s", interpretMsgFull(uchwyt, wiesc, pBuf, nBuf) );
-	if ( wiesc == GOC_MSG_CHAR )
+	GOC_BDEBUG( "-> goc_systemDefaultAction %s", interpretMsgFull(uchwyt, msg) );
+	if ( msg->id == GOC_MSG_CHAR_ID )
 	{
+		GOC_StMsgChar* msgchar = (GOC_StMsgChar*)msg;
 		GOC_HOTKEY last = NULL;
-		while ( (last = goc_hkListKey(uchwyt, last, nBuf)) )
+		while ( (last = goc_hkListKey(uchwyt, last, msgchar->charcode)) )
 		{
 			GOC_DEBUG("Znaleziono hotkey");
 			if ( !(goc_hkGetFlag(last) & GOC_EFLAGA_ENABLE) )
@@ -566,7 +572,8 @@ int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintp
 			GOC_DEBUG("Hotkey jest aktywny");
 			defFun = goc_hkGetFunc(last);
 			GOC_BDEBUG("Funkcja dla hotkey: %x", defFun);
-			ret = defFun(uchwyt, GOC_MSG_HOTKEY, pBuf, nBuf);
+			GOC_MSG_HOTKEY(msghotkey, msgchar->charcode);
+			ret = defFun(uchwyt, msghotkey);
 			if ( ret == GOC_ERR_OK )
 			{
 				GOC_BDEBUG("<- goc_systemDefaultAction RET=%s(%d)", interpretReturn(ret), ret);
@@ -577,7 +584,7 @@ int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintp
 	}
 	if ( uchwyt == GOC_HANDLER_SYSTEM )
 	{
-		ret = systemListener(uchwyt, wiesc, pBuf, nBuf);
+		ret = systemListener(uchwyt, msg);
 		GOC_BDEBUG("<- goc_systemDefaultAction RET=%s(%d)", interpretReturn(ret), ret);
 		return ret;
 	}
@@ -586,7 +593,7 @@ int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintp
 	if ( defFun )
 	{
 		GOC_DEBUG("Wykonanie domyslnej funkcji");
-		ret = defFun(uchwyt, wiesc, pBuf, nBuf);
+		ret = defFun(uchwyt, msg);
 	}
 	else
 	{
@@ -598,100 +605,90 @@ int goc_systemDefaultAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintp
 	if ( ret == GOC_ERR_UNKNOWNMSG )
 	{
 		GOC_DEBUG("Wiesc nieobsluzona - przekazanie do ojca");
-		ret = goc_systemSendMsg(((GOC_StElement*)uchwyt)->ojciec, wiesc, pBuf, nBuf);
+		ret = goc_systemSendMsg(((GOC_StElement*)uchwyt)->ojciec, msg);
 	}
 	GOC_BDEBUG("<- goc_systemDefaultAction RET=%s(%d)", interpretReturn(ret), ret);
 	return ret;
 }
 
-static int systemHotKeyESC(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static int systemHotKeyESC(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	return goc_systemBroadcastMsg( GOC_MSG_FINISH, 0, GOC_ERR_OK );
+	GOC_MSG_FINISH(msgfinish, GOC_ERR_OK);
+	return goc_systemBroadcastMsg( msgfinish );
 }
 
-static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( keyboardFlags & GOC_KBD_ANYSHIFT )
-		return goc_systemBroadcastMsg(GOC_MSG_FOCUSPREV, 0, 0 );
-	else
-		return goc_systemBroadcastMsg( GOC_MSGFOCUSNEXT, 0, 0 );
+	if ( keyboardFlags & GOC_KBD_ANYSHIFT ) {
+		GOC_MSG_FOCUSPREV( msgfocus );
+		return goc_systemBroadcastMsg( msgfocus );
+	} else {
+		GOC_MSG_FOCUSNEXT( msgfocus );
+		return goc_systemBroadcastMsg( msgfocus );
+	}
 }
 
 static int systemHotKeySwitchTerm(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( keyboardFlags & GOC_KBD_ALTL )
-		goc_termSwitchTo(nBuf-0xFF);
+	if ( keyboardFlags & GOC_KBD_ALTL ) {
+		GOC_StMsgChar* msgchar = (GOC_StMsgChar*)msg;
+		goc_termSwitchTo(msgchar->charcode-0xFF);
+	}
 	return GOC_ERR_OK;
 }
 
-static int systemListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static int systemListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_FINISH )
-	{
+	if ( msg->id == GOC_MSG_FINISH_ID ) {
 		return systemClose(GOC_FALSE);
-	}
-	else if ( wiesc == GOC_MSG_CREATE )
-	{
+	} else if ( msg->id == GOC_MSG_CREATE_ID ) {
 		GOC_FUN_LISTENER *defFun = NULL;
-		defFun = goc_systemFindDefaultFunc( ((GOC_StElement*)pBuf)->id );
-		if ( defFun )
-		{
-			return defFun(GOC_HANDLER_SYSTEM, wiesc, pBuf, nBuf );
-		}
-		else
-		{
+		GOC_StMsgCreate* msgcreate = (GOC_StMsgCreate*)msg;
+		defFun = goc_systemFindDefaultFunc( msgcreate->element.id );
+		if ( defFun ) {
+			return defFun(GOC_HANDLER_SYSTEM, msg );
+		} else {
 			return GOC_ERR_UNKNOWNID;
 		}
-	}
-	else if ( wiesc == GOC_MSGFOCUSNEXT )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUSNEXT_ID ) {
 		return goc_systemFocusNext(GOC_HANDLER_SYSTEM);
-	}
-	else if ( wiesc == GOC_MSG_FOCUSPREV )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUSPREV_ID ) {
 		return goc_systemFocusPrev(GOC_HANDLER_SYSTEM);
-	}
-	else if ( wiesc == GOC_MSG_PAINT )
-	{
+	} else if ( msg->id == GOC_MSG_PAINT_ID ) {
 		GOC_HANDLER c;
 		GOC_BOOL start = GOC_TRUE;
-		while ( goc_systemFindChildNext(GOC_HANDLER_SYSTEM, &c, start ) == GOC_ERR_OK )
-		{
-			goc_systemSendMsg(c, GOC_MSG_PAINT, 0, 0);
+		while ( goc_systemFindChildNext(GOC_HANDLER_SYSTEM, &c, start ) == GOC_ERR_OK )	{
+			goc_systemSendMsg(c, msg);
 			start = GOC_FALSE;
 		}
 		fflush(stdout);
 		return GOC_ERR_OK;
-	}
-	else if ( wiesc == GOC_MSG_CATCHSIGNAL )
-	{
+	} else if ( msg->id == GOC_MSG_CATCHSIGNAL_ID ) {
 		// fprintf(stderr, "Zamykanie systemu\n");
-		if (nBuf == SIGWINCH)
-		{
+		GOC_StMsgCatchSignal* msgsignal = (GOC_StMsgCatchSignal*)msg;
+		if (msgsignal->signalid == SIGWINCH) {
 			goc_clearscreen();
-			return goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_PAINT, NULL, 0);
+			GOC_MSG_PAINT( msgpaint );
+			return goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgpaint);
 		}
 		return systemClose(GOC_FALSE);
 	}
 	return GOC_ERR_UNKNOWNMSG;
 }
 
-int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_FUN_LISTENER *pFun = NULL;
 	int ret;
 
-	GOC_BDEBUG( "-> goc_systemSendMsg %s", interpretMsgFull(uchwyt, wiesc, pBuf, nBuf) );
+	GOC_BDEBUG( "-> goc_systemSendMsg %s", interpretMsgFull(uchwyt, msg) );
 
 	pFun = systemListenerFunc(uchwyt);
-	if ( pFun != NULL )
-	{
-		ret = pFun(uchwyt, wiesc, pBuf, nBuf);
-	}
-	else
-	{
-		ret = goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	if ( pFun != NULL ) {
+		ret = pFun(uchwyt, msg);
+	} else {
+		ret = goc_systemDefaultAction(uchwyt, msg);
 	}
 
 	GOC_BDEBUG("<- goc_systemSendMsg RET=%s(%d)", interpretReturn(ret), ret);
@@ -710,7 +707,7 @@ int goc_systemSendMsg(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t n
  * zwracana jest warto¶æ 0
  *
  */
-int goc_systemCheckMsg(GOC_MSG *wiesc)
+int goc_systemCheckMsg(GOC_StMessage* msg)
 {
 	// zainicjowanie systemu
 	systemInit();
@@ -802,18 +799,16 @@ void goc_systemSetListenerFunc(GOC_FUN_LISTENER *pFun)
 
 static void eventKeyboard(GOC_EVENTTYPE type, GOC_EVENTDATA data)
 {
-	if ( type == GOC_ITERMEVENT_RELEASEKEY )
-	{
-		goc_systemBroadcastMsg(GOC_MSG_CHARFREE, 0, data);
-	}
-	else if ( type == GOC_ITERMEVENT_PRESSKEY )
-	{
-		goc_systemBroadcastMsg(GOC_MSG_CHAR, 0, data);
-	}
-	else if ( type == GOC_ITERMEVENT_KBDSTATE )
-	{
+	if ( type == GOC_ITERMEVENT_RELEASEKEY ) {
+		GOC_MSG_CHARFREE( msg, data );
+		goc_systemBroadcastMsg( msg );
+	} else if ( type == GOC_ITERMEVENT_PRESSKEY ) {
+		GOC_MSG_CHAR( msg, data );
+		goc_systemBroadcastMsg( msg );
+	} else if ( type == GOC_ITERMEVENT_KBDSTATE ) {
 		keyboardFlags = data;
-		goc_systemBroadcastMsg(GOC_MSG_KBDSTATECHANGE, 0, data);
+		GOC_MSG_KBDSTATECHANGE( msg, data );
+		goc_systemBroadcastMsg( msg );
 	}
 }
 
@@ -911,7 +906,8 @@ static void systemRunWork()
 	goc_textallcolor(GOC_BLACK | GOC_BBLACK);
 	goc_clearscreen();
 //	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_SYSTEMINITIATED, 0, 0);
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgpaint);
 	fflush(stdout);
 	pthread_mutex_init( &mutex, NULL );
 	pthread_mutex_lock( &mutex );
@@ -922,24 +918,22 @@ GOC_HANDLER goc_elementCreate(
 		GOC_POSITION x, GOC_POSITION y, GOC_POSITION d, GOC_POSITION w,
 		GOC_FLAGS f,	GOC_COLOR k, GOC_HANDLER ojciec)
 {
-	GOC_StElement elem;
-	GOC_HANDLER uchwyt = 0;
+	GOC_MSG_CREATE( msg );
 	GOC_DEBUG("-> goc_elementCreate");
 	systemInit();
-	memset( &elem, 0, sizeof(GOC_StElement) );
-	elem.id = id;
-	elem.x = x;
-	elem.y = y;
-	elem.width = d;
-	elem.height = w;
-	elem.flag = f;
-	elem.color = k;
-	elem.ojciec = ojciec;
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_CREATE, &elem, (GOC_HANDLER)(&uchwyt));
-	if ( uchwyt )
+	msgFull.element.id = id;
+	msgFull.element.x = x;
+	msgFull.element.y = y;
+	msgFull.element.width = d;
+	msgFull.element.height = w;
+	msgFull.element.flag = f;
+	msgFull.element.color = k;
+	msgFull.element.ojciec = ojciec;
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msg);
+	if ( msgFull.created )
 	{
-		pElements = goc_handlerAdd( pElements, uchwyt );
-		GOC_BDEBUG("Wykreowano element %s(%d)", uchwyt->id, uchwyt );
+		pElements = goc_handlerAdd( pElements, msgFull.created );
+		GOC_BDEBUG("Wykreowano element %s(%d)", uchwyt->id, msgFull.created );
 		GOC_DEBUG("<- goc_elementCreate");
 	}
 	else
@@ -947,7 +941,7 @@ GOC_HANDLER goc_elementCreate(
 		GOC_DEBUG("Element nie zostal wykreowany");
 		GOC_DEBUG("<- goc_elementCreate");
 	}
-	return uchwyt;
+	return msgFull.created;
 }
 
 int goc_systemFindChildPrev(GOC_HANDLER u, GOC_HANDLER *c, GOC_BOOL czyStart)
@@ -1016,14 +1010,15 @@ int goc_systemIsChildExists(GOC_HANDLER u)
 int goc_systemFocusOn(GOC_HANDLER uchwyt)
 {
 	int retCode;
-	if ( _focusElement != 0 )
-	{
-		retCode = goc_systemSendMsg( _focusElement, GOC_MSG_FOCUSFREE, 0, 0 );
+	if ( _focusElement != 0 ) {
+		GOC_MSG_FOCUSFREE( msg );
+		retCode = goc_systemSendMsg( _focusElement, msg );
 		if ( retCode != GOC_ERR_OK )
 			return retCode;
 	}
 	_focusElement = uchwyt;
-	retCode = goc_systemSendMsg( uchwyt, GOC_MSG_FOCUS, 0, 0 );
+	GOC_MSG_FOCUS( msg );
+	retCode = goc_systemSendMsg( uchwyt, msg );
 	if ( retCode != GOC_ERR_OK )
 		return retCode;
 	return GOC_ERR_OK;

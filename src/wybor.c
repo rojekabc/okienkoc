@@ -5,6 +5,7 @@
 #include "napis.h"
 #include "mystr.h"
 #include "global-inc.h"
+#include "system.h"
 
 const char* GOC_ELEMENT_CHOICE = "GOC_Choice";
 
@@ -12,7 +13,8 @@ int goc_choiceSetText(GOC_HANDLER uchwyt, const char *tekst)
 {
 	GOC_StChoice *wybor = (GOC_StChoice*)uchwyt;
 	wybor->tekst = goc_stringCopy(wybor->tekst, tekst);
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
@@ -50,7 +52,8 @@ static int choiceFocus(GOC_HANDLER uchwyt)
 	wybor->color = wybor->kolorPoleAktywny;
 	wybor->kolorOdp = wybor->kolorOdpAktywny;
 	wybor->kolorKlamry = wybor->kolorKlamryAktywny;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
@@ -60,13 +63,15 @@ static int choiceFreeFocus(GOC_HANDLER uchwyt)
 	wybor->color = wybor->kolorPoleNieaktywny;
 	wybor->kolorOdp = wybor->kolorOdpNieaktywny;
 	wybor->kolorKlamry = wybor->kolorKlamryNieaktywny;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
-static int choiceHotKeyAction(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int choiceHotKeyAction(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	goc_systemSendMsg(uchwyt, GOC_MSG_ACTION, 0, 0);
+	GOC_MSG_ACTION( msgaction );
+	goc_systemSendMsg(uchwyt, msgaction);
 	return GOC_ERR_OK;
 }
 
@@ -77,23 +82,20 @@ static int choiceAction(GOC_HANDLER uchwyt)
 		wybor->stan = GOC_FALSE;
 	else
 		wybor->stan = GOC_TRUE;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
-int goc_choiceListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_choiceListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
-	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StChoice* wybor = (GOC_StChoice*)malloc(sizeof(GOC_StChoice));
-		memcpy(wybor, elem, sizeof(GOC_StChoice));
+	if ( msg->id == GOC_MSG_CREATE_ID ) {
+		GOC_CREATE_ELEMENT(GOC_StChoice, wybor, msg);
 		wybor->stan = GOC_FALSE;
 		memcpy(wybor->typ, GOC_TYPE_CHOICEROUND, 2);
 		memcpy(&wybor->typ[2], GOC_TYPE_CHOICEASTERIX, 2);
-		wybor->kolorPoleAktywny = elem->color;
-		wybor->kolorPoleNieaktywny = elem->color;
+		wybor->kolorPoleAktywny = wybor->color;
+		wybor->kolorPoleNieaktywny = wybor->color;
 		wybor->kolorOdpAktywny = GOC_WHITE | GOC_FBOLD;
 		wybor->kolorOdpNieaktywny = GOC_WHITE | GOC_FBOLD;
 		wybor->kolorKlamryAktywny = GOC_WHITE | GOC_FBOLD;
@@ -101,31 +103,22 @@ int goc_choiceListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t 
 		wybor->kolorKlamry = wybor->kolorKlamryNieaktywny;
 		wybor->kolorOdp = wybor->kolorOdpNieaktywny;
 		wybor->tekst = NULL;
-		*retuchwyt = (GOC_HANDLER)wybor;
-		goc_hkAdd(*retuchwyt, 0x20, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd((GOC_HANDLER)wybor, 0x20, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			choiceHotKeyAction);
 		return GOC_ERR_OK;
-	}
-	else if ( wiesc == GOC_MSG_DESTROY )
-	{
+	} else if ( msg->id == GOC_MSG_DESTROY_ID ) {
 		GOC_StChoice *wybor = (GOC_StChoice*)uchwyt;
 		if ( wybor->tekst )
 			free( wybor->tekst );
 		return goc_elementDestroy(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_PAINT )
-	{
+	} else if ( msg->id == GOC_MSG_PAINT_ID ) {
 		return choicePaint(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_FOCUS )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUS_ID ) {
 		return choiceFocus(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUSFREE_ID ) {
 		return choiceFreeFocus(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_ACTION )
+	} else if ( msg->id == GOC_MSG_ACTION_ID ) {
 		return choiceAction(uchwyt);
+	}
 	return GOC_ERR_UNKNOWNMSG;
 }

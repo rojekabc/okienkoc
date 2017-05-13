@@ -6,7 +6,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER napis;
 	napis = goc_elementCreate(GOC_ELEMENT_LABEL, 1, 5, 0, 3, GOC_EFLAGA_PAINTED | GOC_EFLAGA_CENTER,
 			GOC_GREEN, GOC_HANDLER_SYSTEM );

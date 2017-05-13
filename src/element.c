@@ -136,40 +136,50 @@ int goc_elementSetColor(GOC_HANDLER u, GOC_COLOR k)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	element->color = k;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 int goc_elementSetX(GOC_HANDLER u, GOC_POSITION x)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	((GOC_StElement*)u)->x = x;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 int goc_elementSetY(GOC_HANDLER u, GOC_POSITION y)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	((GOC_StElement*)u)->y = y;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 int goc_elementSetWidth(GOC_HANDLER u, GOC_POSITION d)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	((GOC_StElement*)u)->width = d;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 int goc_elementSetHeight(GOC_HANDLER u, GOC_POSITION w)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	((GOC_StElement*)u)->height = w;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -182,8 +192,10 @@ int goc_elementSetFlag(GOC_HANDLER u, GOC_FLAGS f)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	((GOC_StElement*)u)->flag = f;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -191,8 +203,10 @@ int goc_elementOrFlag(GOC_HANDLER u, GOC_FLAGS f)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	element->flag |= f;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -200,8 +214,10 @@ int goc_elementIsFlag(GOC_HANDLER u, GOC_FLAGS f)
 {
 	GOC_StElement *element = (GOC_StElement*)u;
 	element->flag &= ~f;
-	if ( element->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( element->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 

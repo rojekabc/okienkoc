@@ -10,7 +10,7 @@ TARGETPATH=target
 TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))
 
 	
-OUTLIB = libokienkoc.so.0.0
+OUTLIB = libokienkoc.so.0.6
 TARGETOUTLIB = $(TARGETPATH)/$(OUTLIB)
 LIBLINK = libokienkoc.so
 TARGETLIBLINK = $(TARGETPATH)/$(LIBLINK)

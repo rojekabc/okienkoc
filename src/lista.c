@@ -10,14 +10,18 @@
 #include "napis.h"
 #include "ramka.h"
 #include "hotkey.h"
+#include "system.h"
 
+// element id
 const char* GOC_ELEMENT_LIST = "GOC_List";
-const char* GOC_MSG_LISTCHANGE = "GOC_MsgListChange";
-const char* GOC_MSG_LISTSETCOLOR = "GOC_MsgListSetColor";
-const char* GOC_MSG_LISTADDTEXT = "GOC_MsgListAddText";
-const char* GOC_MSG_LISTCLEAR = "GOC_MsgListClear";
-const char* GOC_MSG_LISTSETEXTERNAL = "GOC_MsgListSetExternal";
-const char* GOC_MSG_LISTADDROW = "GOC_MsgListAddRow";
+
+// message ids
+const char* GOC_MSG_LISTCHANGE_ID = "GOC_MsgListChange";
+const char* GOC_MSG_LISTSETCOLOR_ID = "GOC_MsgListSetColor";
+const char* GOC_MSG_LISTADDTEXT_ID = "GOC_MsgListAddText";
+const char* GOC_MSG_LISTCLEAR_ID = "GOC_MsgListClear";
+const char* GOC_MSG_LISTSETEXTERNAL_ID = "GOC_MsgListSetExternal";
+const char* GOC_MSG_LISTADDROW_ID = "GOC_MsgListAddRow";
 
 int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width)
 {
@@ -84,7 +88,8 @@ int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna)
 		sizeof(char*), kolumna+1);
 	wiersz.pText[kolumna] = tekst;
 	wiersz.nRow = -1;
-	ret = goc_systemSendMsg(u, GOC_MSG_LISTADDROW, &wiersz, 0);
+	GOC_MSG_LISTADDROW( msg, &wiersz );
+	ret = goc_systemSendMsg(u, msg);
 	wiersz.pText = goc_tableClear( wiersz.pText, &(wiersz.nText) );
 	return ret;
 	/*
@@ -187,7 +192,7 @@ static int listAddRow(GOC_HANDLER u, GOC_LISTROW *wiersz)
 	return GOC_ERR_OK;*/
 }
 
-static int listAddText(GOC_HANDLER u, const char *buf)
+static int listAddText(GOC_HANDLER u, char *buf)
 {
 	GOC_LISTROW wiersz;
 	int retCode;
@@ -196,7 +201,8 @@ static int listAddText(GOC_HANDLER u, const char *buf)
 	wiersz.pText = goc_tableAdd(wiersz.pText, &wiersz.nText,
 		sizeof(char *));
 	wiersz.pText[wiersz.nText-1] = buf;
-	retCode = goc_systemSendMsg(u, GOC_MSG_LISTADDROW, &wiersz, 0);
+	GOC_MSG_LISTADDROW( msg, &wiersz );
+	retCode = goc_systemSendMsg(u, msg);
 	wiersz.pText = goc_tableClear(wiersz.pText, &wiersz.nText);
 	return retCode;
 }
@@ -219,9 +225,10 @@ const char *goc_listGetColumnText(GOC_HANDLER u, int pos, int kol)
 /*
  * Odmowa wykonania polecenia, jezeli ustawione dane sa zewnetrzne.
  */
-int goc_listAddText(GOC_HANDLER u, const char *tekst)
+int goc_listAddText(GOC_HANDLER u, char *tekst)
 {
-	return goc_systemSendMsg(u, GOC_MSG_LISTADDTEXT, (void *)tekst, 0);
+	GOC_MSG_LISTADDTEXT( msg, tekst );
+	return goc_systemSendMsg(u, msg);
 }
 
 const char *goc_listGetText(GOC_HANDLER u, int pos)
@@ -274,7 +281,9 @@ static void listRedrawLine(GOC_HANDLER u, int pos)
 
 	drawer = goc_elementGetLabelDrawer(u);
 	memcpy(&e, lista, sizeof(GOC_StElement));
-	goc_systemSendMsg(u, GOC_MSG_LISTSETCOLOR, &(e.color), pos);
+	GOC_MSG_LISTSETCOLOR( msg, pos );
+	goc_systemSendMsg(u, msg);
+	e.color = msgFull.color;
 	e.y += pos - lista->start + 1;
 	(e.x)++;
 	for ( j = 0; j < lista->nKolumna; j++ )
@@ -334,7 +343,9 @@ static int goc_listPaint(GOC_HANDLER u)
 	{
 		if ( i - lista->start > goc_elementGetHeight(u)-3 )
 			break;
-		goc_systemSendMsg(u, GOC_MSG_LISTSETCOLOR, &(e.color), i);
+		GOC_MSG_LISTSETCOLOR( msg, i);
+		goc_systemSendMsg(u, msg);
+		e.color = msgFull.color;
 //		j %= lista->nKolumna;
 		e.y++;
 		e.x = lista->x;
@@ -374,8 +385,10 @@ static int listFocus(GOC_HANDLER uchwyt)
 		return GOC_ERR_REFUSE;
 	lista->kolorRamka = lista->kolorRamkaAktywny;
 	lista->color = lista->kolorPoleAktywny;
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(uchwyt, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -384,8 +397,10 @@ static int listFocusFree(GOC_HANDLER uchwyt)
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	lista->kolorRamka = lista->kolorRamkaNieaktywny;
 	lista->color = lista->kolorPoleNieaktywny;
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(uchwyt, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -430,14 +445,15 @@ int goc_listSetCursor(GOC_HANDLER uchwyt, int pos)
 	if ( pos < 0 )
 	{
 		lista->kursor = -1;
-		goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE, NULL, lista->kursor);
+		GOC_MSG_LISTCHANGE( msg, NULL, -1 );
+		goc_systemSendMsg(uchwyt, msg);
 	}
 	else if ( pos < cnt )
 	{
 		lista->kursor = pos;
-		goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE,
-			lista->pKolumna[0]->pText[lista->kursor],
-			lista->kursor);
+		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+			lista->kursor );
+		goc_systemSendMsg(uchwyt, msg );
 	}
 	else
 		return GOC_ERR_REFUSE;
@@ -455,14 +471,15 @@ static int listCursorNext(GOC_HANDLER uchwyt)
 	{
 		GOC_POSITION height = goc_elementGetHeight(uchwyt);
 		lista->kursor++;
-		goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE,
-			lista->pKolumna[0]->pText[lista->kursor],
-			lista->kursor);
+		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+			lista->kursor );
+		goc_systemSendMsg(uchwyt, msg);
 		if ( lista->kursor - lista->start >= height-2 )
 		{
 			// przemaluj calosc, nastapilo przewiniecie strony
 			lista->start = listCountStart(lista->kursor, height, n);
-			goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+			GOC_MSG_PAINT( msgpaint );
+			goc_systemSendMsg(uchwyt, msgpaint);
 		}
 		if ( lista->flag & GOC_EFLAGA_SHOWN )
 		{
@@ -485,16 +502,17 @@ static int listCursorPrev(GOC_HANDLER uchwyt)
 	if ( lista->kursor > 0 )
 	{
 		lista->kursor--;
-		goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE,
-			lista->pKolumna[0]->pText[lista->kursor],
-			lista->kursor);
+		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+			lista->kursor );
+		goc_systemSendMsg(uchwyt, msg );
 		if ( lista->start > lista->kursor )
 		{
 			// przemaluj calosc, nastapilo przewiniecie strony
 			int n = goc_listGetRowsAmmount(uchwyt);
 			GOC_POSITION height = goc_elementGetHeight(uchwyt);
 			lista->start = listCountStart(lista->kursor, height, n);
-			goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+			GOC_MSG_PAINT( msgpaint );
+			goc_systemSendMsg(uchwyt, msgpaint);
 		}
 		if ( lista->flag & GOC_EFLAGA_SHOWN )
 		{
@@ -510,32 +528,36 @@ static int listCursorPrev(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int lisyHotKeyHome(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int lisyHotKeyHome(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int retCode = GOC_ERR_OK;
 	retCode = goc_listSetCursor(uchwyt, 0);
 	if ( retCode != GOC_ERR_OK )
 		return retCode;
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg(uchwyt, msgpaint);
+	}
 	return GOC_ERR_OK;
 }
 
-static int listHotKeyEnd(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int listHotKeyEnd(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int retCode = GOC_ERR_OK;
 	retCode = goc_listSetCursor(uchwyt, goc_listGetRowsAmmount( uchwyt )-1);
 	if ( retCode != GOC_ERR_OK )
 		return retCode;
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg(uchwyt, msgpaint);
+	}
 	return GOC_ERR_OK;
 }
 
 static int listHotKeyPgUp(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int n = goc_listGetRowsAmmount(uchwyt);
@@ -561,17 +583,19 @@ static int listHotKeyPgUp(
 	if ( lista->kursor < 0 )
 		lista->kursor = 0;
 	// zgloszenie zmiany
-	goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE,
-		lista->pKolumna[0]->pText[lista->kursor],
-		lista->kursor);
+	GOC_MSG_LISTCHANGE( msgchange, lista->pKolumna[0]->pText[lista->kursor],
+		lista->kursor );
+	goc_systemSendMsg(uchwyt, msgchange);
 	// wy¶wietlenie
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg(uchwyt, msgpaint);
+	}
 	return retCode;
 }
 
 static int listHotKeyPgDown(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int n = goc_listGetRowsAmmount(uchwyt);
@@ -596,21 +620,23 @@ static int listHotKeyPgDown(
 	if ( lista->kursor >= n )
 		lista->kursor = n-1;
 	// zgloszenie zmiany
-	goc_systemSendMsg(uchwyt, GOC_MSG_LISTCHANGE,
-		lista->pKolumna[0]->pText[lista->kursor],
-		lista->kursor);
+	GOC_MSG_LISTCHANGE( msgchange, lista->pKolumna[0]->pText[lista->kursor],
+		lista->kursor );
+	goc_systemSendMsg(uchwyt, msgchange);
 	// wy¶wietlenie
-	if ( lista->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( lista->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg(uchwyt, msgpaint);
+	}
 	return retCode;
 }
 
-static int listHotKeyNext(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int listHotKeyNext(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	return listCursorNext(uchwyt);
 }
 
-static int listHotKeyPrev(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int listHotKeyPrev(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	return listCursorPrev(uchwyt);
 }
@@ -689,7 +715,8 @@ static int listClear(GOC_HANDLER uchwyt)
  */
 int goc_listClear(GOC_HANDLER uchwyt)
 {
-	return goc_systemSendMsg(uchwyt, GOC_MSG_LISTCLEAR, NULL, 0);
+	GOC_MSG_LISTCLEAR( msg );
+	return goc_systemSendMsg(uchwyt, msg);
 }
 
 int listSetExt(
@@ -710,7 +737,8 @@ int listSetExt(
 int goc_listSetExtTable(
 	GOC_HANDLER uchwyt, const char **pTable, unsigned int size)
 {
-	return goc_systemSendMsg(uchwyt, GOC_MSG_LISTSETEXTERNAL, pTable, size);
+	GOC_MSG_LISTSETEXTERNAL( msg, pTable, size);
+	return goc_systemSendMsg(uchwyt, msg);
 }
 
 /*
@@ -748,57 +776,57 @@ static int goc_listDestroy(GOC_HANDLER uchwyt)
 	return goc_elementDestroy(uchwyt);
 }
 
-int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StList* lista = (GOC_StList*)malloc(sizeof(GOC_StList));
-		memcpy(lista, elem, sizeof(GOC_StElement));
-		*retuchwyt = (GOC_HANDLER)lista;
-		goc_systemSendMsg(*retuchwyt, GOC_MSG_INIT, lista, 0);
+		GOC_CREATE_ELEMENT(GOC_StList, lista, msg);
+		listInit((GOC_HANDLER)lista);
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_INIT )
+	else if ( msg->id == GOC_MSG_INIT_ID )
 	{
-		return listInit((GOC_HANDLER)pBuf);
+		return listInit(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		return goc_listPaint(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUS )
+	else if ( msg->id == GOC_MSG_FOCUS_ID )
 	{
 		return listFocus(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
+	else if ( msg->id == GOC_MSG_FOCUSFREE_ID )
 	{
 		return listFocusFree(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		return goc_listDestroy(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_LISTSETCOLOR )
+	else if ( msg->id == GOC_MSG_LISTSETCOLOR_ID )
 	{
-		*((GOC_COLOR *)pBuf) = listSetColor( uchwyt, nBuf );
+		GOC_StMsgListSetColor* msgcolor = (GOC_StMsgListSetColor*)msg;
+		msgcolor->color = listSetColor( uchwyt, msgcolor->position );
 	}
-	else if ( wiesc == GOC_MSG_LISTADDTEXT )
+	else if ( msg->id == GOC_MSG_LISTADDTEXT_ID )
 	{
-		return listAddText(uchwyt, pBuf);
+		GOC_StMsgListAddText* msgadd = (GOC_StMsgListAddText*)msg;
+		return listAddText(uchwyt, msgadd->pText);
 	}
-	else if ( wiesc == GOC_MSG_LISTADDROW )
+	else if ( msg->id == GOC_MSG_LISTADDROW_ID )
 	{
-		return listAddRow(uchwyt, pBuf);
+		GOC_StMsgListAddRow* msgadd = (GOC_StMsgListAddRow*)msg;
+		return listAddRow(uchwyt, msgadd->pRow);
 	}
-	else if ( wiesc == GOC_MSG_LISTCLEAR )
+	else if ( msg->id == GOC_MSG_LISTCLEAR_ID )
 	{
 		return listClear(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_LISTSETEXTERNAL )
+	else if ( msg->id == GOC_MSG_LISTSETEXTERNAL_ID )
 	{
-		return listSetExt(uchwyt, pBuf, nBuf);
+		GOC_StMsgListSetExternal* msgset = (GOC_StMsgListSetExternal*)msg;
+		return listSetExt(uchwyt, msgset->pTextArray, msgset->nTextArray);
 	}
 	return GOC_ERR_UNKNOWNMSG;
 }

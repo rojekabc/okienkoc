@@ -7,6 +7,7 @@
 #include "grupa.h"
 #include "screen.h"
 #include "hotkey.h"
+#include "system.h"
 
 const char* GOC_ELEMENT_GROUP = "GOC_Group";
 
@@ -19,7 +20,8 @@ static int groupPaint(GOC_HANDLER uchwyt)
 		return GOC_ERR_REFUSE;
 	while ( goc_systemFindChildNext( uchwyt, &c, start ) == GOC_ERR_OK )
 	{
-		goc_systemSendMsg( c, GOC_MSG_PAINT, 0, 0);
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg( c, msg);
 		start = GOC_FALSE;
 	}
 	return GOC_ERR_OK;
@@ -30,27 +32,22 @@ int grupaHotKeyTab(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, unsigned int n
 	return goc_systemSendMsg(uchwyt, GOC_MSGFOCUSNEXT, 0, 0);
 }
 */
-int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_groupListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 #ifdef _DEBUG
 	fprintf(stderr, "%s:%d goc_groupListener.\n", __FILE__, __LINE__);
 #endif
-	if ( wiesc == GOC_MSG_CREATE )
-	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StGroup* grupa = (GOC_StGroup*)malloc(sizeof(GOC_StGroup));
-		memcpy(grupa, elem, sizeof(GOC_StElement));
-		*retuchwyt = (GOC_HANDLER)grupa;
+	if ( msg->id == GOC_MSG_CREATE_ID ) {
+		GOC_CREATE_ELEMENT(GOC_StGroup, grupa, msg);
 //		goc_hkAdd( *retuchwyt, 9, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 //			grupaHotKeyTab );
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		return goc_elementDestroy(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUS )
+	else if ( msg->id == GOC_MSG_FOCUS_ID )
 	{
 		GOC_StGroup *grupa = (GOC_StGroup*)uchwyt;
 		if ( !(grupa->flag & GOC_EFLAGA_ENABLE) )
@@ -68,13 +65,13 @@ int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t n
 //		groupPaint(uchwyt);
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
+	else if ( msg->id == GOC_MSG_FOCUSFREE_ID )
 	{
 		GOC_StGroup *grupa = (GOC_StGroup*)uchwyt;
 		grupa->flag &= ~GOC_FORMFLAGFOCUS;
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSGFOCUSNEXT )
+	else if ( msg->id == GOC_MSG_FOCUSNEXT_ID )
 	{
 	// TODO: sprawdzenie, czy focus jest na ostatnim elemencie grupy i jesli
 	// tak to wypuszczenie (w zale¿no¶ci od ustawionej flagi - mo¿e byæ
@@ -98,12 +95,12 @@ int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t n
 		}
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_FOCUSPREV )
+	else if ( msg->id == GOC_MSG_FOCUSPREV_ID )
 	{
 		goc_systemFocusPrev(uchwyt);
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		return groupPaint(uchwyt);
 	}

@@ -5,10 +5,12 @@
 #include "screen.h"
 #include "conflog.h"
 #include "mystr.h"
+#include "system.h"
 
 static void goc_systemDefaultSignal(int signum)
 {
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_CATCHSIGNAL, NULL, signum);
+	GOC_MSG_CATCHSIGNAL( msg, signum );
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msg);
 	return;
 }
 
@@ -19,7 +21,8 @@ static void goc_systemBreakDown(int signum)
 	GOC_FERROR(goc_stringAddInt( goc_stringCopy( NULL,
 		"Abnormal system break down - truning off. SIGNAL CODE: "), signum ) );
 	// TODO: More abnormal system finish - don't use memory
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_FINISH, NULL, 0);
+	GOC_MSG_FINISH( msg, 0 );
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msg);
 	return;
 }
 

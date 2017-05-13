@@ -51,7 +51,7 @@ void listaBudujKolumna(GOC_HANDLER lista)
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER lista;
 	GOC_HANDLER lista2;
 	lista = goc_elementCreate(GOC_ELEMENT_LIST, 1, 1, 20, 10, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,

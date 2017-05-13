@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "ramka.h"
+#include "system.h"
 #include "global.h"
 #include "element.h"
 #include "screen.h"
@@ -69,23 +70,19 @@ static int framePaint(GOC_StFrame *ramka)
 	return GOC_ERR_OK;
 }
 
-int goc_frameListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_frameListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StFrame* ramka = (GOC_StFrame*)malloc(sizeof(GOC_StFrame));
-		memcpy(ramka, elem, sizeof(GOC_StElement));
+		GOC_CREATE_ELEMENT(GOC_StFrame, ramka, msg);
 		memcpy(ramka->znak, "*-*| |*-*", 9);
-		*retuchwyt = (GOC_HANDLER)ramka;
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		return framePaint((GOC_StFrame*)uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		return goc_elementDestroy(uchwyt);
 	}

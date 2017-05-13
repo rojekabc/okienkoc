@@ -11,7 +11,7 @@ void maskaPrzypisz(GOC_HANDLER maska)
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER maska;
 	GOC_HANDLER maparaw = 0;
 

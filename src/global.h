@@ -7,15 +7,31 @@
 
 // typedef unsigned int GOC_HANDLER;
 #include <stdint.h>
+#include <string.h>
 typedef uintptr_t GOC_HANDLER;
-typedef const char* GOC_MSG;
 typedef const char* GOC_IDENTIFIER;
 typedef short GOC_POSITION;
+
+/***** definitiions of system message calls structures ********/
+#define GOC_STRUCT_MESSAGE \
+	const char* id
+
+typedef struct GOC_StMessage {
+	GOC_STRUCT_MESSAGE;
+} GOC_StMessage;
+
+typedef int (GOC_FUN_LISTENER)(GOC_HANDLER, GOC_StMessage*);
+#define GOC_MSG(_structure_, _variable_, _msgid_) \
+	GOC_StMessage* _variable_; \
+	_structure_ _variable_##Full; \
+	_variable_ = (GOC_StMessage*)&_variable_##Full; \
+	memset( _variable_, 0, sizeof(_structure_)); \
+	_variable_->id = _msgid_
+
 //typedef unsigned char GOC_POSITION;
 typedef unsigned char GOC_COLOR;
 typedef unsigned int GOC_FLAGS;
 typedef unsigned char GOC_BOOL;
-typedef int (GOC_FUN_LISTENER)(GOC_HANDLER, GOC_MSG, void*, uintptr_t);
 
 #define GOC_TRUE 1
 #define GOC_FALSE 0

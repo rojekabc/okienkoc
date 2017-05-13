@@ -12,7 +12,7 @@ void maskaPrzypisz(GOC_HANDLER maska)
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER maska = 0;
 	GOC_HANDLER maparaw = 0;
 	maska = goc_elementCreate(GOC_ELEMENT_MASK, 1, 1, 1, 1, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,

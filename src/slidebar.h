@@ -21,7 +21,7 @@ typedef struct GOC_StSlideBar
 	GOC_STRUCT_SLIDEBAR;
 } GOC_StSlideBar;
 
-int goc_slidebarListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_slidebarListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_slidebarSetPosition(GOC_HANDLER h, GOC_POSITION position);
 int goc_slidebarSetChar(GOC_HANDLER h, char ch, char emptych);
 GOC_POSITION goc_slidebarGetPosition(GOC_HANDLER h);

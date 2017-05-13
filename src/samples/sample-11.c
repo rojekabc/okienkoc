@@ -5,45 +5,45 @@ GOC_HANDLER forma;
 GOC_HANDLER napis;
 
 static int nasluchOk(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_ACTION )
+	if ( msg->id == GOC_MSG_ACTION_ID )
 	{
 		goc_labelRemLines( napis );
 		goc_labelAddLine( napis, "Formularz wype³niono" );
 		goc_formHide( forma );
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 static int nasluchCancel(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_ACTION )
+	if ( msg->id == GOC_MSG_ACTION_ID )
 	{
 		goc_labelRemLines( napis );
 		goc_labelAddLine( napis, "Formularz nie zosta³ wype³niony" );
 		goc_formHide( forma );
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 static int nasluchForm(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_ACTION )
+	if ( msg->id == GOC_MSG_ACTION_ID )
 	{
 		goc_formShow( forma );
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER przycisk;
 
 	przycisk = goc_elementCreate(

@@ -35,10 +35,10 @@ typedef struct GOC_StFillArea
 	GOC_StChar *pElement;
 } GOC_StFillArea;
 
-#define goc_areaIsInside(_obszar_, _punkt_) \
-	(( _punkt_.x >= _obszar_.x ) \
-	&& ( _punkt_.x < _obszar_.x + _obszar_.width ) \
-	&& ( _punkt_.y >= _obszar_.y ) \
-	&& ( _punkt_.y < _obszar_.y + _obszar_.height ))
+#define goc_areaIsInside(_area_x_, _area_y_, _width_, _height_, _point_x_, _point_y_) \
+	(( _point_x_ >= _area_x_ ) \
+	&& ( _point_x_ < _area_x_ + _width_ ) \
+	&& ( _point_y_ >= _area_y_ ) \
+	&& ( _point_y_ < _area_y_ + _height_ ))
 
 #endif // _GOC_CHAR_H_

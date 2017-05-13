@@ -3,6 +3,7 @@
 #include "mapapos.h"
 #include "screen.h"
 #include "maska.h"
+#include "system.h"
 
 // #define GOC_PRINTDEBUG
 #include "log.h"
@@ -32,10 +33,9 @@ int goc_mapaposSetSize(GOC_HANDLER uchwyt, int d, int w)
 	return GOC_ERR_OK;
 }
 
-int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
+int goc_mapposFill(GOC_HANDLER handler, GOC_StMsgMapFill* msg)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)handler;
-	GOC_StChar znak;
 	int i = map->nPunkt;
 
 	// przegladaj dostepne punkty
@@ -43,12 +43,15 @@ int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
 	{
 		GOC_StValuePoint *pointDraw = map->pPunkt[i];
 		// sprawdz, czy znajduje sie na rysowanym obszarze
-		if ( goc_areaIsInside( (*area), (*pointDraw) ) )
+		if ( goc_areaIsInside( msg->mapx, msg->mapy, msg->width, msg->height,
+			pointDraw->x, pointDraw->y ) )
 		{
-			goc_systemSendMsg(handler, GOC_MSG_MAPGETCHAR, &znak, (uintptr_t)pointDraw);
-			if ( znak.code )
+			GOC_MSG_MAPGETCHAR(msgchar, pointDraw->value);
+			goc_systemSendMsg(handler, msgchar);
+			if ( msgcharFull.charcode )
 			{
-				area->pElement[(pointDraw->y - area->y)*area->width + (pointDraw->x - area->x)] = znak;
+				msg->pElements[(pointDraw->y - msg->mapy)*msg->width + (pointDraw->x - msg->mapx)].code = msgcharFull.charcode;
+				msg->pElements[(pointDraw->y - msg->mapy)*msg->width + (pointDraw->x - msg->mapx)].color = msgcharFull.charcolor;
 			}
 		}
 	}
@@ -59,11 +62,10 @@ int goc_mapposFill(GOC_HANDLER handler, GOC_StFillArea* area)
 // obszar - okreslenie pozycji w mapie i dlugosci rysowanego obszaru
 // punkt - okreslenie punktu poczatkowego na screenie, w którym jest pocz±tek
 // 	rysowania
-int goc_mapaposPaint(GOC_HANDLER uchwyt, GOC_StArea *obszar, GOC_StPoint *punkt)
+int goc_mapaposPaint(GOC_HANDLER uchwyt, GOC_StMsgMapPaint* msg)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
 	GOC_COLOR lastkolor = 0;
-	GOC_StChar znak;
 	int i = map->nPunkt;
 
 	// przegladaj dostepne punkty
@@ -71,19 +73,20 @@ int goc_mapaposPaint(GOC_HANDLER uchwyt, GOC_StArea *obszar, GOC_StPoint *punkt)
 	{
 		GOC_StValuePoint *pointDraw = map->pPunkt[i];
 		// sprawdz, czy znajduje sie na rysowanym obszarze
-		if ( goc_areaIsInside( (*obszar), (*pointDraw) ) )
+		if ( goc_areaIsInside( msg->mapx, msg->mapy, msg->width, msg->height, pointDraw->x, pointDraw->y ) )
 		{
-			goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETCHAR, &znak, (uintptr_t)pointDraw);
-			if ( znak.code )
+			GOC_MSG_MAPGETCHAR(msgchar, pointDraw->value);
+			goc_systemSendMsg(uchwyt, msgchar);
+			if ( msgcharFull.charcode )
 			{
 				goc_gotoxy(
-					punkt->x + pointDraw->x - obszar->x,
-					punkt->y + pointDraw->y - obszar->y
+					msg->screenx + pointDraw->x - msg->mapx,
+					msg->screeny + pointDraw->y - msg->mapy
 				);
 				// czy wystapila zmiana koloru
-				if ( lastkolor ^ znak.color )
-					goc_textallcolor(lastkolor = znak.color);
-				putchar(znak.code);
+				if ( lastkolor ^ msgcharFull.charcolor )
+					goc_textallcolor(lastkolor = msgcharFull.charcolor);
+				putchar(msgcharFull.charcode);
 			}
 			else
 			{
@@ -110,8 +113,9 @@ int goc_mapaposRemPoint(GOC_HANDLER uchwyt, int x, int y)
 		{
 			// je¿eli kto¶ ma co¶ jeszcze zmieniæ powiadom
 			// o tym fakcie, ¿e nastapi zwolnienie
-			goc_systemSendMsg(uchwyt, GOC_MSG_POSMAPFREEPOINT,
-				map->pPunkt[i], 0);
+			GOC_MSG_POSMAPFREEPOINT(msgfree,
+				map->pPunkt[i]->x, map->pPunkt[i]->y, map->pPunkt[i]->value);
+			goc_systemSendMsg(uchwyt, msgfree);
 			map->pPunkt = goc_tableRemove(
 				map->pPunkt, &map->nPunkt,
 				sizeof(GOC_StValuePoint*), i);
@@ -140,15 +144,13 @@ int goc_mapaposChgPoint(GOC_HANDLER uchwyt, int x, int y, int value)
 // Zwraca wartosc
 int goc_mapposGetPoint(GOC_HANDLER uchwyt, int x, int y)
 {
-	int value;
-	GOC_StPoint punkt;
-	punkt.x = x;
-	punkt.y = y;
-
-	if ( goc_systemSendMsg(uchwyt, GOC_MSG_MAPGETPOINT, &punkt, (uintptr_t)(&value)) == GOC_ERR_OK )
-		return value;
-	else
+	GOC_MSG_MAPGETPOINT(msg, x, y);
+	if ( goc_systemSendMsg(uchwyt, msg) == GOC_ERR_OK ) {
+		return msgFull.value;
+	}
+	else {
 		return 0;
+	}
 }
 
 GOC_StValuePoint* goc_mapaposReadPoint(GOC_HANDLER uchwyt, int x, int y)
@@ -165,20 +167,18 @@ GOC_StValuePoint* goc_mapaposReadPoint(GOC_HANDLER uchwyt, int x, int y)
 	return NULL;
 }
 
-static int mapaposGetPoint(GOC_HANDLER uchwyt, GOC_StPoint *punkt, int *value)
+static int mapaposGetPoint(GOC_HANDLER uchwyt, GOC_StMsgMapPointValue *msg)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
 	int i = map->nPunkt;
-	if ( value == NULL )
-		return GOC_ERR_OK;
 
 	// przegladaj dostepne punkty
 	while ( i-- )
 	{
-		if (( punkt->x == map->pPunkt[i]->x )
-			&& ( punkt->y == map->pPunkt[i]->y ))
+		if (( msg->x == map->pPunkt[i]->x )
+			&& ( msg->y == map->pPunkt[i]->y ))
 		{
-			*value = map->pPunkt[i]->value;
+			msg->value = map->pPunkt[i]->value;
 			return GOC_ERR_OK;
 		}
 	}
@@ -187,13 +187,11 @@ static int mapaposGetPoint(GOC_HANDLER uchwyt, GOC_StPoint *punkt, int *value)
 
 int goc_mapaposSetPoint(GOC_HANDLER uchwyt, int x, int y, int value)
 {
-	GOC_StPoint punkt;
-	punkt.x = x;
-	punkt.y = y;
-	return goc_systemSendMsg(uchwyt, GOC_MSG_MAPSETPOINT, &punkt, value);
+	GOC_MSG_MAPSETPOINT(msg, x, y, value);
+	return goc_systemSendMsg(uchwyt, msg);
 }
 
-static int mapaposSetPoint(GOC_HANDLER uchwyt, GOC_StPoint *punkt, int value)
+static int mapaposSetPoint(GOC_HANDLER uchwyt, GOC_StMsgMapPointValue* msg)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
 	int i = map->nPunkt;
@@ -201,10 +199,10 @@ static int mapaposSetPoint(GOC_HANDLER uchwyt, GOC_StPoint *punkt, int value)
 	// przegladaj dostepne punkty
 	while ( i-- )
 	{
-		if (( punkt->x == map->pPunkt[i]->x )
-			&& ( punkt->y == map->pPunkt[i]->y ))
+		if (( msg->x == map->pPunkt[i]->x )
+			&& ( msg->y == map->pPunkt[i]->y ))
 		{
-			map->pPunkt[i]->value = value;
+			map->pPunkt[i]->value = msg->value;
 			return GOC_ERR_OK;
 		}
 	}
@@ -212,9 +210,9 @@ static int mapaposSetPoint(GOC_HANDLER uchwyt, GOC_StPoint *punkt, int value)
 	// dodaj nowy punkt
 	{
 		GOC_StValuePoint *apunkt = malloc(sizeof(GOC_StValuePoint));
-		apunkt->x = punkt->x;
-		apunkt->y = punkt->y;
-		apunkt->value = value;
+		apunkt->x = msg->x;
+		apunkt->y = msg->y;
+		apunkt->value = msg->value;
 		goc_mapaposAddPoint(uchwyt, apunkt);
 	}
 
@@ -234,32 +232,25 @@ int goc_mapaposAddPoint(GOC_HANDLER uchwyt, GOC_StValuePoint *vpunkt)
 	return GOC_ERR_OK;
 }
 
-static int mapaposAddChar(GOC_HANDLER uchwyt, GOC_StChar* znak, uintptr_t nBuf)
+static int mapaposGetChar(GOC_HANDLER uchwyt, GOC_StMsgMapChar* msg)
 {
 	GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
-	GOC_StValuePoint* punkt = (GOC_StValuePoint*)nBuf;
-	if ( znak == NULL )
-		return GOC_ERR_OK;
-	memcpy(znak, &map->pZnak[punkt->value], sizeof(GOC_StChar));
+	msg->charcode = map->pZnak[msg->position].code;
+	msg->charcolor = map->pZnak[msg->position].color;
 	return GOC_ERR_OK;
 }
 
 int goc_mapaposListener(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_DEBUG("-> goc_mapaposListener");
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StMapPos *map = malloc(sizeof(GOC_StMapPos));
-		memset(map, 0, sizeof(GOC_StMapPos));
-		memcpy(map, elem, sizeof(GOC_StElement));
-		*retuchwyt = (GOC_HANDLER)map;
+		GOC_CREATE_ELEMENT(GOC_StMapPos, map, msg);
 		GOC_DEBUG("<- goc_mapaposListener");
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		GOC_StMapPos *map = (GOC_StMapPos*)uchwyt;
 		int i = map->nPunkt;
@@ -267,17 +258,19 @@ int goc_mapaposListener(
 		// Usuwanie pojedynczych punktów
 		while ( i-- )
 		{
-			goc_systemSendMsg(uchwyt, GOC_MSG_POSMAPFREEPOINT,
-				map->pPunkt[i], 0);
+			GOC_MSG_POSMAPFREEPOINT( msg,
+				map->pPunkt[i]->x, map->pPunkt[i]->y, map->pPunkt[i]->value );
+			goc_systemSendMsg(uchwyt, msg);
 		}
 		map->pPunkt = goc_tableClear(map->pPunkt, &map->nPunkt);
 		GOC_DEBUG("<- goc_mapaposListener");
 		return goc_elementDestroy(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_MAPSETSIZE )
+	else if ( msg->id == GOC_MSG_MAPSETSIZE_ID )
 	{
 		GOC_DEBUG("<- goc_mapaposListener");
-		return goc_mapaposSetSize(uchwyt, (int)pBuf, (int)nBuf);
+		GOC_StMsgMapSetSize* msgsize = (GOC_StMsgMapSetSize*)msg;
+		return goc_mapaposSetSize(uchwyt, msgsize->width, msgsize->height);
 	}
 	// TODO:
 /*	else if ( wiesc == GOC_MSG_MAPGETCHARAT )
@@ -291,40 +284,39 @@ int goc_mapaposListener(
 		return GOC_ERR_OK;
 
 	}*/
-	else if ( wiesc == GOC_MSG_MAPADDCHAR )
+	else if ( msg->id == GOC_MSG_MAPADDCHAR_ID )
 	{
-		GOC_StChar *znak = (GOC_StChar*)pBuf;
+		GOC_StMsgMapChar* msgadd = (GOC_StMsgMapChar*)msg;
 		GOC_DEBUG("<- goc_mapaposListener");
-		return goc_mapaposAddChar(uchwyt, znak->code, znak->color, nBuf);
+		return goc_mapaposAddChar(uchwyt,
+			msgadd->charcode, msgadd->charcolor, msgadd->position);
 	}
-	else if ( wiesc == GOC_MSG_MAPSETPOINT )
+	else if ( msg->id == GOC_MSG_MAPSETPOINT_ID )
 	{
-		GOC_StPoint *punkt = (GOC_StPoint*)pBuf;
 		GOC_DEBUG("<- goc_mapaposListener");
-		return mapaposSetPoint(uchwyt, punkt, nBuf);
+		return mapaposSetPoint(uchwyt, (GOC_StMsgMapPointValue*)msg);
 	}
-	else if ( wiesc == GOC_MSG_MAPGETPOINT )
+	else if ( msg->id == GOC_MSG_MAPGETPOINT_ID )
 	{
-		GOC_StPoint *punkt = (GOC_StPoint*)pBuf;
 		GOC_DEBUG("<- goc_mapaposListener");
-		return mapaposGetPoint(uchwyt, punkt, (int*)nBuf);
+		return mapaposGetPoint(uchwyt, (GOC_StMsgMapPointValue*)msg);
 	}
-	else if ( wiesc == GOC_MSG_MAPPAINT )
+	else if ( msg->id == GOC_MSG_MAPPAINT_ID )
 	{
-		return goc_mapaposPaint(uchwyt, (GOC_StArea*)pBuf, (GOC_StPoint*)nBuf);
+		return goc_mapaposPaint(uchwyt, (GOC_StMsgMapPaint*)msg);
 	}
-	else if ( wiesc == GOC_MSG_MAPGETCHAR )
+	else if ( msg->id == GOC_MSG_MAPGETCHAR_ID )
 	{
-		return mapaposAddChar(uchwyt, (GOC_StChar*)pBuf, nBuf);
+		return mapaposGetChar(uchwyt, (GOC_StMsgMapChar*)msg);
 	}
-	else if ( wiesc == GOC_MSG_MAPFILL )
+	else if ( msg->id == GOC_MSG_MAPFILL_ID )
 	{
-		return goc_mapposFill(uchwyt, (GOC_StFillArea*)pBuf);
+		return goc_mapposFill(uchwyt, (GOC_StMsgMapFill*)msg);
 	}
-	else if ( wiesc == GOC_MSG_POSMAPFREEPOINT )
+	else if ( msg->id == GOC_MSG_POSMAPFREEPOINT_ID )
 	{
 		// Je¶li nikt tego nie zrobi - zrób to sam
-		free(pBuf);
+		// free(pBuf);
 	}
 	GOC_DEBUG("<- goc_mapaposListener");
 	return GOC_ERR_UNKNOWNMSG;

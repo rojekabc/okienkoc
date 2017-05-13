@@ -7,6 +7,7 @@
 #include "tablica.h"
 #include "screen.h"
 #include "mystr.h"
+#include "system.h"
 
 const char* GOC_ELEMENT_LABEL = "GOC_Label";
 
@@ -29,8 +30,10 @@ int goc_labelSetColor(GOC_HANDLER u, unsigned short line, GOC_COLOR color)
 		napis->tekst[line].color = color;
 	}
 	// TODO: Paint only changed line
-	if ( napis->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( napis->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -71,8 +74,10 @@ int goc_labelSetFlag(GOC_HANDLER u, unsigned short line, GOC_FLAGS flag)
 		napis->tekst[line].flag &= (GOC_FLAGS)~COC_EFLAGA_G_JUSTIFY;
 		napis->tekst[line].flag |= flag;
 	}
-	if ( napis->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( napis->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -160,8 +165,10 @@ int goc_labelAddLine(GOC_HANDLER u, const char *Tekst)
 	napis->tekst[napis->nText-1].line = goc_stringCopy(NULL, Tekst);
 	napis->tekst[napis->nText-1].color = napis->color;
 	napis->tekst[napis->nText-1].flag = napis->flag;
-	if ( napis->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	if ( napis->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -172,8 +179,10 @@ int goc_labelSetText(GOC_HANDLER u, char *tekst, GOC_BOOL licz)
 	goc_labelAddLine(u, tekst);
 	if ( licz == GOC_TRUE )
 		goc_elementSetWidth(u, strlen(tekst));
-	else if ( napis->flag & GOC_EFLAGA_SHOWN )
-		goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
+	else if ( napis->flag & GOC_EFLAGA_SHOWN ) {
+		GOC_MSG_PAINT( msg );
+		goc_systemSendMsg(u, msg);
+	}
 	return GOC_ERR_OK;
 }
 
@@ -267,25 +276,21 @@ static int labelPaint(GOC_StLabel *napis)
 	return GOC_ERR_OK;
 }
 
-int goc_labelListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_labelListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StLabel* napis = (GOC_StLabel*)malloc(sizeof(GOC_StLabel));
-		memcpy(napis, elem, sizeof(GOC_StElement));
+		GOC_CREATE_ELEMENT(GOC_StLabel, napis, msg);
 		napis->tekst = NULL;
 		napis->nText = 0;
 		napis->start = 0;
-		*retuchwyt = (GOC_HANDLER)napis;
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		return labelPaint((GOC_StLabel*)uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		goc_labelRemLines(uchwyt);
 		return goc_elementDestroy(uchwyt);

@@ -31,7 +31,7 @@ typedef struct GOC_StChoice
 #define GOC_TYPE_CHOICEPLUSMINUS "+-"
 #define GOC_TYPE_CHOICEV "v "
 
-int goc_choiceListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_choiceListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_choiceSetText(GOC_HANDLER uchwyt, const char *tekst);
 #define goc_choiceSetState(uchwyt, _stan) ((GOC_StChoice*)uchwyt)->stan=_stan
 #define goc_choiceGetState(uchwyt) ((GOC_StChoice*)uchwyt)->stan

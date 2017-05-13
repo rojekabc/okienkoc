@@ -7,7 +7,7 @@
 #include "mystr.h"
 #include "global-inc.h"
 
-const char* GOC_MSG_TIMERTICK = "GOC_MsgTimerTick";
+const char* GOC_MSG_TIMERTICK_ID = "GOC_MsgTimerTick";
 
 static GOC_HANDLER *pHandler = NULL;
 static _GOC_TABEL_SIZETYPE_ nHandler = 0;
@@ -18,8 +18,10 @@ static int milisec = 100;
 static void alarmTick(int a)
 {
 	int i;
-	for (i=0; i<nHandler; i++)
-		goc_systemSendMsg(pHandler[i], GOC_MSG_TIMERTICK, pId[i], 0);
+	for (i=0; i<nHandler; i++) {
+		GOC_MSG_TIMERTICK(msg, pId[i]);
+		goc_systemSendMsg(pHandler[i], msg);
+	}
 }
 
 int goc_systemSetTimer(GOC_HANDLER uchwyt, const char *id)

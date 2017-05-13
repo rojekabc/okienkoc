@@ -3,41 +3,7 @@
 
 #include "element.h"
 
-extern const char* GOC_ELEMENT_LIST;
-
-/*
- * Przesuniecie na liscie. W nBuf pozycja, w pBuf nazwa
- */
-extern const char* GOC_MSG_LISTCHANGE;
-/*
- * Ustalenie koloru, jaki ma zostac nadany dla danego pola.
- * W nBuf jest pozycja pola, o które nastepuje zapytanie
- * W pBuf jest wskazanie na zmienna typu GOC_COLOR, ktora nalezy ustawic
- */
-extern const char* GOC_MSG_LISTSETCOLOR;
-/*
- * Dodanie tekstu do listy.
- * W pBuf wskazanie na dodawany tekst
- * W nBuf zero.
- */
-extern const char* GOC_MSG_LISTADDTEXT;
-/*
- * Czyszczenie listy. pBuf = 0, nBuf = 0
- */
-extern const char* GOC_MSG_LISTCLEAR;
-/*
- * Ustawienie danych zewnetrznych
- * pBuf dane zewnetrzne
- * nBuf ilosc danych
- */
-extern const char* GOC_MSG_LISTSETEXTERNAL;
-/*
- * Dodanie tekstu do listy.
- * W pBuf wskazanie na dodawana strukture wiersza
- * W nBuf zero.
- */
-extern const char* GOC_MSG_LISTADDROW;
-
+/** struktury **/
 typedef struct GOC_StColumn
 {
 	char **pText;
@@ -52,6 +18,76 @@ typedef struct GOC_StListRow
 	int nRow; // jesli -1 ustawi po wykonaniu funkcji nadana
 	// pozcje, jesli != -1 to umiesci we wskazanej pozcji.
 } GOC_LISTROW;
+
+/** id elementu **/
+extern const char* GOC_ELEMENT_LIST;
+
+/**
+ * Change selection on lust.
+ */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	const char* pText;
+	int position;
+} GOC_StMsgListChange;
+#define GOC_MSG_LISTCHANGE(variable, _text_, _position_) \
+	GOC_MSG(GOC_StMsgListChange, variable, GOC_MSG_LISTCHANGE_ID); \
+	variable##Full.pText = _text_; \
+	variable##Full.position = _position_
+extern const char* GOC_MSG_LISTCHANGE_ID;
+/*
+ * Get color.to set for chosen position.
+ */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	int position;
+	GOC_COLOR color;
+} GOC_StMsgListSetColor;
+#define GOC_MSG_LISTSETCOLOR(variable, _position_) \
+	GOC_MSG(GOC_StMsgListSetColor, variable, GOC_MSG_LISTSETCOLOR_ID); \
+	variable##Full.position = _position_
+extern const char* GOC_MSG_LISTSETCOLOR_ID;
+/**
+ * Add text to list.
+ */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	char* pText;
+} GOC_StMsgListAddText;
+#define GOC_MSG_LISTADDTEXT(variable, _text_) \
+	GOC_MSG(GOC_StMsgListAddText, variable, GOC_MSG_LISTADDTEXT_ID); \
+	variable##Full.pText = _text_
+extern const char* GOC_MSG_LISTADDTEXT_ID;
+/*
+ * Remove all elements.
+ */
+#define GOC_MSG_LISTCLEAR(variable) GOC_MSG(GOC_StMessage, variable, GOC_MSG_LISTCLEAR_ID)
+extern const char* GOC_MSG_LISTCLEAR_ID;
+/**
+ * Set data from external source.
+ */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	const char** pTextArray;
+	unsigned int nTextArray;
+} GOC_StMsgListSetExternal;
+#define GOC_MSG_LISTSETEXTERNAL(variable, _textarray_, _countarray_) \
+	GOC_MSG(GOC_StMsgListSetExternal, variable, GOC_MSG_LISTSETEXTERNAL_ID); \
+	variable##Full.pTextArray = _textarray_; \
+	variable##Full.nTextArray = _countarray_
+extern const char* GOC_MSG_LISTSETEXTERNAL_ID;
+/*
+ * Append row.
+ */
+#define GOC_MSG_LISTADDROW(variable, _row_) \
+	GOC_MSG(GOC_StMsgListAddRow, variable, GOC_MSG_LISTADDROW_ID); \
+	variable##Full.pRow = _row_
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	GOC_LISTROW* pRow;
+} GOC_StMsgListAddRow;
+extern const char* GOC_MSG_LISTADDROW_ID;
+
 
 #define GOC_STRUCT_LIST \
 	GOC_STRUCT_ELEMENT; \
@@ -72,8 +108,8 @@ typedef struct GOC_StList
 	GOC_STRUCT_LIST;
 } GOC_StList;
 
-int goc_listListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
-int goc_listAddText(GOC_HANDLER u, const char *tekst);
+int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
+int goc_listAddText(GOC_HANDLER u, char *tekst);
 int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
 int goc_listSetColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
 int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width);

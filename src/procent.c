@@ -6,6 +6,7 @@
 #include "ramka.h"
 #include "napis.h"
 #include "screen.h"
+#include "system.h"
 
 const char* GOC_ELEMENT_PRECENT = "GOC_Precent";
 
@@ -44,7 +45,8 @@ int goc_precentFocus(GOC_HANDLER uchwyt)
 	if ( !(procent->flag & GOC_EFLAGA_ENABLE) )
 		return GOC_ERR_REFUSE;
 	procent->kolorRamka = procent->kolorAktywny;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
@@ -52,35 +54,36 @@ int goc_precentFreeFocus(GOC_HANDLER uchwyt)
 {
 	GOC_StPrecent* procent = (GOC_StPrecent*)uchwyt;
 	procent->kolorRamka = procent->kolorNieaktywny;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msg );
+	goc_systemSendMsg(uchwyt, msg);
 	return GOC_ERR_OK;
 }
 
-static int precentHotKeyPlus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int precentHotKeyPlus(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StPrecent* procent = (GOC_StPrecent*)uchwyt;
-		if ( procent->pozycja < procent->max )
-			(procent->pozycja)++;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( procent->pozycja < procent->max ) {
+		(procent->pozycja)++;
+	}
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt,  msgpaint);
 	return GOC_ERR_OK;
 }
-static int precentHotKeyMinus(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int precentHotKeyMinus(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StPrecent* procent = (GOC_StPrecent*)uchwyt;
-		if ( procent->pozycja > procent->min )
-			(procent->pozycja)--;
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( procent->pozycja > procent->min ) {
+		(procent->pozycja)--;
+	}
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt, msgpaint);
 	return GOC_ERR_OK;
 }
 
-int goc_precentListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_precentListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CREATE )
-	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StPrecent* procent = (GOC_StPrecent*)malloc(sizeof(GOC_StPrecent));
-		memcpy(procent, elem, sizeof(GOC_StElement));
+	if ( msg->id == GOC_MSG_CREATE_ID ) {
+		GOC_CREATE_ELEMENT(GOC_StPrecent, procent, msg);
 		procent->znakJasny = '*';
 		procent->znakCiemny = ' ';
 		procent->kolorJasny = GOC_WHITE | GOC_FBOLD;
@@ -91,27 +94,18 @@ int goc_precentListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t
 		procent->max = 10;
 		procent->min = 0;
 		procent->pozycja = 0;
-		*retuchwyt = (GOC_HANDLER)procent;
-		goc_hkAdd( *retuchwyt, 0x602, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd( (GOC_HANDLER)procent, 0x602, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			precentHotKeyPlus );
-		goc_hkAdd( *retuchwyt, 0x601, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd( (GOC_HANDLER)procent, 0x601, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			precentHotKeyMinus );
 		return GOC_ERR_OK;
-	}
-	else if ( wiesc == GOC_MSG_DESTROY )
-	{
+	} else if ( msg->id == GOC_MSG_DESTROY_ID ) {
 		return goc_elementDestroy(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_PAINT )
-	{
+	} else if ( msg->id == GOC_MSG_PAINT_ID ) {
 		return goc_precentPaint(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_FOCUS )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUS_ID ) {
 		return goc_precentFocus(uchwyt);
-	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
-	{
+	} else if ( msg->id == GOC_MSG_FOCUSFREE_ID ) {
 		return goc_precentFreeFocus(uchwyt);
 	}
 	return GOC_ERR_UNKNOWNMSG;

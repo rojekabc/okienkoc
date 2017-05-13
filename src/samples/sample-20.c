@@ -6,12 +6,11 @@
 
 int main()
 {
-	GOC_MSG wiesc;
-	GOC_HANDLER slide;
-	slide = goc_elementCreate(GOC_ELEMENT_SLIDEBAR, 5, 5, 10, 1,
+	GOC_StMessage wiesc;
+	goc_elementCreate(GOC_ELEMENT_SLIDEBAR, 5, 5, 10, 1,
 			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
 			GOC_WHITE, GOC_HANDLER_SYSTEM );
-	slide = goc_elementCreate(GOC_ELEMENT_SLIDEBAR, 4, 6, 1, 10,
+	goc_elementCreate(GOC_ELEMENT_SLIDEBAR, 4, 6, 1, 10,
 			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
 			GOC_WHITE, GOC_HANDLER_SYSTEM );
 	while (goc_systemCheckMsg( &wiesc ));

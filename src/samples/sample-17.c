@@ -81,19 +81,20 @@ int labelMoveDrawer(GOC_StElement *e, const char *tekst)
 	return GOC_ERR_OK;
 }
 
-static int nasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_TIMERTICK )
+	if ( msg->id == GOC_MSG_TIMERTICK_ID )
 	{
-		goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg(uchwyt, msgpaint);
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER napis;
 	napis = goc_elementCreate(GOC_ELEMENT_LABEL, 1, 1, 0, 1,
 			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,

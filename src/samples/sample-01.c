@@ -6,7 +6,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER ramka;
 	int i;
 	for (i=0; i<NUM; i++)

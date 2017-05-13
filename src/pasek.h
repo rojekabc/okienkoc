@@ -24,7 +24,7 @@ typedef struct GOC_StBar
 	GOC_STRUCT_BAR;
 } GOC_StBar;
 
-int goc_barListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_barListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_barAddText(GOC_HANDLER uchwyt, const char *tekst);
 
 #endif // ifndef _GOC_BAR_H_

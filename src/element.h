@@ -2,10 +2,8 @@
 #define _GOC_ELEMENT_H_
 
 #include "global.h"
-#include "system.h"
 #include "hotkey.h"
 #include "tablica.h"
-#include "global.h"
 #include "baseelement.h"
 
 #define GOC_STRUCT_ELEMENT \
@@ -23,6 +21,12 @@ typedef struct GOC_StElement
 {
 	GOC_STRUCT_ELEMENT;
 } GOC_StElement;
+
+#define GOC_CREATE_ELEMENT(_struct_, _variable_, _msg_) \
+	_struct_* _variable_ = (_struct_*)malloc(sizeof(_struct_)); \
+	memset(_variable_, 0, sizeof(_struct_)); \
+	memcpy(_variable_, &((GOC_StMsgCreate*)_msg_)->element, sizeof(GOC_StElement)); \
+	((GOC_StMsgCreate*)_msg_)->created = (GOC_HANDLER)_variable_
 
 int goc_elementSetColor(GOC_HANDLER u, GOC_COLOR k);
 int goc_elementSetX(GOC_HANDLER u, GOC_POSITION x);

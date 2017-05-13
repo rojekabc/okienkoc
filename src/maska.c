@@ -9,28 +9,29 @@
 #include "tablica.h"
 #include "znak.h"
 #include "conflog.h"
+#include "system.h"
 
+/* Mask element id */
 const char* GOC_ELEMENT_MASK = "GOC_Mask";
-const char* GOC_MSG_MAPSETSIZE = "GOC_MsgMapSetSize";
-const char* GOC_MSG_MAPGETCHARAT = "GOC_MsgMapGetCharAt";
-const char* GOC_MSG_MAPADDCHAR = "GOC_MsgMapAddChar";
-const char* GOC_MSG_MAPSETPOINT = "GOC_MsgMapSetPoint";
-const char* GOC_MSG_MAPPAINT = "GOC_MsgMapPaint";
-const char* GOC_MSG_MAPGETPOINT = "GOC_MsgMapGetPoint";
-const char* GOC_MSG_MAPGETCHAR = "GOC_MsgMapGetChar";
-const char* GOC_MSG_POSMAPFREEPOINT = "GOC_MsgMapFreePoint";
-const char* GOC_MSG_CURSORCHANGE = "GOC_MsgCursorChange";
-const char* GOC_MSG_MAPFILL = "GOC_MsgMapFill";
+
+/* Mask message ids */
+const char* GOC_MSG_MAPSETSIZE_ID = "GOC_MsgMapSetSize";
+const char* GOC_MSG_MAPGETCHARAT_ID = "GOC_MsgMapGetCharAt";
+const char* GOC_MSG_MAPADDCHAR_ID = "GOC_MsgMapAddChar";
+const char* GOC_MSG_MAPSETPOINT_ID = "GOC_MsgMapSetPoint";
+const char* GOC_MSG_MAPPAINT_ID = "GOC_MsgMapPaint";
+const char* GOC_MSG_MAPGETPOINT_ID = "GOC_MsgMapGetPoint";
+const char* GOC_MSG_MAPGETCHAR_ID = "GOC_MsgMapGetChar";
+const char* GOC_MSG_POSMAPFREEPOINT_ID = "GOC_MsgMapFreePoint";
+const char* GOC_MSG_CURSORCHANGE_ID = "GOC_MsgCursorChange";
+const char* GOC_MSG_MAPFILL_ID = "GOC_MsgMapFill";
 
 int goc_maskSet(GOC_HANDLER uchwyt, unsigned char x, unsigned char y, int val)
 {
-	GOC_StPoint punkt;
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	GOC_DEBUG("-> goc_maskSet");
-	punkt.x = x;
-	punkt.y = y;
-	goc_systemSendMsg(maska->pMapa[maska->nMapa-1], GOC_MSG_MAPSETPOINT,
-		&punkt, val);
+	GOC_MSG_MAPSETPOINT( msg, x, y, val );
+	goc_systemSendMsg(maska->pMapa[maska->nMapa-1], msg);
 	GOC_DEBUG("<- goc_maskSet");
 	return GOC_ERR_OK;
 }
@@ -48,8 +49,8 @@ int goc_maskSetRealArea(GOC_HANDLER uchwyt, int d, int w)
 	maska->kursor.y = 0;
 	for (k=0; k<maska->nMapa; k++)
 	{
-		goc_systemSendMsg( maska->pMapa[k],
-			GOC_MSG_MAPSETSIZE, (void*)(uintptr_t)d, w );
+		GOC_MSG_MAPSETSIZE( msg, d, w );
+		goc_systemSendMsg( maska->pMapa[k], msg );
 	}
 //	lbnw = maska->dane->lbnw;
 //	goc_nbitFieldRemove(maska->dane);
@@ -58,17 +59,15 @@ int goc_maskSetRealArea(GOC_HANDLER uchwyt, int d, int w)
 	return GOC_ERR_OK;
 }
 
-static int maskPaintMap(GOC_HANDLER uchwyt, GOC_StArea* obszar, GOC_StPoint* punkt)
+static int maskPaintMap(GOC_HANDLER uchwyt, GOC_StMsgMapPaint* msg)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	int k;
 	GOC_DEBUG("-> maskPaintMap");
 
 	// wypelnianie znakami do wypisania
-	for (k=0; k<maska->nMapa; k++)
-	{
-		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPPAINT, obszar, (uintptr_t)punkt);
+	for (k=0; k<maska->nMapa; k++) {
+		goc_systemSendMsg(maska->pMapa[k], (GOC_StMessage*)msg );
 	}
 	fflush(stdout);
 	GOC_DEBUG("<- maskPaintMap");
@@ -111,8 +110,8 @@ static int maskPaint(GOC_HANDLER uchwyt)
 	// wypelnianie obszaru danymi
 	for (k=0; k<maska->nMapa; k++)
 	{
-		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPFILL, &obszar, 0);
+		GOC_MSG_POSMAPFILL( msg, obszar.x, obszar.y, obszar.width, obszar.height, obszar.pElement );
+		goc_systemSendMsg(maska->pMapa[k], msg);
 	}
 
 	// rysowanie na ekranie
@@ -169,16 +168,14 @@ static int maskPaint(GOC_HANDLER uchwyt)
 int goc_maskGet(GOC_HANDLER uchwyt, int x, int y)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
-	GOC_StPoint punkt;
-	int value, k;
+	int k, value;
 	GOC_DEBUG("-> goc_maskGet");
+	value = 0;
 	for (k=0; k<maska->nMapa; k++ )
 	{
-		punkt.x = x;
-		punkt.y = y;
-		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPGETPOINT,
-			&punkt, (uintptr_t)(&value));
+		GOC_MSG_MAPGETPOINT( msg, x, y );
+		goc_systemSendMsg(maska->pMapa[k], msg);
+		value = msgFull.value;
 	}
 	return value;
 }
@@ -191,13 +188,7 @@ int goc_maskPaintPoint(GOC_HANDLER uchwyt, int x, int y)
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	int k;
 	GOC_StPoint punkt;
-	GOC_StArea obszar;
 	GOC_DEBUG("-> goc_maskPaintPoint");
-
-	obszar.x = maska->xp + x;
-	obszar.y = maska->yp + y;
-	obszar.width = 1;
-	obszar.height = 1;
 
 	punkt.x = goc_elementGetScreenX( uchwyt ) + x;
 	punkt.y = goc_elementGetScreenY( uchwyt ) + y;
@@ -205,8 +196,10 @@ int goc_maskPaintPoint(GOC_HANDLER uchwyt, int x, int y)
 	// wypelnianie znakami do wypisania
 	for (k=0; k<maska->nMapa; k++)
 	{
-		goc_systemSendMsg(maska->pMapa[k],
-			GOC_MSG_MAPPAINT, &obszar, (uintptr_t)(&punkt));
+		GOC_MSG_MAPPAINT( msg, punkt.x, punkt.y,
+			maska->xp+x, maska->yp+y,
+			1, 1);
+		goc_systemSendMsg(maska->pMapa[k], msg);
 	}
 	goc_loadXY();
 	fflush(stdout);
@@ -247,13 +240,14 @@ static int maskFreeFocus(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	if ( maska->kursor.y > 0 )
 	{
 		(maska->kursor.y)--;
-		goc_systemSendMsg(uchwyt, GOC_MSG_CURSORCHANGE, &(maska->kursor), 0);
+		GOC_MSG_CURSORCHANGE( msg, maska->kursor.x, maska->kursor.y );
+		goc_systemSendMsg(uchwyt, msg);
 	}
 	if ( maska->kursor.y < maska->yp )
 		(maska->yp)--;
@@ -268,73 +262,80 @@ static int maskHotKeyUp(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t
 		fflush(stdout);
 		return GOC_ERR_OK;
 	}
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt, msgpaint);
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyDown(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int maskHotKeyDown(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
-		if ( maska->kursor.y < maska->w-1 )
-		{
-			(maska->kursor.y)++;
-			goc_systemSendMsg(uchwyt, GOC_MSG_CURSORCHANGE, &(maska->kursor), 0);
-		}
-		if ( maska->kursor.y >= maska->yp + goc_elementGetHeight(uchwyt) )
-			(maska->yp)++;
-		else
-		{
-			goc_gotoxy(
-				goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
-				goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
-			fflush(stdout);
-			return GOC_ERR_OK;
-		}
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( maska->kursor.y < maska->w-1 )
+	{
+		(maska->kursor.y)++;
+		GOC_MSG_CURSORCHANGE( msgcur, maska->kursor.x, maska->kursor.y );
+		goc_systemSendMsg(uchwyt, msgcur);
+	}
+	if ( maska->kursor.y >= maska->yp + goc_elementGetHeight(uchwyt) )
+		(maska->yp)++;
+	else
+	{
+		goc_gotoxy(
+			goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
+			goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
+		fflush(stdout);
+		return GOC_ERR_OK;
+	}
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt, msgpaint);
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyRight(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int maskHotKeyRight(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
-		if ( maska->kursor.x < maska->d-1 )
-		{
-			(maska->kursor.x)++;
-			goc_systemSendMsg(uchwyt, GOC_MSG_CURSORCHANGE, &(maska->kursor), 0);
-		}
-		if ( maska->kursor.x >= maska->xp + goc_elementGetWidth(uchwyt) )
-			(maska->xp)++;
-		else
-		{
-			goc_gotoxy(
-				goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
-				goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
-			fflush(stdout);
-			return GOC_ERR_OK;
-		}
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( maska->kursor.x < maska->d-1 )
+	{
+		(maska->kursor.x)++;
+		GOC_MSG_CURSORCHANGE( msgcur, maska->kursor.x, maska->kursor.y );
+		goc_systemSendMsg(uchwyt, msgcur);
+	}
+	if ( maska->kursor.x >= maska->xp + goc_elementGetWidth(uchwyt) )
+		(maska->xp)++;
+	else
+	{
+		goc_gotoxy(
+			goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
+			goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
+		fflush(stdout);
+		return GOC_ERR_OK;
+	}
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt, msgpaint);
 	return GOC_ERR_OK;
 }
 
-static int maskHotKeyLeft(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+static int maskHotKeyLeft(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StMask *maska = (GOC_StMask*)uchwyt;
-		if ( maska->kursor.x > 0 )
-		{
-			(maska->kursor.x)--;
-			goc_systemSendMsg(uchwyt, GOC_MSG_CURSORCHANGE, &(maska->kursor), 0);
-		}
-		if ( maska->kursor.x < maska->xp )
-			(maska->xp)--;
-		else
-		{
-			goc_gotoxy(
-				goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
-				goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
-			fflush(stdout);
-			return GOC_ERR_OK;
-		}
-	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
+	if ( maska->kursor.x > 0 )
+	{
+		(maska->kursor.x)--;
+		GOC_MSG_CURSORCHANGE( msgcur, maska->kursor.x, maska->kursor.y );
+		goc_systemSendMsg(uchwyt, msgcur);
+	}
+	if ( maska->kursor.x < maska->xp )
+		(maska->xp)--;
+	else
+	{
+		goc_gotoxy(
+			goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
+			goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
+		fflush(stdout);
+		return GOC_ERR_OK;
+	}
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(uchwyt, msgpaint);
 	return GOC_ERR_OK;
 }
 
@@ -344,11 +345,8 @@ int goc_maskSetValue(GOC_HANDLER uchwyt, short pozycja, char code, GOC_COLOR col
 	GOC_DEBUG("-> goc_maskSetValue");
 	if ( maska->nMapa )
 	{
-		GOC_StChar znak;
-		znak.code = code;
-		znak.color = color;
-		goc_systemSendMsg(maska->pMapa[maska->nMapa-1], GOC_MSG_MAPADDCHAR,
-			&znak, pozycja);
+		GOC_MSG_MAPADDCHAR( msg, color, code, pozycja );
+		goc_systemSendMsg(maska->pMapa[maska->nMapa-1], msg);
 	}
 //	maska->pZnak[pozycja] = znak;
 //	maska->pKolor[pozycja] = color;
@@ -392,19 +390,15 @@ void goc_maskRemMaps(GOC_HANDLER uchwyt)
 	GOC_DEBUG("<- goc_maskRemMaps");
 }
 
-int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int goc_maskListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_DEBUG("-> goc_maskListener");
 	int errCode = GOC_ERR_OK;
-	if ( wiesc == GOC_MSG_CREATE )
+	if ( msg->id == GOC_MSG_CREATE_ID )
 	{
-		GOC_StElement* elem = (GOC_StElement*)pBuf;
-		GOC_HANDLER* retuchwyt = (GOC_HANDLER*)nBuf;
-		GOC_StMask* maska = (GOC_StMask*)malloc(sizeof(GOC_StMask));
-
-		memcpy(maska, elem, sizeof(GOC_StElement));
-		maska->d = goc_elementGetWidth((GOC_HANDLER)elem);
-		maska->w = goc_elementGetHeight((GOC_HANDLER)elem);
+		GOC_CREATE_ELEMENT(GOC_StMask, maska, msg);
+		maska->d = goc_elementGetWidth((GOC_HANDLER)maska);
+		maska->w = goc_elementGetHeight((GOC_HANDLER)maska);
 		maska->xp = 0;
 		maska->yp = 0;
 		maska->xs = 1;
@@ -433,17 +427,16 @@ int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nB
 //		maska->pZnak = goc_tableAdd(maska->pZnak, &maska->nZnak, 1);
 //		maska->pZnak[0] = '0';
 //		maska->pZnak[1] = '1';
-		*retuchwyt = (GOC_HANDLER)maska;
-		goc_hkAdd(*retuchwyt, 0x603, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd((GOC_HANDLER)maska, 0x603, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			maskHotKeyUp);
-		goc_hkAdd(*retuchwyt, 0x600, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd((GOC_HANDLER)maska, 0x600, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			maskHotKeyDown);
-		goc_hkAdd(*retuchwyt, 0x602, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd((GOC_HANDLER)maska, 0x602, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			maskHotKeyRight);
-		goc_hkAdd(*retuchwyt, 0x601, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
+		goc_hkAdd((GOC_HANDLER)maska, 0x601, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			maskHotKeyLeft);
 	}
-	else if ( wiesc == GOC_MSG_DESTROY )
+	else if ( msg->id == GOC_MSG_DESTROY_ID )
 	{
 		GOC_StMask *maska = (GOC_StMask*)uchwyt;
 	//	goc_maskRemMaps(uchwyt);
@@ -454,20 +447,19 @@ int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nB
 //		goc_nbitFieldRemove(maska->dane);
 		errCode = goc_elementDestroy(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUS )
+	else if ( msg->id == GOC_MSG_FOCUS_ID )
 	{
 		errCode = maskFocus(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_FOCUSFREE )
+	else if ( msg->id == GOC_MSG_FOCUSFREE_ID )
 	{
 		errCode = maskFreeFocus(uchwyt);
 	}
-	else if ( wiesc == GOC_MSG_MAPPAINT )
+	else if ( msg->id == GOC_MSG_MAPPAINT_ID )
 	{
-		errCode = maskPaintMap(
-			uchwyt, (GOC_StArea*)pBuf, (GOC_StPoint*)nBuf);
+		errCode = maskPaintMap(uchwyt, (GOC_StMsgMapPaint*)msg);
 	}
-	else if ( wiesc == GOC_MSG_PAINT )
+	else if ( msg->id == GOC_MSG_PAINT_ID )
 	{
 		errCode = maskPaint(uchwyt);
 	}

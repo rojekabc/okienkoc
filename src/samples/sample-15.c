@@ -6,7 +6,7 @@
 
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER lista;
 	lista = goc_elementCreate(GOC_ELEMENT_FILELIST, 1, 1, 40, 20,
 			GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,

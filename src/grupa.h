@@ -13,6 +13,6 @@ typedef struct GOC_StGroup
 	GOC_STRUCT_GROUP;
 } GOC_StGroup;
 
-int goc_groupListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_groupListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 
 #endif // ifndef _GOC_FORM_H_

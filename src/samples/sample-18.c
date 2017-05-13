@@ -22,7 +22,7 @@ void maskaPrzypisz(GOC_HANDLER maska, int n)
 // G³ówna czê¶æ programu
 int main()
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER maska = 0;
 	GOC_HANDLER mapa1 = 0;
 	GOC_HANDLER mapa2 = 0;

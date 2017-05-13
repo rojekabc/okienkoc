@@ -26,7 +26,7 @@ typedef struct GOC_StButton
 #define GOC_BUTTONTYPE_HASH			"#### ####"
 #define GOC_BUTTONTYPE_SLASH			"/-\\| |\\-/"
 
-int goc_buttonListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_buttonListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_buttonSetText(GOC_HANDLER u, const char *tekst);
 
 #endif // ifndef _GOC_BUTTON_H_

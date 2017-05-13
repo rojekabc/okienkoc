@@ -6,67 +6,160 @@
 #include "tablica.h"
 #include "znak.h"
 
+/** Mask element id. */
 extern const char* GOC_ELEMENT_MASK;
-/*
- * Jako pBuf int dlugosc
- * Jak nBuf int wysokosc
+
+/**
+ * Set map size (width/height).
  */
-extern const char* GOC_MSG_MAPSETSIZE;
-/*
- * Jako pBuf GOC_StPoint* punkt do pobrania
- * Jako nBuf GOC_StChar* wskazanie na znak do wypelnienia
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	int width;
+	int height;
+} GOC_StMsgMapSetSize;
+#define GOC_MSG_MAPSETSIZE(variable, _width_, _height_) \
+	GOC_MSG(GOC_StMsgMapSetSize, variable, GOC_MSG_MAPSETSIZE_ID); \
+	variable##Full.width = _width_; \
+	variable##Full.height = _height_
+extern const char* GOC_MSG_MAPSETSIZE_ID;
+
+/**
+ * Get map point value.
  */
-extern const char* GOC_MSG_MAPGETCHARAT;
-/*
- * w pBuf GOC_StChar*
- * w nBuf pozycja (lub -1, gdy tylko dodac)
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	unsigned int x;
+	unsigned int y;
+	GOC_COLOR charcolor;
+	char charcode;
+} GOC_StMsgMapGetCharAt;
+#define GOC_MSG_MAPGETCHARAT(variable, _x_, _y_) \
+	GOC_MSG(GOC_StMsgMapGetCharAt, variable, GOC_MSG_MAPGETCHARAT_ID); \
+	variable##Full.x = _x_; \
+	variable##Full.y = _y_
+extern const char* GOC_MSG_MAPGETCHARAT_ID;
+
+ /**
+  * Append char definition to map.
+  * Set position to -1 if it should be add to the end.
+  */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	GOC_COLOR charcolor;
+	char charcode;
+	short position;
+} GOC_StMsgMapChar;
+#define GOC_MSG_MAPADDCHAR(variable, _color_, _charcode_, _position_) \
+	GOC_MSG(GOC_StMsgMapChar, variable, GOC_MSG_MAPADDCHAR_ID); \
+	variable##Full.charcolor = _color_; \
+	variable##Full.charcode = _charcode_; \
+	variable##Full.position = _position_
+extern const char* GOC_MSG_MAPADDCHAR_ID;
+
+
+ /*
+  * Set value on a map. It will be mapped to character with color.
+  */
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	unsigned int x;
+	unsigned int y;
+	int value;
+} GOC_StMsgMapPointValue;
+#define GOC_MSG_MAPSETPOINT(variable, _x_, _y_, _value_) \
+	GOC_MSG(GOC_StMsgMapPointValue, variable, GOC_MSG_MAPSETPOINT_ID); \
+	variable##Full.x = _x_; \
+	variable##Full.y = _y_; \
+	variable##Full.value = _value_
+extern const char* GOC_MSG_MAPSETPOINT_ID;
+
+/**
+ * Pain part of map from point on a screen.
  */
-extern const char* GOC_MSG_MAPADDCHAR;
-/*
- * w pBuf GOC_StPoint*
- * w nBuf value
- *
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	unsigned int screenx;
+	unsigned int screeny;
+	unsigned int mapx;
+	unsigned int mapy;
+	unsigned int width;
+	unsigned int height;
+	int value;
+} GOC_StMsgMapPaint;
+#define GOC_MSG_MAPPAINT(variable, _screenx_, _screeny_, _mapx_, _mapy_, _width_, _height_) \
+	GOC_MSG(GOC_StMsgMapPaint, variable, GOC_MSG_MAPPAINT_ID); \
+	variable##Full.screenx = _screenx_; \
+	variable##Full.screeny = _screeny_; \
+	variable##Full.mapx = _mapx_; \
+	variable##Full.mapy = _mapy_; \
+	variable##Full.width = _width_; \
+	variable##Full.height = _height_;
+extern const char* GOC_MSG_MAPPAINT_ID;
+
+/**
+ * Get value of point on map.
  */
-extern const char* GOC_MSG_MAPSETPOINT;
-/*
- * W pBuf GOC_StArea* wskazanie wycinka obszaru rysowanego z mapy
- * W nBuf GOC_StPoint* wskazanie punktu na screenie, w którym zacznie rysowanie
+#define GOC_MSG_MAPGETPOINT(variable, _x_, _y_) \
+	GOC_MSG(GOC_StMsgMapPointValue, variable, GOC_MSG_MAPGETPOINT_ID); \
+	variable##Full.x = _x_; \
+	variable##Full.y = _y_;
+extern const char* GOC_MSG_MAPGETPOINT_ID;
+
+/**
+ * Get char to paint on selected position and with given value.
  */
-extern const char* GOC_MSG_MAPPAINT;
+#define GOC_MSG_MAPGETCHAR(variable, _position_) \
+	GOC_MSG(GOC_StMsgMapChar, variable, GOC_MSG_MAPGETCHAR_ID); \
+	variable##Full.position = _position_;
+extern const char* GOC_MSG_MAPGETCHAR_ID;
+
 /*
- * w pBuf GOC_StPoint*
- * w nBuf int* na zwracan± warto¶æ
+ * Free point from position map.
+ * If point is connected with any other resources
+ * than they should be free also. Point will be
+ * free by a caller.
+ * TODO: verify that value is needed.
  */
-extern const char* GOC_MSG_MAPGETPOINT;
+#define GOC_MSG_POSMAPFREEPOINT(variable, _x_, _y_, _value_) \
+	GOC_MSG(GOC_StMsgMapPointValue, variable, GOC_MSG_MAPGETPOINT_ID); \
+	variable##Full.x = _x_; \
+	variable##Full.y = _y_; \
+	variable##Full.value = _value_;
+extern const char* GOC_MSG_POSMAPFREEPOINT_ID;
+
 /*
- * Funkcja zwraca wartosc znaku, jaki ma byc rysowany
- * dla okreslonej wartosci
- *
- * W pBuf GOC_StChar* do uzupe³nienia warto¶ciami
- * W nBuf struktura sk³adowana GOC_StValuePoint* z punktem do rysowania
+ * Change position of cursor.
  */
-extern const char* GOC_MSG_MAPGETCHAR;
-/*
- * Zwolnienie punktu z zasobów mapy pozycyjnej.
- * Je¿eli punkt ten wi±¿e siê z jakimi¶ dodatkowymi
- * zasobami - nale¿y je zwolniæ. Sam punkt bêdzie usuwany
- * przez funkcjê wywo³uj±c±.
- *
- * W pBuf wskazanie na GOC_StValuePoint
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	unsigned int x;
+	unsigned int y;
+} GOC_StMsgMapPoint;
+#define GOC_MSG_CURSORCHANGE(variable, _x_, _y_) \
+	GOC_MSG(GOC_StMsgMapPoint, variable, GOC_MSG_CURSORCHANGE_ID); \
+	variable##Full.x = _x_; \
+	variable##Full.y = _y_;
+extern const char* GOC_MSG_CURSORCHANGE_ID;
+
+/**
+ * Fill the area of map. (Fragment repaint)
  */
-extern const char* GOC_MSG_POSMAPFREEPOINT;
-/*
- * Zmiana po³o¿enia kursora w elemencie
- *
- * W pBuf wskazanie na GOC_StPoint
- */
-extern const char* GOC_MSG_CURSORCHANGE;
-/*
- * Fill structure with char code and color for selected area
- *
- * pBuf - pointer to GOC_StFillArea
- */
-extern const char* GOC_MSG_MAPFILL;
+typedef struct {
+	GOC_STRUCT_MESSAGE;
+	unsigned int mapx;
+	unsigned int mapy;
+	unsigned int width;
+	unsigned int height;
+	GOC_StChar* pElements;
+} GOC_StMsgMapFill;
+#define GOC_MSG_POSMAPFILL(variable, _mapx_, _mapy_, _width_, _height_, _elements_) \
+	GOC_MSG(GOC_StMsgMapFill, variable, GOC_MSG_MAPFILL_ID); \
+	variable##Full.mapx = _mapx_; \
+	variable##Full.mapy = _mapy_; \
+	variable##Full.width = _width_; \
+	variable##Full.height = _height_; \
+	variable##Full.pElements = _elements_
+extern const char* GOC_MSG_MAPFILL_ID;
 
 // d,w - rzeczywista dlugosc i wysokosc
 // xp yp - x,y poczatku rysowania na obszarze rzeczywistym
@@ -92,7 +185,7 @@ typedef struct GOC_StMask
 	GOC_STRUCT_MASK;
 } GOC_StMask;
 
-int goc_maskListener(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf);
+int goc_maskListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
 int goc_maskSetRealArea(GOC_HANDLER uchwyt, int d, int w);
 int goc_maskSet(GOC_HANDLER uchwyt, unsigned char x, unsigned char y, int val);
 int goc_maskGet(GOC_HANDLER uchwyt, int x, int y);
