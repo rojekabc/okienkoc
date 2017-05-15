@@ -374,37 +374,43 @@ void konfplikUsun(StKonfPlik *kp)
 
 GOC_HANDLER wprow, ok;
 
-int fpoziomNasluch(GOC_HANDLER u, GOC_MSG w, void* pBuf, uintptr_t nBuf)
+static int okAction() {
+	GOC_StEdit *wpis = (GOC_StEdit*)wprow;
+	if ( wpis->tekst )
+		_scena->poziom = atoi(wpis->tekst);
+	goc_formHide(formaPoziom);
+	return GOC_ERR_OK;
+}
+
+int fpoziomNasluch(GOC_HANDLER u, GOC_StMessage* msg)
 {
-	if ( (u == wprow) && (w == GOC_MSG_CHAR) )
+	if ( (u == wprow) && (msg->id == GOC_MSG_CHAR_ID) )
 	{
-		if ( (nBuf >= '0') && (nBuf <= '9') )
-		{
+		GOC_StMsgChar* msgchar = (GOC_StMsgChar*)msg;
+		if ( (msgchar->charcode >= '0') && (msgchar->charcode <= '9') ) {
 			int maxi = atoi(konfplikDajParametr( _scena->globus, GLOBUS_MAKS ));
 			GOC_StEdit *wpis = (GOC_StEdit*)u;
-			goc_systemDefaultAction(u, w, pBuf, nBuf);
-			if ( atoi(wpis->tekst) > maxi )
-				goc_systemSendMsg(u, GOC_MSG_CHAR, 0, 0x7F);
+			goc_systemDefaultAction(u, msg);
+			if ( atoi(wpis->tekst) > maxi ) {
+				GOC_MSG_CHAR( msgsend, 0x7F );
+				goc_systemSendMsg(u, msgsend);
+			}
+			return GOC_ERR_OK;
+		} else if ( msgchar->charcode == 13 ) {
+			return okAction();
+		} else if ( msgchar->charcode >= 0x7F ) {
+			return goc_systemDefaultAction(u, msg);
+		} else if ( msgchar->charcode < 0x20 ) {
+			return goc_systemDefaultAction(u, msg);
+		} else {
 			return GOC_ERR_OK;
 		}
-		else if ( nBuf == 13 )
-			return goc_systemSendMsg(ok, GOC_MSG_ACTION, pBuf, nBuf);
-		else if ( nBuf >= 0x7F )
-			return goc_systemDefaultAction(u, w, pBuf, nBuf);
-		else if ( nBuf < 0x20 )
-			return goc_systemDefaultAction(u, w, pBuf, nBuf);
-		else
-			return GOC_ERR_OK;
 	}
-	if ( (u == ok) && (w == GOC_MSG_ACTION) )
+	if ( (u == ok) && (msg->id == GOC_MSG_ACTION_ID) )
 	{
-		GOC_StEdit *wpis = (GOC_StEdit*)wprow;
-		if ( wpis->tekst )
-			_scena->poziom = atoi(wpis->tekst);
-		goc_formHide(formaPoziom);
-		return GOC_ERR_OK;
+		return okAction();
 	}
-	return goc_systemDefaultAction(u, w, pBuf, nBuf);
+	return goc_systemDefaultAction(u, msg);
 }
 
 // Okno wybierania poziomu
@@ -749,10 +755,11 @@ void planRuch( int x, int y )
 #ifdef _TESTING_
 	budujNapisInt(_plan->pustakInfo, "Pustaki", _plan->liczPustki, _plan->liczPustki);
 #endif
-	goc_systemSendMsg(_plan->ruchInfo, GOC_MSG_PAINT, 0, 0);
-	goc_systemSendMsg(_plan->pychInfo, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(_plan->ruchInfo, msgpaint);
+	goc_systemSendMsg(_plan->pychInfo, msgpaint);
 #ifdef _TESTING_
-	goc_systemSendMsg(_plan->pustakInfo, GOC_MSG_PAINT, 0, 0);
+	goc_systemSendMsg(_plan->pustakInfo, msgpaint);
 #endif
 	goc_gotoxy(1, 1);
 
@@ -782,7 +789,7 @@ void planRuch( int x, int y )
 		(_scena->poziom)++;
 		planZaladujGre( konfplikDajParametr(_scena->konf, KONFKLUCZ_FOLDER), _scena->poziom );
 		goc_clearscreen();
-		goc_systemSendMsg(_plan->forma, GOC_MSG_PAINT, 0, 0);
+		goc_systemSendMsg(_plan->forma, msgpaint);
 	}
 }
 
@@ -846,13 +853,14 @@ void planNadajWartosc( const char *klucz, unsigned int pozycja, char znak, GOC_C
 		goc_maskSetValue( _plan->gra, pozycja, znak, color );
 }
 
-int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, uintptr_t nBuf)
+int pokazOknoNasluch(GOC_HANDLER u, GOC_StMessage* msg)
 {
 	if ( u == _plan->gra )
 	{
-		if ( w == GOC_MSG_CHAR )
+		if ( msg->id == GOC_MSG_CHAR_ID )
 		{
-			switch ( nBuf )
+			GOC_StMsgChar* msgchar = (GOC_StMsgChar*)msg;
+			switch ( msgchar->charcode )
 			{
 				case 'u': // cofnij ruch
 				{
@@ -879,10 +887,11 @@ int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, uintptr_t nBuf)
 						cofRuchCofnij();
 					} while ( w != ZNAK_LUDEK && w != ZNAK_LUDEK_MAGAZYN );
 					_plan->liczRuch--;
-					goc_systemSendMsg(_plan->ruchInfo, GOC_MSG_PAINT, 0, 0);
-					goc_systemSendMsg(_plan->pychInfo, GOC_MSG_PAINT, 0, 0);
+					GOC_MSG_PAINT( msgpaint );
+					goc_systemSendMsg(_plan->ruchInfo, msgpaint);
+					goc_systemSendMsg(_plan->pychInfo, msgpaint);
 #ifdef _TESTING_
-					goc_systemSendMsg(_plan->pustakInfo, GOC_MSG_PAINT, 0, 0);
+					goc_systemSendMsg(_plan->pustakInfo, msgpaint);
 #endif
 					fflush( stdout );
 					return GOC_ERR_OK;
@@ -891,7 +900,8 @@ int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, uintptr_t nBuf)
 				{
 					planZaladujGre( konfplikDajParametr( _scena->konf, KONFKLUCZ_FOLDER ), _scena->poziom );
 					planBudujOtoczenie();
-					goc_systemSendMsg(_plan->forma, GOC_MSG_PAINT, 0, 0);
+					GOC_MSG_PAINT( msgpaint );
+					goc_systemSendMsg(_plan->forma, msgpaint);
 					return GOC_ERR_OK;
 				}
 				case 0x603: // gora
@@ -907,11 +917,11 @@ int pokazOknoNasluch(GOC_HANDLER u, GOC_MSG w, void *pBuf, uintptr_t nBuf)
 				planRuch(-1, 0);
 				return GOC_ERR_OK;
 				default:
-				return goc_systemDefaultAction(u, w, pBuf, nBuf);
+				return goc_systemDefaultAction(u, msg);
 			}
 		}
 	}
-	return goc_systemDefaultAction(u, w, pBuf, nBuf);
+	return goc_systemDefaultAction(u, msg);
 }
 
 void pokazOknoPlanszy()
@@ -994,13 +1004,14 @@ const char *liczPoziomy(const char *path)
 	return buftmp;
 }
 
-int bazowaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
+int bazowaNasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	if ( uchwyt == GOC_HANDLER_SYSTEM )
 	{
-		if ( wiesc == GOC_MSG_CHAR )
+		if ( msg->id == GOC_MSG_CHAR_ID )
 		{
-			if ( nBuf == 13 ) // Enter
+			GOC_StMsgChar* msgchar = (GOC_StMsgChar*)msg;
+			if ( msgchar->charcode == 13 ) // Enter
 			{
 				switch ( goc_listGetCursor( _scena->lista ) )
 				{
@@ -1012,9 +1023,12 @@ int bazowaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 						pokazOknoWybieraniaPoziomu();
 						// kreuj i startuj okno poziomu
 						break;
-					case 2: // koniec
-						goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_FINISH, 0, 0);
+					case 2: {
+						// koniec
+						GOC_MSG_FINISH( msgfinish, 0 );
+						goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgfinish);
 						break;
+					}
 					default:
 						return GOC_ERR_UNKNOWNMSG;
 				}
@@ -1024,7 +1038,7 @@ int bazowaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void* pBuf, uintptr_t nBuf)
 				return GOC_ERR_UNKNOWNMSG;
 		}
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 StBazowaScena *bazowaKreuj( StKonfPlik *konf )
@@ -1100,7 +1114,8 @@ StBazowaScena *bazowaKreuj( StKonfPlik *konf )
 		goc_labelSetText(tmp->status, pBuf, GOC_FALSE);
 	}
 
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msgpaint );
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgpaint);
 	goc_systemFocusOn(tmp->lista);
 
 	free(globkonf);
@@ -1110,7 +1125,7 @@ StBazowaScena *bazowaKreuj( StKonfPlik *konf )
 // Program g³ówny
 int main( int argc, char **argv )
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	StKonfPlik *x = konfplikKreuj("plik.cnf", "|:");
 	if ( argc == 2 )
 		konfplikUstParametr( x, KONFKLUCZ_FOLDER, argv[1] );
