@@ -27,25 +27,34 @@ typedef struct StPlayer {
 
 StPlayer player;
 
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static int nasluchBuild(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_MAPGETCHAR )
+	if ( msg->id == GOC_MSG_MAPGETCHAR_ID )
 	{
-		GOC_StChar *znak = (GOC_StChar*)pBuf;
-		// ustalenie informacji o przynaleznosci
-		StBuild *build = (StBuild*)FROMGOC(nBuf);
-		goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
-		if ( build->flag == FLAG_GREEN )
-			znak->color = GOC_GREEN | GOC_FBOLD;
-		else if ( build->flag == FLAG_RED )
-			znak->color = GOC_RED | GOC_FBOLD;
-		else
-			znak->color = GOC_WHITE;
+		// here is our own organization
+		GOC_StMsgMapChar* msgchar = (GOC_StMsgMapChar*)msg;
+		// goc_systemDefaultAction(uchwyt, msg);
+		switch ( msgchar->position &= 0x0F ) {
+			case 0x00: msgchar->charcode = 0; break;
+			case 0x01: msgchar->charcode = 'S'; break;
+			case 0x02: msgchar->charcode = 'f'; break;
+			case 0x03: msgchar->charcode = 'O'; break;
+			case 0x04: msgchar->charcode = 'L'; break;
+			case 0x05: msgchar->charcode = 'o'; break;
+			case 0x06: msgchar->charcode = '#'; break;
+			case 0x07: msgchar->charcode = '0'; break;
+			case 0x08: msgchar->charcode = '-'; break;
+			case 0x09: msgchar->charcode = '|'; break;
+		}
+		switch (msgchar->position &=0xF0) {
+			case 0x10: msgchar->charcolor=GOC_GREEN | GOC_FBOLD; break;
+			case 0x20: msgchar->charcolor=GOC_RED | GOC_FBOLD; break;
+			default: msgchar->charcolor=GOC_WHITE; break;
+		}
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_POSMAPFREEPOINT )
+	else if ( msg->id == GOC_MSG_POSMAPFREEPOINT_ID )
 	{
-		GOC_StValuePoint *punkt = (GOC_StValuePoint*)pBuf;
 		/* TODO FREE
 		switch ( punkt->value )
 		{
@@ -83,7 +92,7 @@ static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t
 		*/
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 GOC_HANDLER maska;
@@ -112,16 +121,17 @@ const char* flyMission[] = {
 };
 short selectedMission;
 
-int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int nasluchSelector(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CHAR )
+	if ( msg->id == GOC_MSG_CHAR_ID )
 	{
-		if ( nBuf == 9 )
+		GOC_StMsgChar* msgChar = (GOC_StMsgChar*)msg;
+		if ( msgChar->charcode == 9 )
 		{
 			// don't allow to remove focus
 			return GOC_ERR_OK;
 		}
-		if (( nBuf == 'M' ) || ( nBuf == 'm' ))
+		if (( msgChar->charcode == 'M' ) || ( msgChar->charcode == 'm' ))
 		{
 			// Change mission type
 			GOC_StSlideBar* slide = (GOC_StSlideBar*)uchwyt;
@@ -133,7 +143,7 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBu
 			goc_gotoxy( goc_elementGetScreenX( uchwyt ), goc_elementGetScreenY( uchwyt ) + slide->position );
 			fflush(stdout);
 		}
-		if (( nBuf == 'C' ) || ( nBuf == 'c' ))
+		if (( msgChar->charcode == 'C' ) || ( msgChar->charcode == 'c' ))
 		{
 			// TODO: Accept creation of new fly team
 			// - create fly team
@@ -148,7 +158,7 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBu
 			fflush(stdout);
 			return GOC_ERR_OK;
 		}
-		if ( nBuf == 27 )
+		if ( msgChar->charcode == 27 )
 		{
 			// - destory elements
 			goc_systemClearArea(uchwyt);
@@ -159,7 +169,7 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBu
 			goc_systemFocusOn(maska);
 			return GOC_ERR_OK;
 		}
-		if (( nBuf == ' ' ) || ( nBuf == 13 ))
+		if (( msgChar->charcode == ' ' ) || ( msgChar->charcode == 13 ))
 		{
 			// - Select a fly to team (color green says selected)
 			GOC_StSlideBar* slide = (GOC_StSlideBar*)uchwyt;
@@ -174,22 +184,21 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBu
 		}
 		
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
-int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int mapaNasluch(GOC_HANDLER uchwyt, GOC_StMessage *msg)
 {
-	if ( wiesc == GOC_MSG_CURSORCHANGE )
+	if ( msg->id == GOC_MSG_CURSORCHANGE_ID )
 	{
+		GOC_StMsgMapPoint* msgp = (GOC_StMsgMapPoint*)msg;
 		char buf[80];
 		GOC_StValuePoint *v;
 		int p;
 		StAirport* airport = NULL;
 
-		punkt = (GOC_StPoint*)pBuf;
-
 		goc_labelRemLines(labelDesc);
-		p = goc_maparawGetPoint(terrain, punkt->x, punkt->y);
+		p = goc_maparawGetPoint(terrain, msgp->x, msgp->y);
 		memset(buf, 0, 80);
 		switch ( p )
 		{
@@ -210,39 +219,39 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 				break;
 		}
 		goc_labelAddLine(labelDesc, buf);
-		v = goc_mapaposReadPoint(build, punkt->x, punkt->y);
+		v = goc_mapaposReadPoint(build, msgp->x, msgp->y);
 		memset(buf, 0, 80);
 		if ( v != NULL )
 		{
-			switch ( v-> value )
+			switch ( v-> value & 0x0F )
 			{
-				case 0x0:
+				case 0x00:
 					sprintf(buf, "");
 					break;
-				case 0x1:
+				case 0x01:
 					sprintf(buf, "Build: Supply");
 					break;
-				case 0x2:
+				case 0x02:
 					sprintf(buf, "Build: Factory");
 					break;
-				case 0x3:
+				case 0x03:
 					sprintf(buf, "Build: City");
 					break;
-				case 0x4:
+				case 0x04:
 					sprintf(buf, "Build: Airport");
 					airport = (StAirport*)FROMGOC(v);
 					break;
-				case 0x5:
+				case 0x05:
 					sprintf(buf, "Build: Village");
 					break;
-				case 0x6:
+				case 0x06:
 					sprintf(buf, "Build: Fort");
 					break;
-				case 0x7:
+				case 0x07:
 					sprintf(buf, "Build: Capital");
 					break;
-				case 0x8:
-				case 0x9:
+				case 0x08:
+				case 0x09:
 					sprintf(buf, "Build: Bridge");
 					break;
 				default:
@@ -265,34 +274,36 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 			}
 
 		}
-		p = goc_maparawGetPoint(front, punkt->x, punkt->y);
 		memset(buf, 0, 80);
-		switch ( p )
-		{
-			case 0:
-				break;
-			case 1:
-				sprintf(buf, "Front: red power" );
-				break;
-			case 2:
-				sprintf(buf, "Front: green power" );
-				break;
-			case 3:
-				sprintf(buf, "Front: none power" );
-				break;
-			default:
-				sprintf(buf, "Front: unknown" );
-				break;
+		if ( v != NULL ) {
+			switch ( v->value & 0xF0 )
+			{
+				case 0x00:
+					break;
+				case 0x10:
+					sprintf(buf, "Front: red power" );
+					break;
+				case 0x20:
+					sprintf(buf, "Front: green power" );
+					break;
+				case 0x30:
+					sprintf(buf, "Front: none power" );
+					break;
+				default:
+					sprintf(buf, "Front: unknown" );
+					break;
+			}
 		}
 		if ( strlen( buf ) )
 			goc_labelAddLine(labelDesc, buf);
 		goc_systemClearArea(labelDesc);
-		goc_systemSendMsg(labelDesc, GOC_MSG_PAINT, NULL, 0);
+		GOC_MSG_PAINT(labelDesc);
 		return GOC_ERR_OK;
 	}
-	else if ( wiesc == GOC_MSG_CHAR )
+	else if ( msg->id == GOC_MSG_CHAR_ID )
 	{
-		if (( nBuf == ' ' ) || ( nBuf == 13 ))
+		GOC_StMsgChar* msgch = (GOC_StMsgChar*)msg;
+		if (( msgch->charcode == ' ' ) || ( msgch->charcode == 13 ))
 		{
 			GOC_StValuePoint *v = NULL;
 			StBuild* building = NULL;
@@ -312,7 +323,8 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 					char buf[80];
 					slidebarSelector = goc_elementCreate( GOC_ELEMENT_SLIDEBAR, 43, 5, 1, airport->nfly,
 						GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, GOC_HANDLER_SYSTEM );
-					goc_systemSendMsg(slidebarSelector, GOC_MSG_PAINT, NULL, 0);
+					GOC_MSG_PAINT( msgpaint );
+					goc_systemSendMsg(slidebarSelector, msgpaint);
 					goc_elementSetFunc(slidebarSelector, GOC_FUNID_LISTENER, nasluchSelector);
 
 					labelInfo = goc_elementCreate( GOC_ELEMENT_LABEL, 2, 24, 0, 1,
@@ -320,7 +332,7 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 					selectedMission = 0;
 					sprintf(buf, labelInfoText[0], flyMission[selectedMission]);
 					goc_labelSetText( labelInfo, buf, GOC_FALSE );
-					goc_systemSendMsg( labelInfo, GOC_MSG_PAINT, NULL, 0 );
+					goc_systemSendMsg(labelInfo, msgpaint);
 
 					goc_systemFocusOn(slidebarSelector);
 				}
@@ -328,7 +340,7 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 			return GOC_ERR_OK;
 		}
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 static char getChar(GOC_Properties* p, char* name, char defValue)
@@ -537,8 +549,8 @@ int main(int argc, char **argv)
 	
 	// uruchomienie systemu
 	goc_systemFocusOn(maska);
-	GOC_MSG wiesc;
-	while (goc_systemCheckMsg( &wiesc ));
+	GOC_StMessage msg;
+	while (goc_systemCheckMsg( &msg ));
 	
 	return 0;
 }

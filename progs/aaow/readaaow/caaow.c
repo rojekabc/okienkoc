@@ -113,23 +113,23 @@ char mapDefs[] = {
 	// forrest (12) - t 0
 	'T', 'T',  'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T',
 	// forrest-clear - t 0
-	 't', 't', 't',
-	 // clear with single tree (8) - t 1
-	 '.', '.', '.', '.', '.', '.', '.', '.', 
-	 // clear - t 1
-	 ' ', ' ', ' ',
-	 // river (19) - t 2
-	 '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', 
-	 // mountain (15) - t 3
-	 '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^',
-	 // damaged clear - none
-	 '+', '+', '+',
-	 // Damages forest - none
-	 '*', '*', '*',
-	 // Unknown - none
-	 'X', 'X', 'X', 'X',
-	 // Damages forest - none
-	 '*'
+	't', 't', 't',
+	// clear with single tree (8) - t 1
+	'.', '.', '.', '.', '.', '.', '.', '.', 
+	// clear - t 1
+	' ', ' ', ' ',
+	// river (19) - t 2
+	'=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', 
+	// mountain (15) - t 3
+	'^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^',
+	// damaged clear - none
+	'+', '+', '+',
+	// Damages forest - none
+	'*', '*', '*',
+	// Unknown - none
+	'X', 'X', 'X', 'X',
+	// Damages forest - none
+	'*'
 
 }; // 00 - 55
 // d 0, 1, 2, 3
@@ -155,12 +155,12 @@ char frontDefs[] = {
 //
 unsigned char terrainDataDefs[] = {
 	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, // 10 clear
-       	0x02, 0x02, // 2 river
-       	0x01, 0x01, 0x01, // 3 clear
+	0x02, 0x02, // 2 river
+	0x01, 0x01, 0x01, // 3 clear
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 15 forest
 	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, // 11 clear
 	0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-       	0x02, 0x02, 0x02, 0x02, // 19 river
+	0x02, 0x02, 0x02, 0x02, // 19 river
 	0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, // 15 mountain
 	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01 // 11 clear
 };
@@ -206,63 +206,72 @@ void readMemo()
 #define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+4)
 #define FROMGOC(variable) (((char*)variable)-4)
 
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+static int nasluchBuild(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_MAPGETCHAR )
+	if ( msg->id == GOC_MSG_MAPGETCHAR_ID )
 	{
-		GOC_StChar *znak = (GOC_StChar*)pBuf;
-		// ustalenie informacji o przynaleznosci
-		StBuild *build = (StBuild*)FROMGOC(nBuf);
-		goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
-		if ( build->flag == 0x10 )
-			znak->color = GOC_GREEN | GOC_FBOLD;
-		else if ( build->flag == 0x20 )
-			znak->color = GOC_RED | GOC_FBOLD;
-		else
-			znak->color = GOC_WHITE;
-		return GOC_ERR_OK;
-	}
-	else if ( wiesc == GOC_MSG_POSMAPFREEPOINT )
-	{
-		GOC_StValuePoint *punkt = (GOC_StValuePoint*)pBuf;
-		/* TODO FREE
-		switch ( punkt->value )
-		{
-			case 0x03:
-				cityFree((StCity*)punkt);
-				break;
-			case 0x07:
-				capitalFree((StCapital*)punkt);
-				break;
-			case 0x04:
-				airportFree((StAirport*)punkt);
-				break;
-			case 0x02:
-				factoryFree((StFactory*)punkt);
-				break;
-			case 0x01:
-				supplyFree((StSupply*)punkt);
-				break;
-			case 0x06:
-				fortFree((StFort*)punkt);
-				break;
-			case 0x05:
-				villageFree((StVillage*)punkt);
-				break;
-			case 0x08:
-				bridgehFree((StBridgeH*)punkt);
-				break;
-			case 0x09:
-				bridgevFree((StBridgeV*)punkt);
-				break;
-			default:
-				goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
-				break;
+		// here is our own organization
+		GOC_StMsgMapChar* msgchar = (GOC_StMsgMapChar*)msg;
+		// goc_systemDefaultAction(uchwyt, msg);
+		switch ( msgchar->position &= 0x0F ) {
+			case 0x00: msgchar->charcode = 0; break;
+			case 0x01: msgchar->charcode = 'S'; break;
+			case 0x02: msgchar->charcode = 'f'; break;
+			case 0x03: msgchar->charcode = 'O'; break;
+			case 0x04: msgchar->charcode = 'L'; break;
+			case 0x05: msgchar->charcode = 'o'; break;
+			case 0x06: msgchar->charcode = '#'; break;
+			case 0x07: msgchar->charcode = '0'; break;
+			case 0x08: msgchar->charcode = '-'; break;
+			case 0x09: msgchar->charcode = '|'; break;
 		}
-		*/
+		switch (msgchar->position &=0xF0) {
+			case 0x10: msgchar->charcolor=GOC_GREEN | GOC_FBOLD; break;
+			case 0x20: msgchar->charcolor=GOC_RED | GOC_FBOLD; break;
+			default: msgchar->charcolor=GOC_WHITE; break;
+		}
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	else if ( msg->id == GOC_MSG_POSMAPFREEPOINT_ID )
+	{
+		/* TODO FREE
+		   switch ( punkt->value )
+		   {
+		   case 0x03:
+		   cityFree((StCity*)punkt);
+		   break;
+		   case 0x07:
+		   capitalFree((StCapital*)punkt);
+		   break;
+		   case 0x04:
+		   airportFree((StAirport*)punkt);
+		   break;
+		   case 0x02:
+		   factoryFree((StFactory*)punkt);
+		   break;
+		   case 0x01:
+		   supplyFree((StSupply*)punkt);
+		   break;
+		   case 0x06:
+		   fortFree((StFort*)punkt);
+		   break;
+		   case 0x05:
+		   villageFree((StVillage*)punkt);
+		   break;
+		   case 0x08:
+		   bridgehFree((StBridgeH*)punkt);
+		   break;
+		   case 0x09:
+		   bridgevFree((StBridgeV*)punkt);
+		   break;
+		   default:
+		   goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+		   break;
+		   }
+		   */
+		return GOC_ERR_OK;
+	}
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 // Algorytm koloryzowania narodowo¶ci terenów i budynków
@@ -417,17 +426,19 @@ void readMap()
 				GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, maska);
 	}
 	// definiuj wartosci
-	goc_mapaposAddChar(build,  0 , GOC_WHITE, 0x00); // nic - don't add!
-	goc_mapaposAddChar(build, 'S', GOC_WHITE, 0x01); // supply
-	goc_mapaposAddChar(build, 'f', GOC_WHITE, 0x02); // factory
-	goc_mapaposAddChar(build, 'O', GOC_WHITE, 0x03); // city
-	goc_mapaposAddChar(build, 'L', GOC_WHITE, 0x04); // airport
-	goc_mapaposAddChar(build, 'o', GOC_WHITE, 0x05); // village
-	goc_mapaposAddChar(build, '#', GOC_WHITE, 0x06); // fort
-	goc_mapaposAddChar(build, '0', GOC_WHITE, 0x07); // capital
-	goc_mapaposAddChar(build, '-', GOC_WHITE, 0x08); // bridge
-	goc_mapaposAddChar(build, '|', GOC_WHITE, 0x09); // bridge
-	// ustal mapê narodowo¶ci
+	/*
+	   goc_mapaposAddChar(build,  0 , GOC_WHITE, 0x00); // nic - don't add!
+	   goc_mapaposAddChar(build, 'S', GOC_WHITE, 0x01); // supply
+	   goc_mapaposAddChar(build, 'f', GOC_WHITE, 0x02); // factory
+	   goc_mapaposAddChar(build, 'O', GOC_WHITE, 0x03); // city
+	   goc_mapaposAddChar(build, 'L', GOC_WHITE, 0x04); // airport
+	   goc_mapaposAddChar(build, 'o', GOC_WHITE, 0x05); // village
+	   goc_mapaposAddChar(build, '#', GOC_WHITE, 0x06); // fort
+	   goc_mapaposAddChar(build, '0', GOC_WHITE, 0x07); // capital
+	   goc_mapaposAddChar(build, '-', GOC_WHITE, 0x08); // bridge
+	   goc_mapaposAddChar(build, '|', GOC_WHITE, 0x09); // bridge
+	   */
+	// ustal mapê narodowosci
 	{
 		int i=0;
 		int j=0;
@@ -446,11 +457,11 @@ void readMap()
 				{
 					colorNation(i, j, 0x20);
 				}
-					
+
 			}
 		}
 	}
-	// nano¶ budynki
+	// nanos budynki
 	{
 		int i=0;
 		int j=0;
@@ -510,6 +521,7 @@ void readMap()
 					}
 					punkt->x = i;
 					punkt->y = j;
+					punkt->value |= nation[i][j];
 					punkt->flag = nation[i][j];
 					goc_mapaposAddPoint(build,TOGOC(punkt));
 					gameData->pbuild = goc_tableAdd(gameData->pbuild, &gameData->nbuild, sizeof(void*));
@@ -615,7 +627,7 @@ void readPilots()
 
 	fseek(plik, DATASIDE, 0);
 	fread(side, 1, PILOTMAX, plik);
-	
+
 	fseek(plik, DATATYPE, 0);
 	fread(type, 1, PILOTMAX, plik);
 
@@ -661,16 +673,16 @@ void readPilots()
 
 GOC_HANDLER labelDesc;
 
-int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
+int mapaNasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	if ( wiesc == GOC_MSG_CURSORCHANGE )
+	if ( msg->id == GOC_MSG_CURSORCHANGE_ID )
 	{
+		GOC_StMsgMapPoint* msgmp = (GOC_StMsgMapPoint*)msg;
 		char buf[80];
-		GOC_StPoint *punkt = (GOC_StPoint*)pBuf;
 		GOC_StValuePoint *v;
 		int p;
 		goc_labelRemLines(labelDesc);
-		p = goc_maparawGetPoint(terrain, punkt->x, punkt->y);
+		p = goc_maparawGetPoint(terrain, msgmp->x, msgmp->y);
 		switch ( p )
 		{
 			case 0:
@@ -690,10 +702,10 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 				break;
 		}
 		goc_labelAddLine(labelDesc, buf);
-		v = goc_mapaposReadPoint(build, punkt->x, punkt->y);
+		v = goc_mapaposReadPoint(build, msgmp->x, msgmp->y);
 		if ( v != NULL )
 		{
-			switch ( v-> value )
+			switch ( v-> value & 0x0F )
 			{
 				case 0x0:
 					sprintf(buf, "");
@@ -731,47 +743,49 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, uintptr_t nBuf)
 		else
 			sprintf(buf, "Build:");
 		goc_labelAddLine(labelDesc, buf);
-		p = goc_maparawGetPoint(front, punkt->x, punkt->y);
-		switch ( p )
-		{
-			case 0:
-				sprintf(buf, "Front:" );
-				break;
-			case 1:
-				sprintf(buf, "Front: red power" );
-				break;
-			case 2:
-				sprintf(buf, "Front: green power" );
-				break;
-			case 3:
-				sprintf(buf, "Front: none power" );
-				break;
-			default:
-				sprintf(buf, "Front: unknown" );
-				break;
+		if ( v != NULL ) {
+			switch ( v->value & 0xF0 )
+			{
+				case 0x00:
+					sprintf(buf, "Front:" );
+					break;
+				case 0x10:
+					sprintf(buf, "Front: red power" );
+					break;
+				case 0x20:
+					sprintf(buf, "Front: green power" );
+					break;
+				case 0x30:
+					sprintf(buf, "Front: none power" );
+					break;
+				default:
+					sprintf(buf, "Front: unknown" );
+					break;
+			}
 		}
 		goc_labelAddLine(labelDesc, buf);
 		// Airport
-		if (( v != NULL ) && ( v->value == 0x4 ))
+		if (( v != NULL ) && ( v->value & 0x0F == 0x04 ))
 		{
 			StAirport *airport = (StAirport*)v;
 			int i;
 			for (i = 0; i < airport->nfly; i++ )
 			{
 				goc_labelAddLine(labelDesc,
-					airport->pfly[i]->pilotName);
+						airport->pfly[i]->pilotName);
 			}
 		}
 		goc_systemClearArea(labelDesc);
-		goc_systemSendMsg(labelDesc, GOC_MSG_PAINT, NULL, 0);
+		GOC_MSG_PAINT( msgpaint );
+		goc_systemSendMsg( labelDesc, msgpaint );
 		return GOC_ERR_OK;
 	}
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 int main(int argc, char **argv)
 {
-	GOC_MSG wiesc;
+	GOC_StMessage msg;
 	char *outFilename = NULL;
 	if ( argc < 2 )
 	{
@@ -812,7 +826,7 @@ int main(int argc, char **argv)
 	// uzupelnianie danych w strukturze gameData
 	fobSerialize((fobElement*)gameData, out);
 	// gamedataSerialize(gameData, out);
-	while (goc_systemCheckMsg( &wiesc ));
+	while (goc_systemCheckMsg( &msg ));
 	// TODO: gamedataFree(gameData);
 	fclose(out);
 	return 0;
