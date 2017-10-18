@@ -110,8 +110,6 @@ GOC_HANDLER slidebarSelector;
 int flyCount[2][2];
 int tickCount;
 int tickSpeed;
-// aktualne polozenie na mapie jakiegos wybranego elementu
-GOC_StPoint *punkt = NULL;
 
 const char* labelInfoText[] = {
 	"[C]reate  [M]ission: %s"
@@ -297,7 +295,8 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_StMessage *msg)
 		if ( strlen( buf ) )
 			goc_labelAddLine(labelDesc, buf);
 		goc_systemClearArea(labelDesc);
-		GOC_MSG_PAINT(labelDesc);
+		GOC_MSG_PAINT( msgPaint );
+		goc_systemSendMsg(labelDesc, msgPaint);
 		return GOC_ERR_OK;
 	}
 	else if ( msg->id == GOC_MSG_CHAR_ID )
@@ -307,9 +306,9 @@ int mapaNasluch(GOC_HANDLER uchwyt, GOC_StMessage *msg)
 		{
 			GOC_StValuePoint *v = NULL;
 			StBuild* building = NULL;
-			if ( !punkt )
-				return GOC_ERR_OK;
-			v = goc_mapaposReadPoint(build, punkt->x, punkt->y);
+			GOC_StPoint mapCursor;
+			goc_maskGetCursor( maska, mapCursor );
+			v = goc_mapaposReadPoint(build, mapCursor.x, mapCursor.y);
 			if ( !v )
 				return GOC_ERR_OK;
 			building = (StBuild*)FROMGOC(v);
