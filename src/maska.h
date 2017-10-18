@@ -47,7 +47,7 @@ typedef struct {
 	GOC_STRUCT_MESSAGE;
 	GOC_COLOR charcolor;
 	char charcode;
-	short position;
+	int position;
 } GOC_StMsgMapChar;
 #define GOC_MSG_MAPADDCHAR(variable, _color_, _charcode_, _position_) \
 	GOC_MSG(GOC_StMsgMapChar, variable, GOC_MSG_MAPADDCHAR_ID); \
@@ -161,13 +161,24 @@ typedef struct {
 	variable##Full.pElements = _elements_
 extern const char* GOC_MSG_MAPFILL_ID;
 
-// d,w - rzeczywista dlugosc i wysokosc
-// xp yp - x,y poczatku rysowania na obszarze rzeczywistym
-// xk, yk - x,y kursora na obszarze rzeczywistym
-// nZnakow - liczebnosc znakow
-// liczebnosc wartosci = nZnakow
-// tKolorow, tZnakow - tablica kolorow i znakow
-// xs, ys - rozmiar przestrzeni na jeden znak
+/**
+ * The mask structure.
+ *
+ * Mask has:
+ *  - real area - it's whole area of the mask data
+ *  - view area - it's area, which is shown on screen
+ *
+ * Fields:
+ * 	element - fields from the element structure.
+ * 	d - the mask real width
+ * 	w - the mask real height
+ * 	xp - the begin x coordinate of the view area
+ * 	yp - the begin y coordinate of the view area
+ * 	xs - the ammount of spaces in x coordinate between mask elements
+ * 	ys - the ammount of spaces in y coordinate between mask elements
+ * 	kursor - cursor position in real mask coordinates
+ * 	pMapa, nMapa - the array of maps connected to the mask
+ */
 #define GOC_STRUCT_MASK \
 	GOC_STRUCT_ELEMENT; \
 	unsigned int d; \
@@ -178,7 +189,6 @@ extern const char* GOC_MSG_MAPFILL_ID;
 	GOC_HANDLER *pMapa; \
 	_GOC_TABEL_SIZETYPE_ nMapa
 
-//	GOC_StNBitField *dane
 	
 typedef struct GOC_StMask
 {
@@ -211,5 +221,15 @@ int goc_maskAddMap(GOC_HANDLER uchwyt, GOC_HANDLER mapa);
 #define goc_maskCharSpace(uchwyt, xspace, yspace) \
 	((GOC_StMask*)uchwyt)->xs = xspace;\
 	((GOC_StMask*)uchwyt)->ys = yspace;
+
+/**
+ * Read the cursor's position of the mask.
+ *
+ * handler - mask handler
+ * cursor - GOC_StPoint instance, where value will be assigned
+ */
+#define goc_maskGetCursor(handler, cursor) \
+	cursor.x = ((GOC_StMask*)handler)->kursor.x; \
+	cursor.y = ((GOC_StMask*)handler)->kursor.y;
 
 #endif // ifndef _GOC_MASK_H_

@@ -221,12 +221,11 @@ static int maskFocus(GOC_HANDLER uchwyt)
 		GOC_DEBUG("<- maskFocus");
 		return GOC_ERR_REFUSE;
 	}
-	// Postaw kursor w ostanim po³o¿eniu (nie odrysowywuj)
+	// Put cursor in the last position (not redraw)
 	goc_gotoxy(
 		goc_elementGetScreenX( uchwyt ) + (maska->kursor.x-maska->xp)*maska->xs,
 		goc_elementGetScreenY( uchwyt ) + (maska->kursor.y-maska->yp)*maska->ys);
 	fflush(stdout);
-//	goc_systemSendMsg(uchwyt, GOC_MSG_PAINT, 0, 0);
 	GOC_DEBUG("<- maskFocus");
 	return GOC_ERR_OK;
 }
