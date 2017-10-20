@@ -1,6 +1,8 @@
 #ifndef _GOC_FILEISTREAM_H_
 #define _GOC_FILEISTREAM_H_
 
+#	include <stdio.h>
+
 #	include "istream.h"
 
 #	define GOC_STRUCT_FILEISTREAM \

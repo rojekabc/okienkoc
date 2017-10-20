@@ -11,17 +11,18 @@ Window listChildStructures(Display *dpy, Window win)
 		Window rootwin = 0;
 		Window parentwin = 0;
 		Window *pChildrenswin = NULL;
-		int nChildrenswin = 0;
+		unsigned int nChildrenswin = 0;
+
 		if ( XQueryTree(dpy, win, &rootwin, &parentwin, &pChildrenswin, &nChildrenswin) )
 		{
 			int i = 0;
-			GOC_BINFO("Listed win id is %d", win);
-			GOC_BINFO("   ROOT win id is %d", rootwin);
-			GOC_BINFO("   Parent win id is %d", parentwin);
-			GOC_BINFO("   Number of childs is %d", nChildrenswin);
+			GOC_BINFO("Listed win id is %u", win);
+			GOC_BINFO("   ROOT win id is %u", rootwin);
+			GOC_BINFO("   Parent win id is %u", parentwin);
+			GOC_BINFO("   Number of childs is %u", nChildrenswin);
 			for ( i=0; i<nChildrenswin; i++ )
 			{
-				GOC_BINFO("      Id of the chilren %d is %d", i, pChildrenswin[i]);
+				GOC_BINFO("      Id of the chilren %u is %u", i, pChildrenswin[i]);
 				listChildStructures(dpy, pChildrenswin[i]);
 			}
 			if ( pChildrenswin )
@@ -38,6 +39,46 @@ Window listChildStructures(Display *dpy, Window win)
 			return NULL;
 		}
 
+}
+
+int catchEvent(Display* dpy, Window win) {
+	XEvent event;
+
+	Window rootwin = 0;
+	Window parentwin = 0;
+	Window *pChildrenswin = NULL;
+	int nChildrenswin = 0;
+	int i;
+
+	// catch keyboard for this window and all childrens
+	XSelectInput(dpy, win, KeyPressMask | KeyReleaseMask );
+	if ( XQueryTree(dpy, win, &rootwin, &parentwin, &pChildrenswin, &nChildrenswin) ) {
+		for ( i=0; i<nChildrenswin; i++ )
+		{
+			XSelectInput(dpy, pChildrenswin[i], KeyPressMask | KeyReleaseMask );
+		}
+		if ( pChildrenswin )
+		{
+			XFree(pChildrenswin);
+			pChildrenswin = NULL;
+			nChildrenswin = 0;
+		}
+	}
+
+	// next keyboard event
+	XNextEvent(dpy, &event);
+	switch (event.type)
+	{
+	case KeyPress:
+		GOC_INFO("Key pressed");
+		break;
+	case KeyRelease:
+		GOC_INFO("Key released");
+		break;
+	default:
+		GOC_INFO("Unknown key event");
+		break;
+	}
 }
 
 int main(int argc, char **argv)
@@ -61,6 +102,7 @@ int main(int argc, char **argv)
 	listChildStructures(dpy, win);
 	// wylitowanie od root-a
 	// listChildStructures(dpy, listChildStructures(dpy, win));
+	// catchEvent(dpy, win);
 	if ( dpy )
 	{
 		XCloseDisplay(dpy);
