@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <okienkoc/mystr.h>
+#define GOC_PRINTERROR
+#include <okienkoc/log.h>
 #include <okienkoc/okienkoc.h>
 /*
 #include "gen/gamedata.h"
@@ -20,162 +22,8 @@
 #include "gen/fighter.h"
 */
 #include "aaow.h"
-
-// TODO: Wykorzystaæ po³o¿enie flag do zorientowania stron
-// konfliktu i dobarwienia budunków znajduj±cych siê na mapie
-//
-// TODO: Rozpisanie mapy na puste przerwy pomiêdzy kolumnami
-
-/*
- * 0000 - 0018 Title
- * 0019 - 0120 Memo
- * 0121 - 0137 ??? (ustawienia)
- * 0138 - 02C7 Map
- * 02C8 - 0457 Mapa frontu i zniszczen
- *     2 najstarsze bity mówi¹ o zniszczeniach - 00 brak/01 male/02 duze/03 zniszczone
- *     2 kolejne bity mowi¹ o froncie 01 red/02 green/03 neutral
- *     4 ostatnie bity, s¹ ustawione na 6 jesli jest to front (nieznane zastosowanie)
- * 0458 - 04BB polozenia pilotow
- * 04BC - 04ED strona pilota (1 green 2 red)
- * 04EE - 051F rodzaj samolotu (1 mysliwiec 2 bombowiec)
- * 0520 - 0551 Odznaczenia pilotów 1E to wszystkie mozliwe odznaczenia - 6 odznaczen (wartosci co 5, czyli zapewne po 5 zaslugach
- *		nastepuje przypisanie medalu)
- * 0552 - 0907 Piloci [jeden pilot po 16 znakow/moze 20]
- *
- * Maksymalna liczba samolotow 50
- *
- *
- * Ustawienia:
- * Play green/red side
- * Enemy seen always/when close/when far
- * Aircraft repair rate is fast/slow/medium
- * Target repair rate is fast/slow/medium
- * Mountain are low/high
- * Your Aircraft range is long/short/medium
- * Your factories build fighters often/never/seldom
- * Your factories build bombers often/never/seldom
- * Enemy Aircraft range is long/short/medium
- * Enemy factories build fighters often/never/seldom
- * Enemy factories build bombers often/never/seldom
- *
- * Oponents with different strategy (fisrt oponent/second oponent)
- * 
- */
-
-// zidentyfikowane elementy - position
-#define DATATITLE 0x0000
-#define TITLELENGTH 24
-#define DATAMEMO 0x0019
-#define MEMOLINELENGTH 24
-#define MEMOLINESAMMOUNT 11
-#define DATAMAP 0x0138
-#define DATADMG 0x02C8
-#define MAPHEIGHT 20
-#define MAPWIDTH 20
-#define DATAPILOT 0x0552
-#define PILOTNAMELENGHT 19
-#define PILOTMAX 50
-#define DATAORDERS 0x0520
-#define DATAPOS 0x458
-#define DATASIDE 0x04BC
-#define DATATYPE 0x04EE
-
-#define GREEN_FLAG 13
-#define RED_FLAG 12
-#define GREEN_BASE 4
-#define RED_BASE 3
-
-char mapDefs[] = {
-	// city - b 0
-	'c', 'c', 'c',
-	// red capital - b 1
-	'r',
-	// green capital - b 2
-	'g',
-	// airbase - b 3
-	'a',
-	// factory - b 4
-	'f',
-	// supply depot - b 5
-	's',
-	// fort - b 6
-	'F',
-	// village - b 7
-	'v',
-	// bridge - b 8, 9
-	'-', '|',
-	// red side flag - none
-	'$',
-	// green side flag - none
-	'#',
-	//compass - none
-	'+',
-	// forrest (12) - t 0
-	'T', 'T',  'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T',
-	// forrest-clear - t 0
-	't', 't', 't',
-	// clear with single tree (8) - t 1
-	'.', '.', '.', '.', '.', '.', '.', '.', 
-	// clear - t 1
-	' ', ' ', ' ',
-	// river (19) - t 2
-	'=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', '=', 
-	// mountain (15) - t 3
-	'^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^', '^',
-	// damaged clear - none
-	'+', '+', '+',
-	// Damages forest - none
-	'*', '*', '*',
-	// Unknown - none
-	'X', 'X', 'X', 'X',
-	// Damages forest - none
-	'*'
-
-}; // 00 - 55
-// d 0, 1, 2, 3
-char dmgDefs[] = {
-	' ', '.', '+', '*'
-};
-
-// f 0, 1, 2, 3
-char frontDefs[] = {
-	' ', 'R', 'G', '|'
-};
-
-// d - 2b (damages)
-// f - 2b (front line)
-// t - 2b (terrain)
-// b - 4b (buildings)
-//
-// definicje mapy dla przeksztalcenia
-// 0x00 - trees
-// 0x01 - clear terrain
-// 0x02 - river
-// 0x03 - mountains
-//
-unsigned char terrainDataDefs[] = {
-	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, // 10 clear
-	0x02, 0x02, // 2 river
-	0x01, 0x01, 0x01, // 3 clear
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 15 forest
-	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, // 11 clear
-	0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-	0x02, 0x02, 0x02, 0x02, // 19 river
-	0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, // 15 mountain
-	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01 // 11 clear
-};
-
-unsigned char buildDataDefs[] = {
-	0x03, 0x03, 0x03, // city
-	0x07, 0x07, // capital (red/green)
-	0x04, // airport
-	0x02, // factory
-	0x01, // supply
-	0x06, // fort
-	0x05, // village
-	0x08, // bridge horizontal
-	0x09 // bridge vertical
-};
+#include "original.h"
+#include "common.h"
 
 unsigned char nation[MAPWIDTH][MAPHEIGHT];
 
@@ -201,77 +49,6 @@ void readMemo()
 	fseek(plik, DATAMEMO, 0);
 	fread(memo, 1, MEMOLINELENGTH * MEMOLINESAMMOUNT, plik);
 	gameData->description = goc_stringCopy(gameData->description, memo);
-}
-
-#define TOGOC(variable) (GOC_StValuePoint*)(((char*)variable)+4)
-#define FROMGOC(variable) (((char*)variable)-4)
-
-static int nasluchBuild(GOC_HANDLER uchwyt, GOC_StMessage* msg)
-{
-	if ( msg->id == GOC_MSG_MAPGETCHAR_ID )
-	{
-		// here is our own organization
-		GOC_StMsgMapChar* msgchar = (GOC_StMsgMapChar*)msg;
-		// goc_systemDefaultAction(uchwyt, msg);
-		switch ( msgchar->position &= 0x0F ) {
-			case 0x00: msgchar->charcode = 0; break;
-			case 0x01: msgchar->charcode = 'S'; break;
-			case 0x02: msgchar->charcode = 'f'; break;
-			case 0x03: msgchar->charcode = 'O'; break;
-			case 0x04: msgchar->charcode = 'L'; break;
-			case 0x05: msgchar->charcode = 'o'; break;
-			case 0x06: msgchar->charcode = '#'; break;
-			case 0x07: msgchar->charcode = '0'; break;
-			case 0x08: msgchar->charcode = '-'; break;
-			case 0x09: msgchar->charcode = '|'; break;
-		}
-		switch (msgchar->position &=0xF0) {
-			case 0x10: msgchar->charcolor=GOC_GREEN | GOC_FBOLD; break;
-			case 0x20: msgchar->charcolor=GOC_RED | GOC_FBOLD; break;
-			default: msgchar->charcolor=GOC_WHITE; break;
-		}
-		return GOC_ERR_OK;
-	}
-	else if ( msg->id == GOC_MSG_POSMAPFREEPOINT_ID )
-	{
-		/* TODO FREE
-		   switch ( punkt->value )
-		   {
-		   case 0x03:
-		   cityFree((StCity*)punkt);
-		   break;
-		   case 0x07:
-		   capitalFree((StCapital*)punkt);
-		   break;
-		   case 0x04:
-		   airportFree((StAirport*)punkt);
-		   break;
-		   case 0x02:
-		   factoryFree((StFactory*)punkt);
-		   break;
-		   case 0x01:
-		   supplyFree((StSupply*)punkt);
-		   break;
-		   case 0x06:
-		   fortFree((StFort*)punkt);
-		   break;
-		   case 0x05:
-		   villageFree((StVillage*)punkt);
-		   break;
-		   case 0x08:
-		   bridgehFree((StBridgeH*)punkt);
-		   break;
-		   case 0x09:
-		   bridgevFree((StBridgeV*)punkt);
-		   break;
-		   default:
-		   goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
-		   break;
-		   }
-		   */
-		return GOC_ERR_OK;
-	}
-	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 // Algorytm koloryzowania narodowo¶ci terenów i budynków
@@ -370,11 +147,6 @@ static void colorNation(int x, int y, unsigned char value)
 	}
 }
 
-GOC_HANDLER terrain = 0;
-GOC_HANDLER build = 0;
-GOC_HANDLER front = 0;
-
-
 void readMap()
 {
 	unsigned char map[MAPWIDTH * MAPHEIGHT];
@@ -383,19 +155,7 @@ void readMap()
 
 	gameData->mapwidth = MAPWIDTH;
 	gameData->mapheight = MAPHEIGHT;
-	// budowanie mapy terenu
-	if ( terrain == 0 )
-	{
-		terrain = goc_elementCreate(GOC_ELEMENT_RAWMAP, 1, 1, MAPWIDTH, MAPHEIGHT,
-				GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, maska);
-	}
-	// definiuj wartosci
-	goc_maparawSetBPV(terrain, 2); // 2 bity na warto¶æ
-	goc_maparawAddChar(terrain, 't', GOC_GREEN, 0);
-	goc_maparawAddChar(terrain, '.', GOC_WHITE, 1);
-	goc_maparawAddChar(terrain, '=', GOC_CYAN, 2);
-	goc_maparawAddChar(terrain, '^', GOC_RED, 3);
-	// nano¶ warto¶ci terenu
+	// nanos wartosci terenu
 	{
 		int i=0;
 		int j=0;
@@ -419,26 +179,7 @@ void readMap()
 			gameData->terrain = goc_nbitFieldToString(map->dane);
 		}
 	}
-	// budowanie mapy budynków
-	if ( build == 0 )
-	{
-		build = goc_elementCreate(GOC_ELEMENT_POSMAP, 1, 1, MAPWIDTH, MAPHEIGHT,
-				GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, maska);
-	}
-	// definiuj wartosci
-	/*
-	   goc_mapaposAddChar(build,  0 , GOC_WHITE, 0x00); // nic - don't add!
-	   goc_mapaposAddChar(build, 'S', GOC_WHITE, 0x01); // supply
-	   goc_mapaposAddChar(build, 'f', GOC_WHITE, 0x02); // factory
-	   goc_mapaposAddChar(build, 'O', GOC_WHITE, 0x03); // city
-	   goc_mapaposAddChar(build, 'L', GOC_WHITE, 0x04); // airport
-	   goc_mapaposAddChar(build, 'o', GOC_WHITE, 0x05); // village
-	   goc_mapaposAddChar(build, '#', GOC_WHITE, 0x06); // fort
-	   goc_mapaposAddChar(build, '0', GOC_WHITE, 0x07); // capital
-	   goc_mapaposAddChar(build, '-', GOC_WHITE, 0x08); // bridge
-	   goc_mapaposAddChar(build, '|', GOC_WHITE, 0x09); // bridge
-	   */
-	// ustal mapê narodowosci
+	// ustal mape narodowosci
 	{
 		int i=0;
 		int j=0;
@@ -530,8 +271,6 @@ void readMap()
 			}
 		}
 	}
-	// ustaw funkcje nasluchujaca
-	goc_elementSetFunc(build, GOC_FUNID_LISTENER, nasluchBuild);
 }
 
 void readDmg()
@@ -570,19 +309,6 @@ void readFront()
 		map[i] &= 0x03;
 	}
 
-	// budowanie mapy frontu
-	if ( front == 0 )
-	{
-		front = goc_elementCreate(GOC_ELEMENT_RAWMAP, 1, 1, MAPWIDTH, MAPHEIGHT,
-				GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, maska);
-	}
-
-	// definiuj wartosci
-	goc_maparawSetBPV(front, 2); // 2 bity na warto¶æ
-	goc_maparawAddChar(front, 0, GOC_WHITE, 0);
-	goc_maparawAddChar(front, 'x', GOC_RED | GOC_FBOLD, 1);
-	goc_maparawAddChar(front, 'x', GOC_GREEN | GOC_FBOLD, 2);
-	goc_maparawAddChar(front, 'x', GOC_CYAN | GOC_FBOLD, 3);
 	// nano¶ warto¶ci frontu
 	{
 		int i=0;
@@ -619,6 +345,7 @@ void readPilots()
 	unsigned char side[PILOTMAX];
 	unsigned char type[PILOTMAX];
 	int i;
+
 	fseek(plik, DATAORDERS, 0);
 	fread(orders, 1, PILOTMAX, plik);
 
@@ -646,11 +373,14 @@ void readPilots()
 			// fighter
 			fly = (StFly*)fobAlloc(cn_Fighter);
 		}
-		else
+		else if ( type[i] == 2 )
 		{
 			// bomber
 			fly = (StFly*)fobAlloc(cn_Bomber);
+		} else if ( type[i] == 0 ) {
+			continue;
 		}
+
 		fly->pilotName = goc_stringCopy(fly->pilotName, pilot);
 		fly->pilotExp = orders[i];
 		fly->live = 100;
@@ -662,125 +392,16 @@ void readPilots()
 
 		// Find and add to an airport
 		vp = goc_mapaposReadPoint(build, pos[i]%20, pos[i]/20-20);
-		if ( vp == NULL )
+		if ( vp == NULL ) {
+			goc_stringFree( fly->pilotName );
+			free( fly );
 			continue;
+		}
 		airport = (StAirport*)FROMGOC(vp);
 		airport->pfly = goc_tableAdd(airport->pfly, &airport->nfly,
 				sizeof(StFly*));
 		airport->pfly[airport->nfly-1] = fly;
 	}
-}
-
-GOC_HANDLER labelDesc;
-
-int mapaNasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
-{
-	if ( msg->id == GOC_MSG_CURSORCHANGE_ID )
-	{
-		GOC_StMsgMapPoint* msgmp = (GOC_StMsgMapPoint*)msg;
-		char buf[80];
-		GOC_StValuePoint *v;
-		int p;
-		goc_labelRemLines(labelDesc);
-		p = goc_maparawGetPoint(terrain, msgmp->x, msgmp->y);
-		switch ( p )
-		{
-			case 0:
-				sprintf(buf, "Terrain: forrest" );
-				break;
-			case 1:
-				sprintf(buf, "Terrain: clear" );
-				break;
-			case 2:
-				sprintf(buf, "Terrain: river" );
-				break;
-			case 3:
-				sprintf(buf, "Terrain: mountains" );
-				break;
-			default:
-				sprintf(buf, "Terrain: unknown" );
-				break;
-		}
-		goc_labelAddLine(labelDesc, buf);
-		v = goc_mapaposReadPoint(build, msgmp->x, msgmp->y);
-		if ( v != NULL )
-		{
-			switch ( v-> value & 0x0F )
-			{
-				case 0x0:
-					sprintf(buf, "");
-					break;
-				case 0x1:
-					sprintf(buf, "Build: Supply");
-					break;
-				case 0x2:
-					sprintf(buf, "Build: Factory");
-					break;
-				case 0x3:
-					sprintf(buf, "Build: City");
-					break;
-				case 0x4:
-					sprintf(buf, "Build: Airport");
-					break;
-				case 0x5:
-					sprintf(buf, "Build: Village");
-					break;
-				case 0x6:
-					sprintf(buf, "Build: Fort");
-					break;
-				case 0x7:
-					sprintf(buf, "Build: Capital");
-					break;
-				case 0x8:
-				case 0x9:
-					sprintf(buf, "Build: Bridge");
-					break;
-				default:
-					sprintf(buf, "Build: unknown" );
-					break;
-			}
-		}
-		else
-			sprintf(buf, "Build:");
-		goc_labelAddLine(labelDesc, buf);
-		if ( v != NULL ) {
-			switch ( v->value & 0xF0 )
-			{
-				case 0x00:
-					sprintf(buf, "Front:" );
-					break;
-				case 0x10:
-					sprintf(buf, "Front: red power" );
-					break;
-				case 0x20:
-					sprintf(buf, "Front: green power" );
-					break;
-				case 0x30:
-					sprintf(buf, "Front: none power" );
-					break;
-				default:
-					sprintf(buf, "Front: unknown" );
-					break;
-			}
-		}
-		goc_labelAddLine(labelDesc, buf);
-		// Airport
-		if (( v != NULL ) && ( v->value & 0x0F == 0x04 ))
-		{
-			StAirport *airport = (StAirport*)v;
-			int i;
-			for (i = 0; i < airport->nfly; i++ )
-			{
-				goc_labelAddLine(labelDesc,
-						airport->pfly[i]->pilotName);
-			}
-		}
-		goc_systemClearArea(labelDesc);
-		GOC_MSG_PAINT( msgpaint );
-		goc_systemSendMsg( labelDesc, msgpaint );
-		return GOC_ERR_OK;
-	}
-	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 int main(int argc, char **argv)
@@ -802,11 +423,8 @@ int main(int argc, char **argv)
 	outFilename = goc_stringFree(outFilename);
 	gameData = (StGameData*)fobAlloc(cn_GameData);
 
-	maska = goc_elementCreate( GOC_ELEMENT_MASK, 1, 1, MAPWIDTH, MAPHEIGHT, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
-			GOC_WHITE, GOC_HANDLER_SYSTEM );
-	goc_maskCharSpace(maska, 2, 1);
-	labelDesc = goc_elementCreate( GOC_ELEMENT_LABEL, 50, 2, 20, 20, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
-			GOC_WHITE, GOC_HANDLER_SYSTEM );
+	createCommonObjects();
+
 	readTitle();
 	readMemo();
 	// ustalenie narodowo¶ci na nieznan±
@@ -819,10 +437,7 @@ int main(int argc, char **argv)
 	readPilots();
 
 	fclose(plik);
-	goc_maskAddMap(maska, terrain);
-	goc_maskAddMap(maska, build);
-	goc_maskAddMap(maska, front);
-	goc_elementSetFunc(maska, GOC_FUNID_LISTENER, mapaNasluch);
+
 	// uzupelnianie danych w strukturze gameData
 	fobSerialize((fobElement*)gameData, out);
 	// gamedataSerialize(gameData, out);
