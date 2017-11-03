@@ -192,14 +192,14 @@ static int listAddRow(GOC_HANDLER u, GOC_LISTROW *wiersz)
 	return GOC_ERR_OK;*/
 }
 
-static int listAddText(GOC_HANDLER u, char *buf)
+static int listAddText(GOC_HANDLER u, const char *buf)
 {
 	GOC_LISTROW wiersz;
 	int retCode;
 	memset( &wiersz, 0, sizeof(GOC_LISTROW) );
 	wiersz.nRow = -1;
 	wiersz.pText = goc_tableAdd(wiersz.pText, &wiersz.nText,
-		sizeof(char *));
+		sizeof(const char *));
 	wiersz.pText[wiersz.nText-1] = buf;
 	GOC_MSG_LISTADDROW( msg, &wiersz );
 	retCode = goc_systemSendMsg(u, msg);
@@ -225,7 +225,7 @@ const char *goc_listGetColumnText(GOC_HANDLER u, int pos, int kol)
 /*
  * Odmowa wykonania polecenia, jezeli ustawione dane sa zewnetrzne.
  */
-int goc_listAddText(GOC_HANDLER u, char *tekst)
+int goc_listAddText(GOC_HANDLER u, const char *tekst)
 {
 	GOC_MSG_LISTADDTEXT( msg, tekst );
 	return goc_systemSendMsg(u, msg);

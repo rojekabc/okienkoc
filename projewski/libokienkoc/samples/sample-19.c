@@ -4,6 +4,7 @@
  */
 #include <okienkoc/okienkoc.h>
 #include <tools/screen.h>
+#include <tools/term.h>
 #include <stdio.h>
 #ifndef _DEBUG
 #	include <string.h>

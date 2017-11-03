@@ -52,7 +52,7 @@ extern const char* GOC_MSG_LISTSETCOLOR_ID;
  */
 typedef struct {
 	GOC_STRUCT_MESSAGE;
-	char* pText;
+	const char* pText;
 } GOC_StMsgListAddText;
 #define GOC_MSG_LISTADDTEXT(variable, _text_) \
 	GOC_MSG(GOC_StMsgListAddText, variable, GOC_MSG_LISTADDTEXT_ID); \
@@ -109,7 +109,7 @@ typedef struct GOC_StList
 } GOC_StList;
 
 int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
-int goc_listAddText(GOC_HANDLER u, char *tekst);
+int goc_listAddText(GOC_HANDLER u, const char *tekst);
 int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
 int goc_listSetColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
 int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width);

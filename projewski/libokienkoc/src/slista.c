@@ -83,7 +83,7 @@ static GOC_COLOR goc_sellistSetColor(GOC_HANDLER uchwyt, int pos)
 	}
 }
 
-static int sellistAddText(GOC_HANDLER uchwyt, char *pText)
+static int sellistAddText(GOC_HANDLER uchwyt, const char *pText)
 {
 	int ret;
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
