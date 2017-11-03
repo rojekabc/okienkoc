@@ -883,12 +883,12 @@ static void systemRunWork()
 		char *modname = NULL;
 		// TODO: Configured path
 		modname = goc_stringCopy(modname,
-			"/usr/local/share/okienkoc/libterm-");
+			"/usr/local/share/projewski/okienkoc/libterm-");
 		modname = goc_stringAdd(modname, termname);
 		modname = goc_stringAdd(modname, ".so");
 		if ( ! goc_isFileExists(modname) )
 		{
-			GOC_ERROR("Unsupported terminal type");
+			GOC_BERROR("Unsupported terminal type %s", modname);
 			goc_stringFree(modname);
 			systemClose(GOC_TRUE);
 			return;

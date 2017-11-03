@@ -1,2 +1,0 @@
-# xterm -bg black -fg white -font "-*-terminus-medium-r-normal-*-18-*-*-*-*-*-iso8859-13" -maximized
-xterm -bg black -fg gray60 -font "-*-fixed-medium-r-normal-*-20-*-*-*-*-*-iso10646-*" -maximized -e $* 2> OUT
