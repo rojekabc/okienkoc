@@ -1,7 +1,4 @@
-// Poniewa¿ SISI jest pe³en bug'ów zwi±zanych z orzganizowaniem pamiêci, pe³nym
-// wycieków i nieprzemy¶lanych allokacji, piszê w³asnego shit'a
 #include <okienkoc/okienkoc.h>
-#include <okienkoc/mystr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -17,12 +14,16 @@
 #include <sys/types.h>
 
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
+#include <tools/log.h>
+#include <tools/plik.h>
+#include <tools/mystr.h>
+#include <tools/screen.h>
+#include <tools/term.h>
 
 #define _TESTING_
 
 #define PROGRAM_AUTHOR "Piotr Rojewski"
-#define PROGRAM_TITLE "Magazynier - wersja 1.2"
+#define PROGRAM_TITLE "Magazynier - wersja 1.2.1"
 
 #define KONFKLUCZ_FOLDER "Katalog plansz"
 
@@ -49,7 +50,7 @@
 	std::cerr << __FILE__ << ":" << __LINE__ << std::endl \
 			<< komunikat << " " << opis << std::endl
 
-// czas rozpoczêcia gry na danej planszy
+// czas rozpoczÃªcia gry na danej planszy
 time_t czas_start;
 GOC_HANDLER formaPoziom;
 // Struktura magzynujaca ustawienia
@@ -99,7 +100,7 @@ StOknoPlansza *_plan;
 
 
 int planLiczDlugosc(const char **pString, unsigned int nString);
-// utworzenie nazwy pliku logowania na podtawie nazwy aktualnego u¿ytkownika
+// utworzenie nazwy pliku logowania na podtawie nazwy aktualnego uÂ¿ytkownika
 // oraz rozszerzenia log
 char *dajRekordPlik(char *pBuf, unsigned int nBuf)
 {
@@ -324,7 +325,7 @@ const char *konfplikUstParametr( StKonfPlik *kp, const char *klucz, const char *
 	return pBuf;
 }
 
-// zwraca parametr, je¶li nie ustawiony to go te¿ ustawia
+// zwraca parametr, jeÂ¶li nie ustawiony to go teÂ¿ ustawia
 const char *konfplikDajUstParametr( StKonfPlik *kp, const char *klucz, const char *wartosc )
 {
 	unsigned int i;
@@ -631,7 +632,7 @@ void planZaladujGre(const char *folder, unsigned int poziom)
 	plik = fopen(tmp, "r");
 	if ( !plik )
 	{
-		GOC_FERROR( goc_stringAdd( goc_stringCopy(NULL, "Problem otwarcia pliku poziomów: "), tmp) );
+		GOC_FERROR( goc_stringAdd( goc_stringCopy(NULL, "Problem otwarcia pliku poziomÃ³w: "), tmp) );
 		goc_stringFree(tmp);
 		exit(-1);
 	}
@@ -665,7 +666,7 @@ void planZaladujGre(const char *folder, unsigned int poziom)
 	cofRuchCzysc();
 	_plan->czyStart = GOC_FALSE; // czy wystartowal (aby rozpoczac liczenie czasu
 	// i aby nie mozna bylo zerowac czasu po powrocie do poczatku poprzez
-	// cofanie ruchów)
+	// cofanie ruchÃ³w)
 	_plan->minRuch = planSzukajNajlepszy( _scena->poziom, 1 );
 	_plan->minPosow = planSzukajNajlepszy( _scena->poziom, 2 );
 	planBuduj( pInfo, nInfo );
@@ -694,7 +695,7 @@ void planRuch( int x, int y )
 			  	||	wart2 == ZNAK_SCIANA ) ) // jagody
 		return;
 	
-	// Je¿eli jest to pierwszy ruch to rozpocznij liczenie czasu
+	// JeÂ¿eli jest to pierwszy ruch to rozpocznij liczenie czasu
 	if ( _plan->czyStart == GOC_FALSE )
   	{
 		time( &czas_start );
@@ -765,7 +766,7 @@ void planRuch( int x, int y )
 
 //			gra->rysuj();
 	fflush( stdout );
-	// Czy gra dobieg³a koñca
+	// Czy gra dobiegÂ³a koÃ±ca
 	if ( !_plan->liczPustki )
 	{
 		GOC_StElement e;
@@ -781,7 +782,7 @@ void planRuch( int x, int y )
 		e.flag |= GOC_EFLAGA_CENTER;
 		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TA", "Gratulacje"));
 		e.x = 27; e.y = 13; e.width = 26; e.height = 1;
-		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TB", "Gotuj siê na trudniejsze"));
+		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TB", "Gotuj siÃª na trudniejsze"));
 		goc_gotoxy(1, 1);
 		fflush(stdout);
 		sleep(3);
@@ -814,7 +815,7 @@ void planBudujOtoczenie()
 	tmp = goc_stringAdd(tmp, ": ");
 	tmp = goc_stringAdd(tmp, konfplikDajParametr(_scena->globus, GLOBUS_AUTOR));
 	tmp = goc_stringAdd(tmp, "  ");
-	tmp = goc_stringAdd(tmp, konfplikDajUstParametr(_scena->konf, "T5", "Tytu³"));
+	tmp = goc_stringAdd(tmp, konfplikDajUstParametr(_scena->konf, "T5", "TytuÅ‚"));
 	tmp = goc_stringAdd(tmp, ": ");
 	tmp = goc_stringAdd(tmp, konfplikDajParametr(_scena->globus, GLOBUS_TYTUL));
 	goc_labelSetText(_plan->inform, tmp, GOC_FALSE);
@@ -826,7 +827,7 @@ GOC_COLOR planDoKolor(const char *ciag)
 	GOC_COLOR tmp = 0;
 	if ( strlen(ciag) <= 2 )
 		return GOC_WHITE;
-	if ( strstr(ciag,"bia³y") )
+	if ( strstr(ciag,"biaÅ‚y") )
 		tmp = GOC_WHITE;
 	else if ( strstr(ciag,"czerwony") )
 		tmp = GOC_RED;
@@ -836,7 +837,7 @@ GOC_COLOR planDoKolor(const char *ciag)
 		tmp = GOC_GREEN;
 	else if ( strstr(ciag,"cyjankowy") )
 		tmp = GOC_CYAN;
-	else if ( strstr(ciag,"¿ó³ty") )
+	else if ( strstr(ciag,"Å¼Ã³Å‚ty") )
 		tmp = GOC_YELLOW;
 	if ( strstr(ciag,"jasny") )
 		tmp |= GOC_FBOLD;
@@ -864,8 +865,8 @@ int pokazOknoNasluch(GOC_HANDLER u, GOC_StMessage* msg)
 			{
 				case 'u': // cofnij ruch
 				{
-					// Zawsze jest porzucane najpierw po³o¿enie go¶cia, a potem innych
-					// elementów przemieszczanych
+					// Zawsze jest porzucane najpierw poÂ³oÂ¿enie goÂ¶cia, a potem innych
+					// elementÃ³w przemieszczanych
 					unsigned char w;
 					GOC_BOOL czyPodloga = GOC_FALSE;
 					if ( cofRuchCzyJest() == GOC_FALSE )
@@ -951,7 +952,7 @@ void pokazOknoPlanszy()
 	tmp = goc_stringAdd( tmp, ": " );
 	tmp = goc_stringAdd( tmp, PROGRAM_AUTHOR );
 	tmp = goc_stringAdd( tmp, "    ");
-	tmp = goc_stringAdd( tmp, konfplikDajUstParametr(_scena->konf, "T5", "Tytu³") );
+	tmp = goc_stringAdd( tmp, konfplikDajUstParametr(_scena->konf, "T5", "TytuÅ‚") );
 	tmp = goc_stringAdd( tmp, ": ");
 	tmp = goc_stringAdd(tmp, PROGRAM_TITLE );
 	goc_labelSetText(_plan->status, tmp, GOC_FALSE);
@@ -1099,6 +1100,7 @@ StBazowaScena *bazowaKreuj( StKonfPlik *konf )
 	goc_listAddText( tmp->lista, konfplikDajUstParametr(tmp->konf, "T1", "S T A R T") );
 	goc_listAddText( tmp->lista, konfplikDajUstParametr(tmp->konf, "T2", "I N N Y   P O Z I O M") );
 	goc_listAddText( tmp->lista, konfplikDajUstParametr(tmp->konf, "T3", "K O N I E C") );
+	goc_listSetCursor(tmp->lista, 0);
 	// Dodaj linie statusu
 	tmp->status = goc_elementCreate(GOC_ELEMENT_LABEL, 1, 0, 0, 1,
 		  	GOC_EFLAGA_PAINTED | GOC_EFLAGA_CENTER, GOC_BCYAN | GOC_YELLOW | GOC_FBOLD,
@@ -1108,7 +1110,7 @@ StBazowaScena *bazowaKreuj( StKonfPlik *konf )
 		sprintf(pBuf, "%s: %s    %s: %s",
 				konfplikDajUstParametr(tmp->konf, "T4", "Autor"),
 				PROGRAM_AUTHOR,
-				konfplikDajUstParametr(tmp->konf, "T5", "Tytu³"),
+				konfplikDajUstParametr(tmp->konf, "T5", "TytuÅ‚"),
 				PROGRAM_TITLE
 				);
 		goc_labelSetText(tmp->status, pBuf, GOC_FALSE);
@@ -1122,7 +1124,7 @@ StBazowaScena *bazowaKreuj( StKonfPlik *konf )
 	return tmp;
 }
 
-// Program g³ówny
+// Program gÂ³Ã³wny
 int main( int argc, char **argv )
 {
 	GOC_StMessage wiesc;
