@@ -1,10 +1,5 @@
-OBJS = @build_objects@
-	
-OUTLIB = 
-LIBLINK =
-
 INCLUDEPATH =
-INCLUDEPATHS = -I/usr/include/libxml2 -I/home/projewski/include
+INCLUDEPATHS = -I/usr/include/libxml2
 
 OUTERROR = ERRORS
 
@@ -17,25 +12,13 @@ CFLAGS = @cflags@
 #NORMALLFLAGS = -s -shared
 
 PROG = @build_progs@
-# PROGLIBS = -lokienkoc -lm -lxml2
-PROGLIBS = -L/home/projewski/lib @lflags@
-PROGINCLUDE = -I/usr/local/include -I/home/projewski/include -I/usr/include/libxml2
+PROGLIBS = @lflags@
+PROGINCLUDE = -I/usr/local/include/projewski -I/usr/include/libxml2
 
 all: prepare $(OUTLIB) $(OBJS) $(PROG)
 
 prepare:
 	@rm -f $(OUTERROR)
-
-$(OBJS): %.o: %.c $(INCLUDEFILE)
-	@echo "--- Compile $< ---" >> $(OUTERROR)
-	@echo $"Compile $<$"
-	@gcc $< @cflags@ -c -o $@ $(INCLUDEPATHS) 2>> $(OUTERROR)
-
-$(OUTLIB): $(OBJS)
-	@echo $"--- Link $@ ---$" >> $(OUTERROR)
-	@echo $"Link $@$"
-	@gcc @lflags@ -o $@ $(OBJS) $(LIBSIN) 2>> $(OUTERROR)
-	@ln -sf $(OUTLIB) $(LIBLINK)
 
 clean:
 	@echo $"Cleaning builds$"

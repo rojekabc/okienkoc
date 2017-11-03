@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <libxml/parser.h>
-#include <okienkoc/plik.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/tablica.h>
+#include <tools/plik.h>
+#include <tools/mystr.h>
+#include <tools/tablica.h>
 #define GOC_PRINTINFO
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
+#include <tools/log.h>
 
 #define DST_FOLDER "gen"
 
