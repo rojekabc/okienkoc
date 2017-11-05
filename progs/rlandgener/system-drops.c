@@ -1,10 +1,11 @@
 #include "rlandgener.h"
 #include "system-drops.h"
-#include <okienkoc/random.h>
+#include <tools/random.h>
 // #define GOC_PRINTINFO
 #define GOC_PRINTERROR
-#define GOC_INFO
-#include <okienkoc/log.h>
+#include <tools/log.h>
+#include <tools/screen.h>
+#include <tools/term.h>
 
 static stContext* context = NULL;
 static int nBiomeTurn = 0;
@@ -116,7 +117,7 @@ static void generateLandMass(
 }
 
 static int hotkeyNextTurnDrops(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
+	GOC_HANDLER u, GOC_StMessage* msg)
 {
 	// TODO: Setting max and min landmass for forest/hills/land seperate
 	GOC_BINFO("Turn: %3d", nBiomeTurn);
@@ -167,7 +168,8 @@ static int hotkeyNextTurnDrops(
 		return GOC_ERR_OK;
 	}
 	nBiomeTurn++;
-	goc_systemSendMsg(context->mapa, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT( msgPaint );
+	goc_systemSendMsg(context->mapa, msgPaint);
 	goc_gotoxy(0, 0);
 	goc_textallcolor(GOC_WHITE);
 	printf("%03d", nBiomeTurn);

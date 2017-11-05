@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 #define GOC_PRINTINFO
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/fileistream.h>
-#include <okienkoc/properties.h>
+#include <tools/log.h>
+#include <tools/mystr.h>
+#include <tools/fileistream.h>
+#include <tools/properties.h>
 
 const char *wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890";
 

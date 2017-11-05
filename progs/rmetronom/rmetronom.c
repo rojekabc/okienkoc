@@ -7,11 +7,11 @@
 #define GOC_PRINTINFO
 //#define GOC_PRINTDEBUG
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/tablica.h>
-#include <okienkoc/screen.h>
-// #include <okienkoc/term.h>
+#include <tools/log.h>
+#include <tools/mystr.h>
+#include <tools/tablica.h>
+#include <tools/screen.h>
+#include <tools/term.h>
 
 #define SAMPLE_RATE 44100
 //#define SAMPLE_FORMAT AO_FMT_LITTLE

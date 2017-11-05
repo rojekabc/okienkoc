@@ -1,7 +1,7 @@
 OBJS = system-drops.o
 	
 INCLUDEPATH =
-INCLUDEPATHS =
+INCLUDEPATHS = -I/usr/local/include/projewski
 
 OUTERROR = ERRORS
 
@@ -18,8 +18,8 @@ CFLAGSFILE = .cflags
 LFLAGSFILE = .lflags
 
 PROG = rlandgener
-PROGLIBS = -lokienkoc -lm
-PROGINCLUDE = -I/usr/local/include
+PROGLIBS = -lprojewski-okienkoc -lprojewski-tools -lm
+PROGINCLUDE = -I/usr/local/include/projewski
 
 all: prepare $(PROG)
 

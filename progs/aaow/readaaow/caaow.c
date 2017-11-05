@@ -1,9 +1,9 @@
 #include <malloc.h>
 #include <stdio.h>
 #include <string.h>
-#include <okienkoc/mystr.h>
+#include <tools/mystr.h>
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
+#include <tools/log.h>
 #include <okienkoc/okienkoc.h>
 /*
 #include "gen/gamedata.h"

@@ -1,5 +1,6 @@
-#include <okienkoc/properties.h>
-#include <okienkoc/fileistream.h>
+#include <tools/properties.h>
+#include <tools/fileistream.h>
+#include <tools/screen.h>
 #include <okienkoc/okienkoc.h>
 
 #include "common.h"

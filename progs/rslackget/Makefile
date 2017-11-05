@@ -21,8 +21,8 @@ CFLAGSFILE = .cflags
 LFLAGSFILE = .lflags
 
 PROG = rslackget
-PROGLIBS = -lokienkoc -lm
-PROGINCLUDE = -I/usr/local/include
+PROGLIBS = -lprojewski-tools -lprojewski-okienkoc -lm
+PROGINCLUDE = -I/usr/local/include/projewski
 
 all: prepare $(OUTLIB) $(PROG)
 

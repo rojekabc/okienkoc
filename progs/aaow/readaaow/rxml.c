@@ -1,9 +1,9 @@
 #include <libxml/parser.h>
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
+#include <tools/log.h>
 #include <okienkoc/okienkoc.h>
-#include <okienkoc/fileistream.h>
-#include <okienkoc/properties.h>
+#include <tools/fileistream.h>
+#include <tools/properties.h>
 
 #include "aaow.h"
 #include "common.h"

@@ -1,4 +1,4 @@
 all:
-	gcc -o rchange -lokienkoc main.c
+	gcc -o rchange -lprojewski-tools -I/usr/local/include/projewski main.c
 clean:
 	rm -rf rchange *~

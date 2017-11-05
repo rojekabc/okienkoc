@@ -1,8 +1,8 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/tablica.h>
+#include <tools/mystr.h>
+#include <tools/tablica.h>
 #include <libxml/parser.h>
 
 #define TYPE_STRING(name) char* name;

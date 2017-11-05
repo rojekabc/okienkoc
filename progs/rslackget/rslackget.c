@@ -1,13 +1,14 @@
 #define GOC_PRINTINFO
 #define GOC_PRINTERROR
 
-#include <okienkoc/log.h>
-#include <okienkoc/plik.h>
-#include <okienkoc/fileistream.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/properties.h>
-#include <okienkoc/arguments.h>
-#include <okienkoc/tablica.h>
+#include <tools/log.h>
+#include <tools/plik.h>
+#include <tools/fileistream.h>
+#include <tools/mystr.h>
+#include <tools/properties.h>
+#include <tools/arguments.h>
+#include <tools/tablica.h>
+#include <tools/screen.h>
 
 #include <okienkoc/okienkoc.h>
 
@@ -57,7 +58,7 @@ static char **freeStringTable(char** pList, _GOC_TABEL_SIZETYPE_ *nList)
 
 int argumentConsole(char** argv, int pos, int argc, void* param)
 {
-	GOC_MSG wiesc;
+	GOC_StMessage wiesc;
 	GOC_HANDLER lista;
 	GOC_HANDLER info;
 	char* value;

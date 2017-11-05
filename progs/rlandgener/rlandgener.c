@@ -1,13 +1,14 @@
-#include <okienkoc/tablica.h>
-#include <okienkoc/mystr.h>
+#include <tools/tablica.h>
+#include <tools/mystr.h>
 #include <stdlib.h>
 #include <time.h>
-#include <okienkoc/random.h>
-#include <okienkoc/arguments.h>
+#include <tools/random.h>
+#include <tools/arguments.h>
+#include <tools/screen.h>
+#include <tools/term.h>
 #define GOC_PRINTINFO
 #define GOC_PRINTERROR
-#define GOC_INFO
-#include <okienkoc/log.h>
+#include <tools/log.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
@@ -509,7 +510,8 @@ static void bacteryGeneration(GOC_HANDLER mapa, int numStartPoints, int nBiomes)
 		goc_maparawSetPoint(mapa,
 			pBiomeSet[i]->x, pBiomeSet[i]->y, ++(pBiomeSet[i]->v));
 	}
-	goc_systemSendMsg(mapa, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT(msgPaint);
+	goc_systemSendMsg(mapa, msgPaint);
 }
 
 
@@ -608,7 +610,7 @@ static void setUpBiomeModeView(GOC_HANDLER maska)
 }
 
 static int hotkeyModeView(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
+	GOC_HANDLER u, GOC_StMessage *msg)
 {
 	if ( modeView == MODE_VIEW_CHARS )
 	{
@@ -618,13 +620,14 @@ static int hotkeyModeView(
 	{
 		setUpCharModeView(context.maska);
 	}
-	goc_systemSendMsg(context.mapa, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT(msgPaint);
+	goc_systemSendMsg(context.mapa, msgPaint);
 	return GOC_ERR_OK;
 }
 
 int nBiomeTurn = 0;
 static int hotkeyNextTurnBactery(
-	GOC_HANDLER u, GOC_MSG m, void* pBuf, uintptr_t nBuf)
+	GOC_HANDLER u, GOC_StMessage* msg)
 {
 	int randomAtOneTurn = 100;
 	int nKill = 0;
@@ -697,7 +700,8 @@ static int hotkeyNextTurnBactery(
 		}
 	}
 	GOC_BINFO("Dies: %3d Burns: %3d Invades: %3d", nKill, nBurn, nInvade);
-	goc_systemSendMsg(context.mapa, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT(msgPaint);
+	goc_systemSendMsg(context.mapa, msgPaint);
 	return GOC_ERR_OK;
 }
 

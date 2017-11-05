@@ -3,13 +3,14 @@ PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 
 CC=gcc
-LDFLAGS=-ldl -lpthread -lao -lokienkoc -lm
+LDFLAGS=-ldl -lpthread -lao -lprojewski-tools -lm
 OBJECTS=rmetronom.o
 CFLAGS=-DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX \
 			-DOSS -DTERM_CONTROL\
 			-Wall -O2\
 			-fomit-frame-pointer -funroll-all-loops \
-			-finline-functions -ffast-math
+			-finline-functions -ffast-math \
+			-I/usr/local/include/projewski
 
 rmetronom-make: rmetronom
 

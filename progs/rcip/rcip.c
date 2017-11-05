@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <okienkoc/mystr.h>
+#include <tools/mystr.h>
 
 // TODO : Inner random number generator - to save from differents operating
 // system
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 	FILE *outStream = NULL;
 
 	// informacje wejsciowe
-	fprintf(stderr, "int size = %d\n", sizeof(int));
+	fprintf(stderr, "int size = %ld\n", sizeof(int));
 
 	// rozpoznanie argumentow wejsciowych
 	for (i=1; i<argc; i++)
