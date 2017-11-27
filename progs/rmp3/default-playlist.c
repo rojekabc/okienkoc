@@ -10,12 +10,27 @@
 #include <string.h>
 #include <time.h>
 
-#include <okienkoc/tablica.h>
-#include <okienkoc/mystr.h>
-#include <okienkoc/random.h>
+#include <tools/tablica.h>
+#include <tools/mystr.h>
+#include <tools/random.h>
 
 #include "playlist.h"
-//#include "mystr.h"
+
+/* 
+ * the playlist struct 
+ */
+
+typedef struct {
+	char **pFilelist;
+	_GOC_TABEL_SIZETYPE_ nFilelist;
+	int *pShuffle;
+	_GOC_TABEL_SIZETYPE_ nShuffle;
+	int *pQueue;
+	_GOC_TABEL_SIZETYPE_ nQueue;
+	unsigned int currFile;
+	unsigned int currShuffle;
+	unsigned char shufflemode;
+} stPlaylist;
 
 #define RANDPULLSIZE 64
 stPlaylist *playlist = NULL;
@@ -217,7 +232,7 @@ const char **playlistGetTable( )
 
 int playlistRemoveFile( int pos )
 {
-	int i, p;
+	int i, p = -1;
 	if (( !playlist ) || ( pos < 0 ) || ( pos >= playlist->nFilelist ))
 		return -1;
 	playlist->pFilelist = goc_tableRemove(
@@ -232,9 +247,11 @@ int playlistRemoveFile( int pos )
 			else if ( playlist->pShuffle[i] == pos )
 				p = i;
 		}
-		playlist->pShuffle = goc_tableRemove(
-			playlist->pShuffle, &playlist->nShuffle, sizeof(int),
-			p );
+		if ( p != -1 ) {
+			playlist->pShuffle = goc_tableRemove(
+				playlist->pShuffle, &playlist->nShuffle, sizeof(int),
+				p );
+		}
 	}
 	playlistRemQueue( pos );
 	return 0;
@@ -288,6 +305,7 @@ int playlistStoreInFile( const char *filename )
 		fprintf(plik, "%s\n", playlist->pFilelist[i]);
 	}
 	fclose( plik );
+	return 0;
 }
 
 int playlistAddList( const char *filename )

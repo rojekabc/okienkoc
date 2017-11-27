@@ -1,27 +1,77 @@
+
 # Where to install binary and manpage on "make install":
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 SHAREDIR=$(PREFIX)/share/rmp3
+OBJECTS=mixer.o common-mixer.o rmp3.o
 
-linux:
-	$(MAKE) CC=gcc LDFLAGS="-ldl -lpthread -lavcodec -lavformat -lao -lokienkoc -lm -lavutil" \
-		OBJECTS='aumix.o rmp3.o' \
-		CFLAGS='$(CFLAGS) -DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX \
-			-DOSS -DTERM_CONTROL\
-			-Wall -O3\
-			-fomit-frame-pointer -funroll-all-loops \
-			-finline-functions -ffast-math' \
-		rmp3-make
+# Check properties file
+include Makefile.properties
 
-rmp3-make: rmp3
+ifeq ($(PLATFORM),linux)
+	CC := gcc
+	LDFLAGS := -ldl -lpthread -lprojewski-tools -lm -lavutil
+	CFLAGS := -DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX -DOSS -DTERM_CONTROL -Wall -fomit-frame-pointer -funroll-all-loops -finline-functions -ffast-math
+	CFLAGS += -I/usr/local/include/projewski
+endif
 
-rmp3: rmp3.o Makefile aumix.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) -o $@
+ifeq ($(DEBUG),true)
+	CFLAGS += -g -O0
+else
+	CFLAGS += -O3
+endif
 
-rmp3.o:	rmp3.c aumix.h
+ifeq ($(OSS_MIXER_ENABLE),true)
+	CFLAGS += -DOSS_MIXER_ENABLE
+	OBJECTS += oss-mixer.o
+endif
+
+ifeq ($(ALSA_MIXER_ENABLE),true)
+	CFLAGS += -DALSA_MIXER_ENABLE
+	OBJECTS += alsa-mixer.o
+	LDFLAGS += -lasound
+endif
+
+ifeq ($(OUTPUT_LIBRARY),libao)
+	CFLAGS += -DHAS_LIBAO
+	LDFLAGS += -lao
+	OBJECTS += libao-player.o
+endif
+
+ifeq ($(DECODE_LIBRARY),libsox)
+	CFLAGS += -DHAS_LIBSOX
+	LDFLAGS += -lsox
+	OBJECTS += libsox-decoder.o
+endif
+
+ifeq ($(FILEINFO_LIBRARY),ffmpeg)
+	CFLAGS += -DHAS_FFMPEG
+	LDFLAGS += -lavutil -lavformat
+	OBJECTS += ffmpeg-finfo.o
+endif
+
+ifeq ($(CONTROL_LIBRARY),okienko)
+	LDFLAGS += -lprojewski-okienkoc
+	OBJECTS += okienko-control.o
+endif
+
+ifeq ($(PLAYLIST_LIBRARY),default)
+	OBJECTS += default-playlist.o
+endif
+
+all: prepare rmp3
+
+prepare:
+	rm -rf ERRORS
+
+rmp3: Makefile $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ 2>> ERRORS
+
+$(OBJECTS): %.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $< 2>> ERRORS
 
 clean:
-	rm -f *.o *core *~ rmp3
+	rm -f *.o *core *~ rmp3 .*.un~ ERRORS
 
 install:
 	strip rmp3

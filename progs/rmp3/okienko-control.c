@@ -18,21 +18,23 @@
 #include <pwd.h>
 
 #include <okienkoc/okienkoc.h>
-#include <okienkoc/mystr.h>
+#include <tools/mystr.h>
 #define GOC_PRINTERROR
-#include <okienkoc/log.h>
-#include <okienkoc/istream.h>
+#include <tools/log.h>
+#include <tools/istream.h>
+#include <tools/screen.h>
+#include <tools/term.h>
+#include <tools/plik.h>
+#include <tools/fileistream.h>
 
 #include <sys/socket.h>
-#define MOD_CONTROL
-#include "../mod_fun.h"
+#include "mod_fun.h"
+
+#include "finfo.h"
 
 #define MODE_STOPPED 0
 #define MODE_PLAYING 1
 #define MODE_PAUSED 2
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
 
 #ifdef _DEBUG
 #	include <mpatrol.h>
@@ -138,66 +140,71 @@ void list_mark(struct mark_type *mark) // ROJEK
 }
 
 */
-int (*doAction)(unsigned int, void*) = NULL;
+int (*doActionCall)(unsigned int, void*) = NULL;
 
 void printMixer()
 {
-	int param;
-	param = AUMIX_CURRNAME;
-	doAction(ACTION_AUMIX, &param);
-	goc_labelSetText(nMixer, (char*)param, GOC_FALSE);
-	param = AUMIX_CURRDEV;
-	doAction(ACTION_AUMIX, &param);
-	param &= 0x7F;
-	goc_precentSetPosition(pMixer, param);
-	goc_systemSendMsg(nMixer, GOC_MSG_PAINT, 0, 0);
-	goc_systemSendMsg(pMixer, GOC_MSG_PAINT, 0, 0);
+	char* deviceName = NULL;
+	int volumeLevel;
+	doActionCall(ACTION_AUMIX_CURRNAME, &deviceName);
+	goc_labelSetText(nMixer, deviceName, GOC_FALSE);
+	doActionCall(ACTION_AUMIX_CURRDEV, &volumeLevel);
+	volumeLevel &= 0x7F;
+	goc_precentSetPosition(pMixer, volumeLevel);
+	GOC_MSG_PAINT( msgPaint );
+	goc_systemSendMsg(nMixer, msgPaint);
+	goc_systemSendMsg(pMixer, msgPaint);
 	fflush(stdout);
 }
 
-static int nasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+static int nasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	if ( uchwyt == GOC_HANDLER_SYSTEM )
 	{
-		if ( wiesc == GOC_MSG_CHAR )
+		if ( msg->id == GOC_MSG_CHAR_ID )
 		{
-			if ( nBuf == 27 )
+			GOC_StMsgChar* msgChar = (GOC_StMsgChar*)msg;
+			if ( msgChar->charcode == 27 ) {
 				return GOC_ERR_OK;
+			}
 		}
 	}
 	else if ( uchwyt == lLista )
 	{
-		if ( wiesc == GOC_MSG_CHAR )
+		if ( msg->id == GOC_MSG_CHAR_ID )
 		{
-			if ( nBuf == 0x0D )
+			GOC_StMsgChar* msgChar = (GOC_StMsgChar*)msg;
+			if ( msgChar->charcode == 0x0D )
 			{
 				char *selFile = goc_listGetUnderCursor( lLista );
-				if ( selFile )
-					doAction(ACTION_PLAY, selFile);
+				if ( selFile ) {
+					doActionCall(ACTION_PLAY, selFile);
+				}
 				return GOC_ERR_OK;
 			}
-			else if ( nBuf == 0x116 )
+			else if ( msgChar->charcode == 0x116 )
 			{
 				int pos = goc_listGetCursor(lLista);
 				if ( pos > 0 )
 				{
 					int size = 0;
 					const char **ptr;
-					doAction(ACTION_PLAYLIST_REMOVEFILE, &pos);
-					doAction(ACTION_PLAYLIST_GETSIZE, &size);
-					doAction(ACTION_PLAYLIST_GETTABLE, &ptr);
+					doActionCall(ACTION_PLAYLIST_REMOVEFILE, &pos);
+					doActionCall(ACTION_PLAYLIST_GETSIZE, &size);
+					doActionCall(ACTION_PLAYLIST_GETTABLE, &ptr);
 					goc_listSetExtTable(lLista, ptr, size);
-					doAction(ACTION_PLAYLIST_GETACTUAL, &size);
+					doActionCall(ACTION_PLAYLIST_GETACTUAL, &size);
 					goc_sellistSelect(lLista, size);
 					goc_listSetCursor(lLista, pos);
 //		goc_elementOrFlag(lLista, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE);
 //		goc_systemFocusOn(lLista);
-					goc_systemSendMsg(lLista, GOC_MSG_PAINT, 0, 0);
+					GOC_MSG_PAINT(msgPaint);
+					goc_systemSendMsg(lLista, msgPaint);
 				}
 				return GOC_ERR_OK;
 			}
 		}
-		else if ( wiesc == GOC_MSG_LISTCHANGE )
+		else if ( msg->id == GOC_MSG_LISTCHANGE_ID )
 		{
 			// TODO: Opis zaznaczonej pozycji
 			return GOC_ERR_OK;
@@ -212,92 +219,103 @@ static int nasluch(GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int n
 				return GOC_ERR_REFUSE;
 		}
 	}*/
-	return goc_systemDefaultAction(uchwyt, wiesc, pBuf, nBuf);
+	return goc_systemDefaultAction(uchwyt, msg);
 }
 
 static int hotKeyNext(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_NEXT, NULL);
+	doActionCall(ACTION_NEXT, NULL);
+	return GOC_ERR_OK;
 }
 static int hotKeyPrev(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_PREV, NULL);
+	doActionCall(ACTION_PREV, NULL);
+	return GOC_ERR_OK;
 }
 static int hotKeyInfo(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	printInfo();
+	return GOC_ERR_OK;
 }
 static int hotKeyPause(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_PAUSE, NULL);
+	doActionCall(ACTION_PAUSE, NULL);
+	return GOC_ERR_OK;
 }
 static int hotKeyHelp(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	lista_polecen();
+	return GOC_ERR_OK;
 }
 static int hotKeyQuit(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_QUIT, NULL);
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_FINISH, 0, 0);
+	doActionCall(ACTION_QUIT, NULL);
+	GOC_MSG_FINISH( msgFinish, 0 );
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgFinish);
+	return GOC_ERR_OK;
 }
 static int hotKeyStop(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_STOP, NULL);
+	doActionCall(ACTION_STOP, NULL);
+	return GOC_ERR_OK;
 }
 static int hotKeyHome(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	doAction(ACTION_PLAY, NULL);
+	doActionCall(ACTION_PLAY, NULL);
+	return GOC_ERR_OK;
 }
 static int hotKeyAumixPlus(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg=AUMIX_PLUS;
-	doAction(ACTION_AUMIX, &arg);
+	doActionCall(ACTION_AUMIX_PLUS, NULL);
 	printMixer();
+	return GOC_ERR_OK;
 }
 static int hotKeyAumixMinus(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg=AUMIX_MINUS;
-	doAction(ACTION_AUMIX, &arg);
+	doActionCall(ACTION_AUMIX_MINUS, NULL);
 	printMixer();
+	return GOC_ERR_OK;
 }
 static int hotKeyAumixNext(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg=AUMIX_NEXTDEV;
-	doAction(ACTION_AUMIX, &arg);
+	doActionCall(ACTION_AUMIX_NEXTDEV, NULL);
 	printMixer();
+	return GOC_ERR_OK;
 }
 static int hotKeyShuffleOn(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	int arg=SHUFFLE_YES;
-	doAction(ACTION_SHUFFLE, &arg);
+	doActionCall(ACTION_SHUFFLE, &arg);
 	goc_gotoxy(1,9);
 	goc_clearline();
 	printf("W³±czono tryb mieszania.\n");
+	return GOC_ERR_OK;
 }
 static int hotKeyShuffleOff(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	int arg=SHUFFLE_NO;
-	doAction(ACTION_SHUFFLE, &arg);
+	doActionCall(ACTION_SHUFFLE, &arg);
 	goc_gotoxy(1,9);
 	goc_clearline();
 	printf("Wy³±czono tryb mieszania.\n");
+	return GOC_ERR_OK;
 }
 
 static int hotKeyShowList(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_FLAGS f = goc_elementGetFlag(lLista);
 	if ( f & GOC_EFLAGA_PAINTED )
@@ -312,22 +330,24 @@ static int hotKeyShowList(
 	{
 		int size = 0;
 		const char **ptr;
-		doAction(ACTION_PLAYLIST_GETSIZE, &size);
-		doAction(ACTION_PLAYLIST_GETTABLE, &ptr);
+		doActionCall(ACTION_PLAYLIST_GETSIZE, &size);
+		doActionCall(ACTION_PLAYLIST_GETTABLE, &ptr);
 		goc_listSetExtTable(lLista, ptr, size);
-		doAction(ACTION_PLAYLIST_GETACTUAL, &size);
+		doActionCall(ACTION_PLAYLIST_GETACTUAL, &size);
 		goc_sellistSelect(lLista, size);
 		goc_listSetCursor(lLista, size);
 		goc_elementOrFlag(lLista, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE);
 		goc_systemFocusOn(lLista);
 	}
-	goc_systemSendMsg(lLista, GOC_MSG_PAINT, 0, 0);
+	GOC_MSG_PAINT(msgPaint);
+	goc_systemSendMsg(lLista, msgPaint);
+	return GOC_ERR_OK;
 }
 
 // TODO: Dodanie odswiezenia listy, jesli jest widoczna po dodaniu pliku lub
 // katalogu z zachowaniem pozycji kursora
 static int hotKeyAddFolder(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_FLAGS f = goc_elementGetFlag(pLista);
 	if ( f & GOC_EFLAGA_PAINTED )
@@ -342,37 +362,19 @@ static int hotKeyAddFolder(
 	{
 		goc_elementOrFlag(pLista, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE);
 		goc_systemFocusOn(pLista);
-		goc_systemSendMsg(pLista, GOC_MSG_PAINT, 0, 0);
+		GOC_MSG_PAINT(msgPaint);
+		goc_systemSendMsg(pLista, msgPaint);
 	}
 	return GOC_ERR_OK;
 }
 
-// sprawdz, czy plik to MP3 i dodaj, je¶li tak
+// find audio stream in the file
 static void checkAddFile(const char *fullname)
 {
-	AVFormatContext *pFormatCtx = NULL;
-	int i = av_open_input_file( &pFormatCtx, fullname, NULL, 0, NULL);
-	// Cannot open file
-	if ( i != 0 )
-		return;
-	i = av_find_stream_info( pFormatCtx );
-	// No info about opened file
-	if ( i < 0 )
-	{
-		av_close_input_file( pFormatCtx );
-		return;
+	FileInfo fileInfo;
+	if ( finfoInfo(fullname, &fileInfo) == FINFO_CODE_OK ) {
+		doActionCall(ACTION_PLAYLIST_ADDFILE, (void*)fullname);
 	}
-	// wyszukaj strumien audio
-	for (i=0; i<pFormatCtx->nb_streams; i++)
-	{
-		if (pFormatCtx->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO )
-		{
-			doAction(ACTION_PLAYLIST_ADDFILE, fullname);
-			av_close_input_file( pFormatCtx );
-			return;
-		}
-	}
-	av_close_input_file( pFormatCtx );
 	return;
 }
 
@@ -404,7 +406,7 @@ static void listAddFolder(const char *fullname)
 }
 
 static int hotKeySelectFolder(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	char *element = goc_stringCopy(NULL, goc_filelistGetFolder(uchwyt));
 	element = goc_stringAdd(element, "/");
@@ -422,28 +424,30 @@ static int hotKeySelectFolder(
 		char *tmp = goc_stringAdd(goc_stringCopy(NULL, "Dodano: "), element);
 		goc_labelSetText(nStatus, tmp, 0);
 		tmp = goc_stringFree(tmp);
-		goc_systemSendMsg(nStatus, GOC_MSG_PAINT, 0, 0);
+		GOC_MSG_PAINT(msgPaint);
+		goc_systemSendMsg(nStatus, msgPaint);
 	}
+	return GOC_ERR_OK;
 }
 
 static int hotKeyQueue(
-	GOC_HANDLER uchwyt, GOC_MSG wiesc, void *pBuf, unsigned int nBuf)
+	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	int arg;
 	GOC_FLAGS f = goc_elementGetFlag(lLista);
 	if ( f & GOC_EFLAGA_PAINTED )
 	{
 		arg = goc_listGetCursor(lLista);
-		doAction(ACTION_PLAYLIST_ISQUEUE, &arg);
+		doActionCall(ACTION_PLAYLIST_ISQUEUE, &arg);
 		if ( arg )
 		{
 			arg = goc_listGetCursor(lLista);
-			doAction(ACTION_PLAYLIST_REMQUEUE, &arg);
+			doActionCall(ACTION_PLAYLIST_REMQUEUE, &arg);
 		}
 		else
 		{
 			arg = goc_listGetCursor(lLista);
-			doAction(ACTION_PLAYLIST_ADDQUEUE, &arg);
+			doActionCall(ACTION_PLAYLIST_ADDQUEUE, &arg);
 		}
 	}
 	return GOC_ERR_OK;
@@ -453,13 +457,14 @@ static int hotKeyQueue(
 
 int controlInit(int (*fun)(unsigned int, void*))
 {
+	finfoInitialize();
 	if ( fun == NULL )
 	{
 		fprintf(stderr, "Nie podano funkcji kontrolnej.\n%s:%d\n",
 				__FILE__, __LINE__);
 		exit(1);
 	}
-	doAction = fun;
+	doActionCall = fun;
 	// zainicjowanie systemu okienkoc
 	goc_systemSetListenerFunc( &nasluch );
 	goc_hkAdd(GOC_HANDLER_SYSTEM, 'n', GOC_EFLAGA_ENABLE, hotKeyNext);
@@ -494,7 +499,7 @@ int controlInit(int (*fun)(unsigned int, void*))
 	
 	nTytul = goc_elementCreate(GOC_ELEMENT_LABEL, 1, 1, 0, 1,
 		GOC_EFLAGA_PAINTED | GOC_EFLAGA_CENTER, GOC_WHITE, GOC_HANDLER_SYSTEM);
-	goc_labelSetText(nTytul, "Rojkowy kontroler muzyki. Wersja 0.2 :+)",GOC_FALSE);
+	goc_labelSetText(nTytul, "Rojkowy kontroler muzyki. Wersja 0.3a :+)",GOC_FALSE);
 	nMixer = goc_elementCreate(GOC_ELEMENT_LABEL, 1, 8, 8, 1,
 		GOC_EFLAGA_PAINTED | GOC_EFLAGA_LEFT, GOC_WHITE, GOC_HANDLER_SYSTEM);
 	pMixer = goc_elementCreate(GOC_ELEMENT_PRECENT, 9, 8, 0, 1,
@@ -549,10 +554,11 @@ void controlCleanup()
 // -- czy grac dalej, czy przerwac
 int controlStart()
 {
-	GOC_MSG wiesc;
-	doAction(ACTION_START, NULL);
-	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_PAINT, 0, 0);
-	while ((goc_systemCheckMsg( &wiesc )));
+	GOC_StMessage msg;
+	doActionCall(ACTION_START, NULL);
+	GOC_MSG_PAINT(msgPaint);
+	goc_systemSendMsg(GOC_HANDLER_SYSTEM, msgPaint);
+	while ((goc_systemCheckMsg( &msg )));
 	return 0;
 }
 
@@ -560,52 +566,40 @@ int controlEvent(unsigned int event)
 {
 	if ( event == EVENT_CHANGE_SONG ) 
 	{
-		char buf[256];
-		int param;
-		param = INFO_FILE;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Plik: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nPlik, buf, 0);
-		goc_systemSendMsg(nPlik, GOC_MSG_PAINT, 0, 0);
+		GOC_MSG_PAINT(msgPaint);
 
-		param = INFO_TITLE;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Title: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nTitle, buf, 0);
-		goc_systemSendMsg(nTitle, GOC_MSG_PAINT, 0, 0);
+		FileInfo* fileInfo = allocFileInfo();
+		doActionCall(ACTION_INFO, fileInfo);
 
-		param = INFO_ARTIST;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Artist: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nArtist, buf, 0);
-		goc_systemSendMsg(nArtist, GOC_MSG_PAINT, 0, 0);
+		goc_labelSetText(nPlik, fileInfo->filename, 0);
+		goc_systemSendMsg(nPlik, msgPaint);
+
+		goc_labelSetText(nTitle, fileInfo->title, 0);
+		goc_systemSendMsg(nTitle, msgPaint);
+
+		goc_labelSetText(nArtist, fileInfo->artist, 0);
+		goc_systemSendMsg(nArtist, msgPaint);
 		
-		param = INFO_ALBUM;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Album: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nAlbum, buf, 0);
-		goc_systemSendMsg(nAlbum, GOC_MSG_PAINT, 0, 0);
+		goc_labelSetText(nAlbum, fileInfo->album, 0);
+		goc_systemSendMsg(nAlbum, msgPaint);
 		
-		param = INFO_YEAR;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Year: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nYear, buf, 0);
-		goc_systemSendMsg(nYear, GOC_MSG_PAINT, 0, 0);
+		goc_labelSetText(nYear, fileInfo->year, 0);
+		goc_systemSendMsg(nYear, msgPaint);
 		
-		param = INFO_COMMENT;
-		doAction(ACTION_INFO, &param);
-		sprintf(buf, "Comment: %s", (char *)param); free((char*)param);
-		goc_labelSetText(nComment, buf, 0);
-		goc_systemSendMsg(nComment, GOC_MSG_PAINT, 0, 0);
+		goc_labelSetText(nComment, fileInfo->comment, 0);
+		goc_systemSendMsg(nComment, msgPaint);
+
+		freeFileInfo( fileInfo );
+
 		if ( goc_elementGetFlag(lLista) & GOC_EFLAGA_PAINTED )
 		{
 			int pos = 0;
 			pos = goc_sellistGetSelectPos(lLista, 0);
 			goc_sellistUnselect(lLista, pos);
 			pos = 0;
-			doAction(ACTION_PLAYLIST_GETACTUAL, &pos);
+			doActionCall(ACTION_PLAYLIST_GETACTUAL, &pos);
 			goc_sellistSelect(lLista, pos);
-			goc_systemSendMsg(lLista, GOC_MSG_PAINT, 0, 0);
+			goc_systemSendMsg(lLista, msgPaint);
 		}
 	}
 	return 0;
