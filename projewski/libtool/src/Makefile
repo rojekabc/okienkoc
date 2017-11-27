@@ -1,6 +1,6 @@
 # Elementy wyjsciowe
 OBJS = tablica.o term.o screen.o mystr.o nbitpola.o plik.o font.o bits.o \
-	istream.o fileistream.o memistream.o tableiterator.o \
+	istream.o fileistream.o memistream.o tableiterator.o array.o \
 	iterator.o properties.o arguments.o memostream.o ostream.o mempipestream.o
 TARGETPATH=target
 TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))

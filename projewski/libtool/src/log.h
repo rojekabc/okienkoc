@@ -62,4 +62,10 @@
 #		define GOC_FERROR(str)
 #		define GOC_BERROR(str, a...)
 #	endif
+
+#	define GOC_CHECK_DEBUG(condition) if ( !(condition) ) {GOC_DEBUG( #condition" --- failed" );}
+#	define GOC_CHECK(condition) if ( !(condition) ) {GOC_ERROR( #condition" --- failed" );}
+#	define GOC_CHEOP_DEBUG(condition, operation) if ( !(condition) ) {GOC_DEBUG( #condition" --- failed" ); operation;}
+#	define GOC_CHEOP(condition, operation) if ( !(condition) ) {GOC_ERROR( #condition" --- failed" ); operation;}
+#	define GOC_MSG_CHEOP(message, condition, operation) if ( !(condition) ) {GOC_ERROR( message ); operation;}
 #endif // ifndef _GOC_LOG_H_

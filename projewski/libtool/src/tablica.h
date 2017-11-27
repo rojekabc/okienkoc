@@ -45,9 +45,9 @@ if ( structptr ) \
 { \
 	int i; \
 	if ( freefun ) \
-		for(i=0; i<structprt->n ## name; i++) \
+		for(i=0; i<structptr->n ## name; i++) \
 			freefun(structptr->p ## name[i]); \
-	p ## name = goc_tableClear( structptr->p ## name, &(structptr->n ## name) ); \
+	structptr->p ## name = goc_tableClear( structptr->p ## name, &(structptr->n ## name) ); \
 }
 
 #define GOC_TABLEFREE(name, freefun) { \
