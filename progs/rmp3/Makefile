@@ -10,7 +10,7 @@ include Makefile.properties
 
 ifeq ($(PLATFORM),linux)
 	CC := gcc
-	LDFLAGS := -ldl -lpthread -lprojewski-tools -lm -lavutil
+	LDFLAGS := -lpthread -lprojewski-tools -lm -lavutil
 	CFLAGS := -DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX -DOSS -DTERM_CONTROL -Wall -fomit-frame-pointer -funroll-all-loops -finline-functions -ffast-math
 	CFLAGS += -I/usr/local/include/projewski
 endif
