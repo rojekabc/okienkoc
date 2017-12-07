@@ -36,6 +36,10 @@ ifeq ($(OUTPUT_LIBRARY),libao)
 	CFLAGS += -DHAS_LIBAO
 	LDFLAGS += -lao
 	OBJECTS += libao-player.o
+else ifeq ($(OUTPUT_LIBRARY),alsa)
+	CFLAGS += -DHAS_ALSA
+	LDFLAGS += -lasound
+	OBJECTS += alsa-player.o
 endif
 
 ifeq ($(DECODE_LIBRARY),libsox)
