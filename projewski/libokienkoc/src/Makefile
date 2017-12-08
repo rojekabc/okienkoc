@@ -7,6 +7,29 @@ OBJS = system.o ramka.o element.o napis.o wpis.o \
 TARGETPATH=target
 TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))
 
+# Flagi kompilacji i linkowania
+CFLAGS = -Wall -fPIC
+LFLAGS = -shared -lpthread -lprojewski-tools
+
+include Makefile.properties
+
+ifeq ($(DEBUG),true)
+	CFLAGS += -g -O0 -D_DEBUG
+	LFLAGS += memwatch.o
+else
+	CFLAGS += -O2 -s
+	LFLAGS += -s
+endif
+
+ifeq ($(TERM_STD),true)
+	CFLAGS += -DHAS_TERM_STD
+	OBJS += term-std.o
+endif
+ifeq ($(TERM_RAW),true)
+endif
+ifeq ($(TERM_X11),true)
+endif
+
 	
 OUTLIB = libprojewski-okienkoc.so.1.0
 TARGETOUTLIB = $(TARGETPATH)/$(OUTLIB)
@@ -35,20 +58,7 @@ else
 endif
 PREFIXINCLUDE = $(PREFIX)/include/projewski/okienkoc
 
-# Flagi kompilacji i linkowania
-# DEBUGCFLAGS = -Wall -g -D_DEBUG -I.
-DEBUGCFLAGS = -Wall -g -O0 -D_DEBUG -fPIC
-NORMALCFLAGS = -Wall -O2 -s -fPIC
-# DEBUGLFLAGS = -shared
-# DEBUGLFLAGS = -shared -lxml2
-DEBUGLFLAGS = -shared -lpthread -lprojewski-tools memwatch.o
-NORMALLFLAGS = -s -shared -ldl -lpthread -lprojewski-tools
-
-# Pliki wyjsciowe dla zapisania flag kompilacji / debugowania
-CFLAGSFILE = .cflags
-LFLAGSFILE = .lflags
-
-TERMINALLIBS=libterm-linux.so libterm-xterm.so
+# TERMINALLIBS=libterm-linux.so libterm-xterm.so
 
 all: prepare $(TARGETOUTLIB) $(TERMINALLIBS)
 
@@ -59,47 +69,43 @@ prepare:
 	@rm -f ERRORS
 	@rm -rf target
 	@mkdir target
-	@echo "$(NORMALCFLAGS)" > $(CFLAGSFILE)
-	@echo "$(NORMALLFLAGS)" > $(LFLAGSFILE)
 
 preparedebug:
 	@echo "Preparing..."
 	@rm -f ERRORS
-	@echo "$(DEBUGCFLAGS)" > $(CFLAGSFILE)
-	@echo "$(DEBUGLFLAGS)" > $(LFLAGSFILE)
 
 $(TARGETOBJS): target/%.o: %.c $(INCLUDEFILE)
 	@echo "--- Compile $< ---" >> $(OUTERROR)
 	@echo $"Compile $<$"
-	@gcc $< `cat $(CFLAGSFILE)` -c -o $@ $(INCLUDEPATHS) $(DEBUGFLAGS) 2>> $(OUTERROR)
+	@gcc $< $(CFLAGS) -c -o $@ $(INCLUDEPATHS) $(DEBUGFLAGS) 2>> $(OUTERROR)
 
 $(TARGETOUTLIB): $(TARGETOBJS)
 	@echo $"--- Link $@ ---$" >> $(OUTERROR)
 	@echo $"Link $@$"
-	@gcc `cat $(LFLAGSFILE)` -o $@ $(TARGETOBJS) $(LIBSIN) 2>> $(OUTERROR)
+	@gcc $(LFLAGS) -o $@ $(TARGETOBJS) $(LIBSIN) 2>> $(OUTERROR)
 	@ln -sf $(OUTLIB) $(TARGETLIBLINK)
 
 clean:
 	@echo $"Cleaning$"
-	@rm -f $(TARGETOBJS) $(TARGETOUTLIB) $(OUTERROR) $(TARGETLIBLINK) .cflags .lflags *.log *~ $(TERMINALLIBS) .*.un~
+	@rm -f $(TARGETOBJS) $(TARGETOUTLIB) $(OUTERROR) $(TARGETLIBLINK) *.log *~ $(TERMINALLIBS) .*.un~
 
 install:
 	install  $(TARGETOUTLIB) $(PREFIXLIB)
 	ln -sf $(OUTLIB) $(PREFIXLIB)/$(LIBLINK)
 	install -d $(PREFIXINCLUDE)
 	install -m 0644 *.h $(PREFIXINCLUDE)
-	install -d $(PREFIX)/share/projewski/okienkoc
-	install $(TERMINALLIBS) $(PREFIX)/share/projewski/okienkoc
+#	install -d $(PREFIX)/share/projewski/okienkoc
+#	install $(TERMINALLIBS) $(PREFIX)/share/projewski/okienkoc
 
 uninstall:
 	rm -f $(PREFIXLIB)/$(OUTLIB) $(PREFIXLIB)/$(LIBLINK)
 	rm -rf $(PREFIXINCLUDE)
 	rm -rf $(PREFIX)/share/projewski/okienkoc
 
-libterm-linux.so: term-linux.c
-	@echo "--- Compile $< ---" >> $(OUTERROR)
-	@gcc -o $@ -shared `cat $(CFLAGSFILE)` $(INCLUDEPATHS) $< 2>> $(OUTERROR)
-
-libterm-xterm.so: term-xterm.c
-	@echo "--- Compile $< ---" >> $(OUTERROR)
-	@gcc -o $@ -shared `cat $(CFLAGSFILE)` $< -lX11 $(INCLUDEPATHS) 2>> $(OUTERROR)
+# libterm-linux.so: term-linux.c
+# 	@echo "--- Compile $< ---" >> $(OUTERROR)
+#	@gcc -o $@ -shared $(CFLAGS) $(INCLUDEPATHS) $< 2>> $(OUTERROR)
+#
+# libterm-xterm.so: term-xterm.c
+#	@echo "--- Compile $< ---" >> $(OUTERROR)
+#	@gcc -o $@ -shared $(CFLAGS) $< -lX11 $(INCLUDEPATHS) 2>> $(OUTERROR)

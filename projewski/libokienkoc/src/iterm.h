@@ -31,6 +31,7 @@
 #define GOC_KBD_ANYCTRL	(GOC_KBDCTRLL | GOC_KBD_CRLR)
 #define GOC_KBD_ABYALT	(GOC_KBD_ALTL | GOC_KBD_ALTR)
 
+
 // init
 // 	Description:
 // 		Init interface.
@@ -43,7 +44,7 @@
 // close
 // 	Description:
 // 		Finish working of module.
-// 		Set by implementing module.
+// 		Free resources.
 // 	Arguments:
 // 	Return:
 // 		 0 OK
@@ -57,11 +58,11 @@
 // 		GOC_EVENTTYPE - type of event
 // 		GOC_EVENTDATA - sending data of event
 // 	Return:
-typedef struct GOC_StITerm {
+typedef struct GOC_Terminal {
 	void *handler;
-	int (*init)();
+	int (*init)(struct GOC_Terminal*);
 	void (*event)(GOC_EVENTTYPE, GOC_EVENTDATA);
-	int (*close)();
-} GOC_StITerm;
+	int (*close)(struct GOC_Terminal*);
+} GOC_Terminal;
 
 #endif // ifndef _ITREM_H_

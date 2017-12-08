@@ -8,12 +8,16 @@
 #include "okienkoc.h"
 #include "signals.h"
 #include "conflog.h"
-#include "iterm.h"
 #include <tools/mystr.h>
 #include <tools/typetable.h>
 #include <tools/screen.h>
 #include <tools/plik.h>
 #include <tools/term.h>
+#include <tools/array.h>
+#include "iterm.h"
+#ifdef HAS_TERM_STD
+#	include "term-std.h"
+#endif
 
 #include "global-inc.h"
 
@@ -47,22 +51,7 @@ typedef struct
 } GOC_StDefListen;
 
 // Zarejestrowane modu³y generuj±ce zdarzenia
-
-static GOC_StITerm* freeTerm(GOC_StITerm* term)
-{
-	dlclose(term->handler);
-	free(term);
-	return NULL;
-}
-
-static GOC_StITerm* copyTerm(GOC_StITerm* term)
-{
-	return NULL;
-}
-
-GOC_TypeTable(GOC_TermTable, goc_termtable, GOC_StITerm*, freeTerm, copyTerm);
-GOC_TermTable* pSystemGenerators;
-// GOC_StITerm pTerminal;
+GOC_Array* generators;
 
 static GOC_StDefListen* freeDefListen(GOC_StDefListen* listen)
 {
@@ -135,13 +124,16 @@ static int systemClose(GOC_BOOL isError)
 	// from moment before system runs.
 	{
 		int i;
-		for (i=0; i < pSystemGenerators->nElement; i++ )
+		for (i=0; i < generators->nElement; i++ )
 		{
-			if ( pSystemGenerators->pElement[i]->close() )
+			GOC_Terminal* terminal = (GOC_Terminal*)generators->pElement[i];
+			if ( terminal->close(generators->pElement[i]) )
 			{
 				GOC_ERROR("Cannot close event generator");
 			}
+			generators->pElement[i] = NULL;
 		}
+		goc_arrayFree( generators );
 	}
 	// Remove elements, which still are in system
 	while (pElements->nElement)
@@ -726,7 +718,7 @@ int goc_systemCheckMsg(GOC_StMessage* msg)
 		// zamykanie systemu
 		
 		// zwolnienie systemów generowania
-		pSystemGenerators = goc_termtableFree( pSystemGenerators );
+		generators = goc_arrayFree( generators );
 
 		// usuniêcie mutex
 		pthread_mutex_destroy(&mutex);
@@ -735,53 +727,37 @@ int goc_systemCheckMsg(GOC_StMessage* msg)
 }
 
 /*
- * Funkcja:
- * Zarejestrowanie modu³u generuj±cego zdarzenia.
+ * Select an message generator to use.
  *
- * Argumenty:
- * libname - nazwa biblioteki, która bêdzie generowa³a zdarzenia
- * event - func nas³uchuj±ca przychodz±ce zdarzenia
+ * name 
+ * 	message generator name
+ * event
+ * 	handling function
  *
- * Zwraca:
- * GOC_ERR_OK je¶li nie by³o problemów
- *
+ * return
+ * 	GOC_ERR_OK if everything ok
+ *	GOC_ERR_REFUSE cannot find any terminal to register
+ *	GOC_ERR_FALSE error while init
  */
 int goc_systemRegisterMsgGenerator(
-	const char *libname, void (*event)(GOC_EVENTTYPE, GOC_EVENTDATA))
+	const char *name, void (*event)(GOC_EVENTTYPE, GOC_EVENTDATA))
 {
-	int (*initModule)(void *) = NULL;
-	GOC_StITerm *iterm = malloc( sizeof(GOC_StITerm) );
-	memset(iterm, 0, sizeof(GOC_StITerm));
-	iterm->event = event;
-	iterm->handler = dlopen(libname, RTLD_NOW);
-	if ( !iterm->handler )
-	{
-		GOC_ERROR(dlerror());
-		return -1;
+	GOC_Terminal* terminal = NULL;
+
+#ifdef HAS_TERM_STD
+	if ( goc_stringEquals("terminal-std", name) ) {
+		terminal = goc_termStdAlloc( event );
 	}
-	dlerror();
-	initModule = dlsym(iterm->handler, "initModule");
-	if ( !initModule )
-	{
-		GOC_ERROR(dlerror());
-		return -1;
+#endif
+
+	if ( terminal == NULL ) {
+		return GOC_ERR_REFUSE;
 	}
-	if ( (*initModule)( iterm ) )
-	{
-		GOC_ERROR("Error initializing module");
-		return -1;
+	if ( terminal->init && terminal->init(terminal) ) {
+		return GOC_ERR_FALSE;
 	}
-	if ( !(iterm->init) )
-	{
-		GOC_ERROR("NULL init function");
-		return -1;
-	}
-	if ( iterm->init() )
-	{
-		GOC_ERROR("Wrong initializing terminal");
-		return -1;
-	}
-	pSystemGenerators = goc_termtableAdd(pSystemGenerators, iterm);
+
+	generators = goc_arrayAdd( generators, terminal );
 	return GOC_ERR_OK;
 }
 
@@ -824,7 +800,8 @@ static void systemInit()
 	{
 		_flag |= GOC_SFLAG_INIT;
 
-		pSystemGenerators = goc_termtableAlloc();;
+		generators = goc_arrayAlloc();
+		generators->freeElement = NULL;
 		pDefListens = goc_listenAlloc();
 		pElements = goc_handlerAlloc();
 		_focusElement = GOC_HANDLER_SYSTEM;
@@ -878,34 +855,13 @@ static void systemRunWork()
 	// przechwytywanie sygna³ów - póki terminal jeszcze normalny
 	goc_systemCatchSignals();
 	// ustawienie terminala jako generatora
+	if ( goc_systemRegisterMsgGenerator( "terminal-std", eventKeyboard ) )
 	{
-		const char *termname = getenv("TERM");
-		char *modname = NULL;
-		// TODO: Configured path
-		modname = goc_stringCopy(modname,
-			"/usr/local/share/projewski/okienkoc/libterm-");
-		modname = goc_stringAdd(modname, termname);
-		modname = goc_stringAdd(modname, ".so");
-		if ( ! goc_isFileExists(modname) )
-		{
-			GOC_BERROR("Unsupported terminal type %s", modname);
-			goc_stringFree(modname);
-			systemClose(GOC_TRUE);
-			return;
-		}
-		else
-		{
-			GOC_BDEBUG("Using module [%s] for terminal", modname);
-		}
-		if ( goc_systemRegisterMsgGenerator( modname, eventKeyboard ) )
-		{
-			GOC_ERROR("Cannot initialize keyboard");
-			goc_stringFree(modname);
-			systemClose(GOC_TRUE);
-			return;
-		}
-		goc_stringFree(modname);
+		GOC_ERROR("Cannot initialize keyboard");
+		systemClose(GOC_TRUE);
+		return;
 	}
+
 	goc_textallcolor(GOC_BLACK | GOC_BBLACK);
 	goc_clearscreen();
 //	goc_systemSendMsg(GOC_HANDLER_SYSTEM, GOC_MSG_SYSTEMINITIATED, 0, 0);
