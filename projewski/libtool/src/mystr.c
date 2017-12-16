@@ -1,9 +1,7 @@
 #define _GNU_SOURCE
 #include "global-inc.h"
 #include "mystr.h"
-#ifndef _DEBUG
-#	include <string.h>
-#endif
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>

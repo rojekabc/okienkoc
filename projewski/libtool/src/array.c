@@ -3,12 +3,6 @@
 #include <malloc.h>
 #include <string.h>
 
-static void internalClear(GOC_Array* array) {
-	if ( array->freeElement ) {
-		GOC_STABLEFREE(array, Element, array->freeElement);
-	}
-}
-
 static void internalRemove(GOC_Array* array, int pos) {
 	array->pElement = goc_tableRemove(
 		array->pElement, &(array->nElement),
@@ -16,7 +10,7 @@ static void internalRemove(GOC_Array* array, int pos) {
 }
 
 GOC_Array* goc_arrayAlloc() {
-	GOC_Array* result = malloc(sizeof(struct GOC_Array));
+	struct GOC_Array* result = malloc(sizeof(struct GOC_Array));
 	memset(result, 0, sizeof(struct GOC_Array));
 	result->freeElement = &free;
 	return result;
@@ -24,7 +18,7 @@ GOC_Array* goc_arrayAlloc() {
 
 GOC_Array* goc_arrayFree(GOC_Array* array) {
 	if ( array ) {
-		internalClear( array );
+		goc_arrayClear( array );
 		free( array );
 		array = NULL;
 	}
@@ -62,7 +56,15 @@ GOC_Array* goc_arrayRemoveAt(GOC_Array* array, int pos) {
 
 GOC_Array* goc_arrayClear(GOC_Array* array) {
 	if ( array ) {
-		internalClear(array);
+		int i;
+		if ( array->freeElement ) {
+			for(i=0; i<array->nElement; i++) {
+				if ( array->pElement ) {
+					array->freeElement(array->pElement[i]);
+				}
+			}
+		}
+		array->pElement = goc_tableClear( array->pElement, &array->nElement );
 	}
 	return array;
 }

@@ -44,9 +44,13 @@ void *goc_tableInsert(
 if ( structptr ) \
 { \
 	int i; \
-	if ( freefun ) \
-		for(i=0; i<structptr->n ## name; i++) \
-			freefun(structptr->p ## name[i]); \
+	if ( freefun ) { \
+		for(i=0; i<structptr->n ## name; i++) { \
+			if ( structptr->p ## name[i] ) { \
+				freefun(structptr->p ## name[i]); \
+			} \
+		} \
+	} \
 	structptr->p ## name = goc_tableClear( structptr->p ## name, &(structptr->n ## name) ); \
 }
 
