@@ -1,8 +1,5 @@
 #include "alsa-mixer.h"
 
-#ifdef _DEBUG
-#	include <mpatrol.h>
-#endif // ifdef _DEBUG
 #include <alsa/asoundlib.h>
 #include <tools/mystr.h>
 #define GOC_PRINTERROR
@@ -33,7 +30,7 @@ static enum MixerCode alsaMixerCardClose(struct MixerSystem* system) {
 			GOC_ERROR("Cannot close active mixer");
 		}
 		card->sndmixer = NULL;
-		card->mixerElement = goc_arrayClear( card->mixerElement );
+		card->mixerElement = goc_arrayFree( card->mixerElement );
 	}
 	system->active = NULL;
 	return MIXER_CODE_OK;

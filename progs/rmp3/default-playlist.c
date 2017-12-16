@@ -13,6 +13,12 @@
 #include <tools/tablica.h>
 #include <tools/mystr.h>
 #include <tools/random.h>
+#ifdef _DEBUG_
+#	define GOC_PRINTDEBUG
+#endif
+#define GOC_PRINTERROR
+#include <tools/log.h>
+#include <tools/array.h>
 
 #include "playlist.h"
 
@@ -21,8 +27,7 @@
  */
 
 typedef struct {
-	char **pFilelist;
-	_GOC_TABEL_SIZETYPE_ nFilelist;
+	GOC_Array* files;
 	int *pShuffle;
 	_GOC_TABEL_SIZETYPE_ nShuffle;
 	int *pQueue;
@@ -50,7 +55,7 @@ int playlistIsQueue( int inx )
 
 void playlistQueue( int inx )
 {
-	if ( inx > playlist->nFilelist )
+	if ( inx > goc_arraySize(playlist->files) )
 		return;
 	if ( playlistIsQueue( inx ) )
 		return;
@@ -78,57 +83,59 @@ void playlistRemQueue( int inx )
 
 const char *playlistNext()
 {
-	if ( !playlist->pFilelist )
+	if ( goc_arrayIsEmpty(playlist->files) ) {
 		return NULL;
+	}
 
-	if ( playlist->nQueue )
-	{
+	if ( playlist->nQueue )	{
 		int inx = playlist->pQueue[0];
 		playlistRemQueue( inx );
-		return playlist->pFilelist[ inx ];
+		return goc_arrayGet(playlist->files, inx);
 	}
 
 	if ( playlist->shufflemode & 1 )
 	{
-		if ( playlist->nShuffle != playlist->nFilelist )
+		if ( playlist->nShuffle != goc_arraySize(playlist->files) ) {
 			playlistShuffleMode(playlist->shufflemode);
+		}
 		playlist->currShuffle++;
 		playlist->currShuffle %= playlist->nShuffle;
 		playlist->currFile = playlist->pShuffle[playlist->currShuffle];
-		return playlist->pFilelist[ playlist->currFile ];
 	}
 	else
 	{
 		playlist->currFile++;
-		playlist->currFile %= playlist->nFilelist;
-		return playlist->pFilelist[ playlist->currFile ];
+		playlist->currFile %= goc_arraySize(playlist->files);
 	}
+	return goc_arrayGet(playlist->files, playlist->currFile);
 }
 
 const char *playlistPrev( )
 {
-	if ( !playlist->pFilelist )
+	if ( goc_arrayIsEmpty(playlist->files) ) {
 		return NULL;
+	}
 
 	if ( playlist->shufflemode & 1 )
 	{
-		if ( playlist->nShuffle != playlist->nFilelist )
+		if ( playlist->nShuffle != goc_arraySize(playlist->files) ) {
 			playlistShuffleMode(playlist->shufflemode);
-		if ( playlist->currShuffle )
+		}
+		if ( playlist->currShuffle ) {
 			playlist->currShuffle--;
-		else
+		} else {
 			playlist->currShuffle = playlist->nShuffle - 1;
+		}
 		playlist->currFile = playlist->pShuffle[playlist->currShuffle];
-		return playlist->pFilelist[ playlist->currFile ];
 	}
 	else
 	{
 		if ( playlist->currFile )
 			playlist->currFile--;
 		else
-			playlist->currFile = playlist->nFilelist - 1;
-		return playlist->pFilelist[ playlist->currFile ];
+			playlist->currFile = goc_arraySize(playlist->files) - 1;
 	}
+	return goc_arrayGet(playlist->files, playlist->currFile);
 }
 
 void playlistShuffleMode(unsigned char mode)
@@ -138,8 +145,9 @@ void playlistShuffleMode(unsigned char mode)
 	{
 		int i;
 		// wyszukaj najblizsza liczbe pierwsza
-		if ( playlist->nFilelist == 0 )
+		if ( goc_arrayIsEmpty( playlist->files ) ) {
 			return;
+		}
 
 		// ustaw parametry losowania
 		srand(time(0u));
@@ -150,9 +158,8 @@ void playlistShuffleMode(unsigned char mode)
 					&playlist->nShuffle);
 		}
 		// zaloz nowa liste shuffle
-		playlist->pShuffle = (int*)malloc(
-			sizeof(int)*playlist->nFilelist);
-		playlist->nShuffle = playlist->nFilelist;
+		playlist->nShuffle = goc_arraySize(playlist->files);
+		playlist->pShuffle = (int*)malloc(sizeof(int)*playlist->nShuffle);
 		for ( i=0; i<playlist->nShuffle; i++ )
 			playlist->pShuffle[i] = i;
 
@@ -171,22 +178,20 @@ void playlistShuffleMode(unsigned char mode)
 int playlistInit()
 {
 	playlist = (stPlaylist *) malloc(sizeof(stPlaylist));
-	if(!playlist)
+	if(!playlist) {
 		return -1;
+	}
 	memset(playlist,0,sizeof(stPlaylist));
 	playlist->currFile = -1;
 	playlist->currShuffle = -1;
+	playlist->files = goc_arrayAlloc();
 	return 0;
 }
 
 void playlistClear()
 {
-	unsigned int i;
-	if ( playlist->pFilelist )
-		for ( i = 0; i < playlist->nFilelist; i++ )
-			free( playlist->pFilelist[ i ] );
-	playlist->pFilelist = goc_tableClear(
-		playlist->pFilelist, &playlist->nFilelist);
+	GOC_DEBUG("-> Playlist clear");
+	playlist->files = goc_arrayFree( playlist->files );
 	playlist->pShuffle = goc_tableClear(
 		playlist->pShuffle, &playlist->nShuffle );
 	playlist->pQueue = goc_tableClear(
@@ -194,8 +199,8 @@ void playlistClear()
 }
 
 void playlistCleanup()
-	// func do przebudowania
 {
+	GOC_DEBUG("-> Playlist cleanup");
 	playlistClear();
 	if ( playlist )
 		free( playlist );
@@ -204,40 +209,43 @@ void playlistCleanup()
 
 int playlistGetSize()
 {
-	if ( playlist )
-		return playlist->nFilelist;
+	if ( playlist ) {
+		return goc_arraySize( playlist->files );
+	}
 	return 0;
 }
 
 int playlistGetActualPos()
 {
-	if ( playlist )
+	if ( playlist ) {
 		return playlist->currFile;
+	}
 	return -1;
 }
 
 const char *playlistGetFile( int pos )
 {
-	if (( playlist ) && (pos >=0) && ( pos < playlist->nFilelist ))
-		return playlist->pFilelist[pos];
+	if (( playlist ) && (pos >=0) && ( pos < goc_arraySize( playlist->files) )) {
+		return goc_arrayGet( playlist->files, pos );
+	}
 	return NULL;
 }
 
 const char **playlistGetTable( )
 {
-	if ( playlist )
-		return (const char **)playlist->pFilelist;
+	if ( playlist ) {
+		return (const char**)playlist->files->pElement;
+	}
 	return NULL;
 }
 
 int playlistRemoveFile( int pos )
 {
 	int i, p = -1;
-	if (( !playlist ) || ( pos < 0 ) || ( pos >= playlist->nFilelist ))
+	if (( !playlist ) || ( pos < 0 ) || ( pos >= goc_arraySize(playlist->files) )) {
 		return -1;
-	playlist->pFilelist = goc_tableRemove(
-		playlist->pFilelist, &playlist->nFilelist, sizeof(char *),
-		pos);
+	}
+	goc_arrayRemoveAt( playlist->files, pos );
 	if ( playlist->pShuffle )
 	{
 		for ( i=0; i<playlist->nShuffle; i++ )
@@ -264,12 +272,12 @@ int playlistRemoveFile( int pos )
  */
 int playlistAddFile( const char *filename )
 {
-	char *tmp, *p;
+	char* tmp = NULL;
+	char* p = NULL;
 	
 	if ( !filename )
 		return -1;
 
-	tmp = NULL;
 	tmp = goc_stringCopy(tmp, filename);
 
 	if ( (p = strchr(tmp, '\n')) )
@@ -282,10 +290,8 @@ int playlistAddFile( const char *filename )
 		return -1;
 	}
 
-	playlist->pFilelist = goc_tableAdd(
-		playlist->pFilelist, &playlist->nFilelist, sizeof(char *));
-	playlist->pFilelist[playlist->nFilelist-1] = tmp;
-		
+	goc_arrayAdd( playlist->files, tmp );
+
 	return 0;
 }
 
@@ -293,16 +299,16 @@ int playlistStoreInFile( const char *filename )
 {
 	FILE *plik = NULL;
 	int i;
-	printf("Storing at %s\n", filename);
-	fflush(stdout);
+	GOC_BDEBUG("Stroing playlist at %s", filename);
 	if ( ! filename )
 		return -1;
 	plik = fopen(filename, "wb");
 	if ( ! plik )
 		return -1;
-	for ( i=0; i<playlist->nFilelist; i++ )
+	for ( i=0; i<goc_arraySize(playlist->files); i++ )
 	{
-		fprintf(plik, "%s\n", playlist->pFilelist[i]);
+		char* str = goc_arrayGet(playlist->files, i);
+		fprintf(plik, "%s\n", str);
 	}
 	fclose( plik );
 	return 0;
@@ -318,12 +324,10 @@ int playlistAddList( const char *filename )
 
 	plik = fopen(filename, "r");
 	
-	while ( fgets(buf, 1024, plik) )
+	while ( fgets(buf, 1024, plik) ) {
 		playlistAddFile(buf);
+	}
 
 	fclose(plik);
-#ifdef _VERBOSE_
-	printf("Now id %d files on playlist.\n", playlist->nFilelist);
-#endif
 	return 0;
 }

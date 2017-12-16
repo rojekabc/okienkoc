@@ -19,7 +19,9 @@
 #include <tools/plik.h>
 #define GOC_PRINTINFO
 #define GOC_PRINTERROR
-#define GOC_PRINTDEBUG
+#ifdef _DEBUG_
+	#define GOC_PRINTDEBUG
+#endif
 #include <tools/log.h>
 #include <tools/memostream.h>
 #include <tools/mystr.h>
@@ -45,6 +47,9 @@
 #include "finfo.h"
 #include "control.h"
 #include "playlist.h"
+#ifdef HAS_LIBSOX
+#	include <sox.h>
+#endif
 
 #define PREFIX "/usr/local"
 #define PROGNAME "rmp3"
@@ -592,6 +597,9 @@ int main(int argc, char *argv[])
 		}
 		fclose(plik);
 	}
+#ifdef HAS_LIBSOX
+//	GOC_CHEOP(sox_init() == SOX_SUCCESS, endProgram(1));
+#endif
 	/* Wstepne inicjowanie modulu playlist */
 	// ---------------------------------------------------------------
 	if ( playlistInit() )
@@ -664,6 +672,8 @@ int main(int argc, char *argv[])
 	GOC_CHEOP(finfoInitialize() == FINFO_CODE_OK, endProgram(-1));
 	// rozpoczecie grania
 	controlStart();
+
+	mixerFree( mixer );
 	// save playlist
 	if ( ! isLoadFromCmd )
 	{

@@ -80,7 +80,8 @@ MixerHandler mixerFree(MixerHandler handler) {
 		if ( mixer->mixerCardClose ) {
 			mixer->mixerCardClose( mixer );
 		}
-		mixer->mixerCard = goc_arrayFree( mixer->mixerCard );
+		mixer->mixerCard = goc_arrayClear( mixer->mixerCard );
+		free( mixer );
 	}
 	return 0;
 }

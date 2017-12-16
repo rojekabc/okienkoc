@@ -12,9 +12,6 @@ size_t size = 0;
 size_t clips = 0; SOX_SAMPLE_LOCALS;
 
 DecoderCode decoderInitialize() {
-	if (sox_init() != SOX_SUCCESS) {
-		return DECODER_CODE_FAIL;
-	}
 	return DECODER_CODE_OK;
 }
 

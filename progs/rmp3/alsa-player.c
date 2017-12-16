@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #define GOC_PRINTERROR
+#ifdef _DEBUG_
+#	define GOC_PRINTDEBUG
+#endif
 #include <tools/log.h>
 
 #define PCM_DEVICE "default"
@@ -17,15 +20,21 @@ int bufsize;
 snd_pcm_uframes_t frames;
 
 PlayerCode playerCloseOutput() {
+	GOC_DEBUG("-> playerCloseOutput");
 	if ( handler ) {
-		snd_pcm_drain( handler );
+		// Marked because of playling whole file before close
+		// snd_pcm_drain( handler );
 		snd_pcm_close( handler );
 		handler = NULL;
 	}
+	/* Marked because of failing
 	if ( params ) {
 		snd_pcm_hw_params_free( params );
+		GOC_DEBUG("free");
 		params = NULL;
 	}
+	*/
+	GOC_DEBUG("<- playerCloseOutput");
 	return PLAYER_CODE_OK;
 }
 
@@ -66,7 +75,6 @@ PlayerCode playerOpenOutput() {
 
 PlayerCode playerPlay(int16_t* pBuf, size_t nBuf) {
 	int err;
-	int toplay;
 	snd_pcm_uframes_t framesToPlay;
 	// TO THINK buffsize and frames
 	while ( nBuf > 0 ) {

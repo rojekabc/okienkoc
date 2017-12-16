@@ -36,10 +36,6 @@
 #define MODE_PLAYING 1
 #define MODE_PAUSED 2
 
-#ifdef _DEBUG
-#	include <mpatrol.h>
-#endif
-
 GOC_HANDLER nTytul;
 GOC_HANDLER nMixer;
 GOC_HANDLER pMixer;
@@ -371,9 +367,17 @@ static int hotKeyAddFolder(
 // find audio stream in the file
 static void checkAddFile(const char *fullname)
 {
-	FileInfo fileInfo;
+	struct FileInfo fileInfo;
+	memset( &fileInfo, 0, sizeof(struct FileInfo) );
 	if ( finfoInfo(fullname, &fileInfo) == FINFO_CODE_OK ) {
 		doActionCall(ACTION_PLAYLIST_ADDFILE, (void*)fullname);
+		goc_stringFree(fileInfo.filename);
+		goc_stringFree(fileInfo.title);
+		goc_stringFree(fileInfo.artist);
+		goc_stringFree(fileInfo.album);
+		goc_stringFree(fileInfo.year);
+		goc_stringFree(fileInfo.comment);
+		goc_stringFree(fileInfo.genre);
 	}
 	return;
 }
@@ -427,6 +431,7 @@ static int hotKeySelectFolder(
 		GOC_MSG_PAINT(msgPaint);
 		goc_systemSendMsg(nStatus, msgPaint);
 	}
+	goc_stringFree( element );
 	return GOC_ERR_OK;
 }
 

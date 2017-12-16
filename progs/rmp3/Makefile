@@ -10,13 +10,13 @@ include Makefile.properties
 
 ifeq ($(PLATFORM),linux)
 	CC := gcc
-	LDFLAGS := -lpthread -lprojewski-tools -lm -lavutil
+	LDFLAGS := -lpthread -lprojewski-tools -lm
 	CFLAGS := -DI386_ASSEM -DPENTIUM_OPT -DREAL_IS_FLOAT -DLINUX -DOSS -DTERM_CONTROL -Wall -fomit-frame-pointer -funroll-all-loops -finline-functions -ffast-math
 	CFLAGS += -I/usr/local/include/projewski
 endif
 
 ifeq ($(DEBUG),true)
-	CFLAGS += -g -O0
+	CFLAGS += -g -O0 -D_DEBUG_
 else
 	CFLAGS += -O3
 endif
@@ -52,6 +52,10 @@ ifeq ($(FILEINFO_LIBRARY),ffmpeg)
 	CFLAGS += -DHAS_FFMPEG
 	LDFLAGS += -lavutil -lavformat
 	OBJECTS += ffmpeg-finfo.o
+else ifeq ($(FILEINFO_LIBRARY),libsox)
+	CFLAGS += -DHAS_LIBSOX
+	LDFLAGS += -lsox
+	OBJECTS += libsox-finfo.o
 endif
 
 ifeq ($(CONTROL_LIBRARY),okienko)
@@ -68,7 +72,7 @@ all: prepare rmp3
 prepare:
 	rm -rf ERRORS
 
-rmp3: Makefile $(OBJECTS)
+rmp3: Makefile Makefile.properties $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ 2>> ERRORS
 
 $(OBJECTS): %.o: %.c
