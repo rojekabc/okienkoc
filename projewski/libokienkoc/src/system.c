@@ -51,7 +51,7 @@ typedef struct
 } GOC_StDefListen;
 
 // Zarejestrowane modu³y generuj±ce zdarzenia
-GOC_Array* generators;
+GOC_Array* generators = NULL;
 
 static GOC_StDefListen* freeDefListen(GOC_StDefListen* listen)
 {
@@ -133,7 +133,7 @@ static int systemClose(GOC_BOOL isError)
 			}
 			generators->pElement[i] = NULL;
 		}
-		goc_arrayFree( generators );
+		generators = goc_arrayFree( generators );
 	}
 	// Remove elements, which still are in system
 	while (pElements->nElement)
@@ -757,7 +757,7 @@ int goc_systemRegisterMsgGenerator(
 		return GOC_ERR_FALSE;
 	}
 
-	generators = goc_arrayAdd( generators, terminal );
+	generators = generators = goc_arrayAdd( generators, terminal );
 	return GOC_ERR_OK;
 }
 

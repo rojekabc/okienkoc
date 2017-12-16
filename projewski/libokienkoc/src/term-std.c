@@ -19,14 +19,14 @@ int xkey[GOC_REDEFSIZE] =
 {
 	0x0a,// Enter
 	0x1b5b337e, // Del
-	0x1b5b317e, // Home
+	0x1b5b48, // Home
 	0x1b5b44, // Up
 	0x1b5b41, // Left
 	0x1b5b43, // Right
 	0x1b5b42, // Down
 	0x1b5b357e, // PgUp
 	0x1b5b367e, // PgDown
-	0x1b5b347e // End
+	0x1b5b46 // End
 };
 int rkey[GOC_REDEFSIZE] =
 {

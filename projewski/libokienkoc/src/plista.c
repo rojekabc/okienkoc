@@ -16,10 +16,6 @@
 //#include "ramka.h"
 //#include "hotkey.h"
 //
-// get_current_dir_name() is not under memwatch controll
-#ifdef _DEBUG
-#	define get_current_dir_name() mwMark(get_current_dir_name(), "get_current_dir_name", __FILE__, __LINE__)
-#endif
 
 const char* GOC_ELEMENT_FILELIST = "GOC_FileList";
 

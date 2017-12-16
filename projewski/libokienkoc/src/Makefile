@@ -15,7 +15,6 @@ include Makefile.properties
 
 ifeq ($(DEBUG),true)
 	CFLAGS += -g -O0 -D_DEBUG
-	LFLAGS += memwatch.o
 else
 	CFLAGS += -O2 -s
 	LFLAGS += -s
