@@ -54,6 +54,15 @@ GOC_Array* goc_arrayRemoveAt(GOC_Array* array, int pos) {
 	return array;
 }
 
+GOC_Array* goc_arrayInsert(GOC_Array* array, int pos, void* pElement) {
+	if ( array && pos >=0 ) {
+		array->pElement = goc_tableInsert(array->pElement, &array->nElement,
+			sizeof(void*), pos);
+		array->pElement[pos] = pElement;
+	}
+	return array;
+}
+
 GOC_Array* goc_arrayClear(GOC_Array* array) {
 	if ( array ) {
 		int i;

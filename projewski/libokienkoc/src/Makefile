@@ -61,17 +61,10 @@ PREFIXINCLUDE = $(PREFIX)/include/projewski/okienkoc
 
 all: prepare $(TARGETOUTLIB) $(TERMINALLIBS)
 
-debug: preparedebug memwatch.o $(TARGETOUTLIB) $(TERMINALLIBS)
-
 prepare:
 	@echo "Preparing..."
 	@rm -f ERRORS
-	@rm -rf target
-	@mkdir target
-
-preparedebug:
-	@echo "Preparing..."
-	@rm -f ERRORS
+	@if ! test -e target; then mkdir target; fi
 
 $(TARGETOBJS): target/%.o: %.c $(INCLUDEFILE)
 	@echo "--- Compile $< ---" >> $(OUTERROR)

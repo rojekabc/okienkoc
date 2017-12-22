@@ -31,23 +31,23 @@ void listaBuduj(GOC_HANDLER lista)
 void listaBudujKolumna(GOC_HANDLER lista)
 {
 	goc_listAddText(lista, "alfa");
-	goc_listSetColumnText(lista, "beta", 1);
+	goc_listSetTextToColumn(lista, "beta", 1);
 	goc_listAddText(lista, "auto");
-	goc_listSetColumnText(lista, "blok", 1);
+	goc_listSetTextToColumn(lista, "blok", 1);
 	goc_listAddText(lista, "cesna");
-	goc_listSetColumnText(lista, "ciezar", 1);
+	goc_listSetTextToColumn(lista, "ciezar", 1);
 	goc_listAddText(lista, "drezno");
-	goc_listSetColumnText(lista, "dublin", 1);
+	goc_listSetTextToColumn(lista, "dublin", 1);
 	goc_listAddText(lista, "ekran");
-	goc_listSetColumnText(lista, "ewolucja", 1);
+	goc_listSetTextToColumn(lista, "ewolucja", 1);
 	goc_listAddText(lista, "fragment");
-	goc_listSetColumnText(lista, "fuzja", 1);
+	goc_listSetTextToColumn(lista, "fuzja", 1);
 	goc_listAddText(lista, "gra");
-	goc_listSetColumnText(lista, "gapik", 1);
+	goc_listSetTextToColumn(lista, "gapik", 1);
 	goc_listAddText(lista, "hamak");
-	goc_listSetColumnText(lista, "hak", 1);
+	goc_listSetTextToColumn(lista, "hak", 1);
 	goc_listAddText(lista, "ig³a");
-	goc_listSetColumnText(lista, "iskra", 1);
+	goc_listSetTextToColumn(lista, "iskra", 1);
 }
 
 int main()

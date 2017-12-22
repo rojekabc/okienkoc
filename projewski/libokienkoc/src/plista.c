@@ -66,7 +66,7 @@ static int filelistHotKeyFolder(
 	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
 	GOC_StFileList *plista = (GOC_StFileList*)uchwyt;
-	char *name = goc_listGetUnderCursor(uchwyt);
+	char *name = goc_listGetText( uchwyt );
 	int wiersz = -1;
 	char *prevname = NULL;
 
@@ -90,30 +90,6 @@ static int filelistHotKeyFolder(
 		}
 	}
 		
-//	if ( name == NULL )
-//		return GOC_ERR_OK;
-//	if ( name[strlen(name)-1] != '/' )
-//		return GOC_ERR_OK;
-	// wyodrebnij poprzedni folder, jezeli nastapila zmiana do gory
-//	if ( goc_systemSendMsg(uchwyt, WIESC_PLISTA_PRZEJDZDOKATALOGU,
-//		(unsigned char *)name, 0)
-//		!= GOC_ERR_OK )
-//		return GOC_ERR_FALSE;
-/*	if ( strcmp(name, "../") == 0 )
-	{
-		char *p;
-		int len = strlen(plista->folder);
-
-		if (len > 1)
-		{
-			if ( plista->folder[len-1] == '/' )
-				plista->folder[len-1] = 0;
-
-			p = strrchr( plista->folder, '/');
-			prevname = goc_stringCopy( NULL, p + 1 );
-			prevname = goc_stringAdd(prevname, "/");
-		}
-	}*/
 	// przejdz
 	goc_filelistSetFolder(uchwyt, name);
 	if ( prevname != NULL )
@@ -164,7 +140,6 @@ int goc_filelistSetFolder(GOC_HANDLER uchwyt, const char *dirname)
 	ret = goc_systemSendMsg(uchwyt, msglistfolder );
 	if ( ret != GOC_ERR_OK )
 		return ret;
-//	ret = goc_listSetCursor(uchwyt, 0);
 	return ret;
 }
 
@@ -188,7 +163,7 @@ static int filelistListFolder(GOC_HANDLER uchwyt, char *name)
 		return GOC_ERR_FALSE;
 	while ( (ent = readdir( dir )) != NULL )
 	{
-		char *buf;
+		char *buf = NULL;
 		unsigned int flag = 0;
 
 		if (( strcmp(ent->d_name, "..") == 0 ) && ( strlen(name) == 1 ))
@@ -209,10 +184,9 @@ static int filelistListFolder(GOC_HANDLER uchwyt, char *name)
 		}
 		GOC_MSG_FILELISTADDFILE( msgaddfile, ent->d_name, flag );
 		if ( goc_systemSendMsg(uchwyt, msgaddfile ) == GOC_ERR_OK ) {
-			GOC_MSG_LISTADDTEXT( msgaddtext, buf );
-			goc_systemSendMsg(uchwyt, msgaddtext);
+			GOC_MSG_LISTADD( msgadd, buf );
+			goc_systemSendMsg(uchwyt, msgadd);
 		}
-		buf = goc_stringFree(buf);
 	}
 	closedir( dir );
 	return GOC_ERR_OK;

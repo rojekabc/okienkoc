@@ -7,6 +7,7 @@
 #include <tools/screen.h>
 #include <tools/mystr.h>
 #include <tools/tablica.h>
+#include <tools/malloc.h>
 #include "napis.h"
 #include "ramka.h"
 #include "hotkey.h"
@@ -18,114 +19,72 @@ const char* GOC_ELEMENT_LIST = "GOC_List";
 // message ids
 const char* GOC_MSG_LISTCHANGE_ID = "GOC_MsgListChange";
 const char* GOC_MSG_LISTSETCOLOR_ID = "GOC_MsgListSetColor";
-const char* GOC_MSG_LISTADDTEXT_ID = "GOC_MsgListAddText";
+const char* GOC_MSG_LISTADD_ID = "GOC_MsgListAdd";
 const char* GOC_MSG_LISTCLEAR_ID = "GOC_MsgListClear";
 const char* GOC_MSG_LISTSETEXTERNAL_ID = "GOC_MsgListSetExternal";
-const char* GOC_MSG_LISTADDROW_ID = "GOC_MsgListAddRow";
 
 int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width)
 {
 	GOC_POSITION free;
-	GOC_COLUMN *kolumna;
+	ALLOC(GOC_COLUMN, newColumn);
 	int i;
 	GOC_StList *lista = (GOC_StList*)u;
+
+	// calculate witdh of new column
 	free = goc_elementGetWidth(u);
 	free -= 2; /* ramka */
-	for ( i=0; i<lista->nKolumna; i++ )
-		free -= lista->pKolumna[i]->position;
-	lista->pKolumna = goc_tableAdd( lista->pKolumna, &(lista->nKolumna), sizeof(GOC_COLUMN*) );
-	kolumna = malloc(sizeof(GOC_COLUMN));
-	memset(kolumna, 0, sizeof(GOC_COLUMN));
-	lista->pKolumna[lista->nKolumna-1] = kolumna;
-	kolumna->position = width <= free ? width : free;
-	// Wyrowanie liczby wierszow w stosunku do istenijacych kolumn
-	if ( lista->nKolumna > 1 )
-	{
-		kolumna->pText = goc_tableResize(kolumna->pText,
-			&(kolumna->nText), sizeof(char*),
-			lista->pKolumna[0]->nText);
-		// Wyzerowanie wierszy
-		if ( kolumna->pText )
-			memset(kolumna->pText, 0,
-				sizeof(char*)*kolumna->nText);
+	for ( i=0; i < goc_arraySize(&lista->columns); i++ ) {
+		free -= ((GOC_COLUMN*)goc_arrayGet(&lista->columns, i))->position;
 	}
-//	lista->kursor = -1;
+	goc_arrayAdd(&lista->columns, newColumn);
+	newColumn->position = width <= free ? width : free;
+
+	// new column has to have same number of rows
+	if ( goc_arraySize(&lista->columns) > 1 )
+	{
+		GOC_COLUMN* firstColumn = goc_arrayGet( &lista->columns, 0);
+		int i = goc_arraySize( &firstColumn->elements );
+		for ( ; i>0; i--) {
+			goc_arrayAdd( &newColumn->elements, NULL );
+		}
+	}
 	return GOC_ERR_OK;
 }
 
-// ustawienie w kolumnie tekstu w pierwszej wolnej pozycji, jesli nie znajdzie
-// zostanie dodana nowa kolumna
-int goc_listSetColumnText(GOC_HANDLER u, const char *tekst, int kolumna)
+int goc_listSetToColumn(GOC_HANDLER u, void* element, int column)
 {
 	GOC_StList* lista = (GOC_StList*)u;
 	GOC_COLUMN *k = NULL;
 	int i;
 
-	if ( lista->flag & GOC_LISTFLAG_EXTERNAL )
+	if ( column >= goc_arraySize( &lista->columns) ) {
 		return GOC_ERR_REFUSE;
-	if ( kolumna >= lista->nKolumna )
-		return GOC_ERR_REFUSE;
-	k = lista->pKolumna[kolumna];
-	for ( i=0; i<k->nText; i++ )
+	}
+	k = goc_arrayGet( &lista->columns, column );
+	for ( i=0; i < goc_arraySize( &k->elements ); i++ )
 	{
-		if ( k->pText[i] == NULL )
+		if ( goc_arrayGet( &k->elements, i ) == NULL )
 		{
-			k->pText[i] = goc_stringCopy(k->pText[i], tekst);
+			goc_arraySet( &k->elements, i, element );
 			return GOC_ERR_OK;
 		}
 	}
-	return goc_listAddColumnText(u, tekst, kolumna);
+	return goc_listAddTextToColumn(u, element, column);
+}
+// ustawienie w kolumnie tekstu w pierwszej wolnej pozycji, jesli nie znajdzie
+// zostanie dodana nowa kolumna
+int goc_listSetTextToColumn(GOC_HANDLER u, const char *tekst, int kolumna)
+{
+	GOC_StList* lista = (GOC_StList*)u;
+
+	if ( lista->flag & GOC_LISTFLAG_EXTERNAL ) {
+		return goc_listSetToColumn( u, (void*)tekst, kolumna );
+	} else {
+		return goc_listSetToColumn( u, goc_stringCopy(NULL, tekst), kolumna );
+	}
 }
 
-// Dodanie nowego wierszu i ustawienie tekstu dla podanej kolumny
-int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna)
-{
-	GOC_LISTROW wiersz;
-	int ret;
-	
-	memset( &wiersz, 0, sizeof(GOC_LISTROW));
-	wiersz.pText = goc_tableResize( wiersz.pText, &(wiersz.nText),
-		sizeof(char*), kolumna+1);
-	wiersz.pText[kolumna] = tekst;
-	wiersz.nRow = -1;
-	GOC_MSG_LISTADDROW( msg, &wiersz );
-	ret = goc_systemSendMsg(u, msg);
-	wiersz.pText = goc_tableClear( wiersz.pText, &(wiersz.nText) );
-	return ret;
-	/*
-	GOC_StList* lista = (GOC_StList*)u;
-	char *pBuf = NULL;
-	GOC_COLUMN *k = NULL;
-	int i;
-	
-	if ( lista->flag & GOC_LISTFLAG_EXTERNAL )
-		return GOC_ERR_REFUSE;
-	// jesli nie ma to stworz nowa kolumne
-	if ( lista->nKolumna == 0 )
-		goc_listAddColumn(u, lista->width);
-	if ( kolumna >= lista->nKolumna )
-		return GOC_ERR_REFUSE;
-	// zrob kopie dodawanego tekstu
-	pBuf = goc_stringCopy(pBuf, tekst);
-	// dodaj do wszystkich kolumn wiersz, ustawiajac ten do ktorego
-	// ma zostac wpisany tekst
-	for ( i=0; i<lista->nKolumna; i++ )
-	{
-		k = lista->pKolumna[i];
-		k->pText = goc_tableAdd(k->pText, &(k->nText),sizeof(char*));
-		if ( i != kolumna )
-			k->pText[k->nText-1] = NULL;
-		else
-			k->pText[k->nText-1] = pBuf;
-	}
-	return GOC_ERR_OK;
-	*/
-}
-/*
- * Odmowa wykonania polecenia, jezeli ustawione dane sa zewnetrzne.
- */
-static int listAddRow(GOC_HANDLER u, GOC_LISTROW *wiersz)
-{
+int goc_listInsertInColumn(GOC_HANDLER u, void* element, int column, int row) {
 	GOC_StList* lista = (GOC_StList*)u;
 	GOC_COLUMN *k = NULL;
 	int i;
@@ -133,124 +92,94 @@ static int listAddRow(GOC_HANDLER u, GOC_LISTROW *wiersz)
 	if ( lista->flag & GOC_LISTFLAG_EXTERNAL )
 		return GOC_ERR_REFUSE;
 	// jesli nie ma to stworz nowa kolumne
-	if ( lista->nKolumna == 0 )
+	if ( goc_arraySize( &lista->columns ) == 0 ) {
 		goc_listAddColumn(u, goc_elementGetWidth(u));
+	}
 	// ustal pozcje na podstawie sortowania lub jako ostatni element
-	if ( wiersz->nRow == -1 )
-	{
-		if ( lista->flag & GOC_LISTFLAG_SORT )
-		{
-			k = lista->pKolumna[0];
-			for (i=0; i<k->nText; i++)
-			{
-				if ( strcmp(wiersz->pText[0], k->pText[i])<0 )
+	k = goc_arrayGet( &lista->columns, 0 );
+	if ( row == -1 ) {
+		if ( lista->flag & GOC_LISTFLAG_SORT ) {
+			const char* newElementText = lista->elementToText( element );
+			for (i=0; i< goc_arraySize( &k->elements ); i++) {
+				void* element = goc_arrayGet( &k->elements, i );
+				if ( strcmp(newElementText, lista->elementToText( element )) < 0 ) {
 					break;
+				}
 			}
-			wiersz->nRow = i;
+			row = i;
 		}
-		else
-		{
-			wiersz->nRow = lista->pKolumna[0]->nText;
+		else {
+			row = goc_arraySize( &k->elements );
 		}
 	}
 	// czy nie wykracza ponad dodanie
-	if ( wiersz->nRow > lista->pKolumna[0]->nText )
+	if ( row > goc_arraySize( &k->elements ) ) {
 		return GOC_ERR_REFUSE;
-	// dodawanie danych wiersza do kolumn
-	for ( i=0; i<lista->nKolumna; i++ )
-	{
-		k = lista->pKolumna[i];
-		k->pText = goc_tableInsert(k->pText, &(k->nText), sizeof(char*),
-				wiersz->nRow);
-
-		if ( i < wiersz->nText )
-		{
-			k->pText[wiersz->nRow] = goc_stringCopy(NULL,
-				wiersz->pText[i]);
-		}
-		else
-		{
-			k->pText[wiersz->nRow] = NULL;
+	}
+	// dodawanie do wybranej kolumny wiersza
+	// pozotale kolumny puste
+	for ( i=0; i< goc_arraySize( &lista->columns ); i++ ) {
+		k = goc_arrayGet( &lista->columns, i );
+		if ( i == column ) {
+			goc_arrayInsert( &k->elements, row, element );
+		} else {
+			goc_arrayInsert( &k->elements, row, NULL );
 		}
 	}
 	return GOC_ERR_OK;
-
-//	return goc_listAddColumnText(u, tekst, 0);
-/*	GOC_StList* lista = (GOC_StList*)u;
-	char *pBuf = NULL;
-	GOC_COLUMN *kolumna = NULL;
-	if ( lista->flag & GOC_LISTFLAG_EXTERNAL )
-		return GOC_ERR_REFUSE;
-	if ( lista->nKolumna == 0 )
-		goc_listAddColumn(u, lista->width);
-	kolumna = lista->pKolumna[0];
-	pBuf = goc_stringCopy(pBuf, tekst);
-	kolumna->pText = goc_tableAdd( kolumna->pText, &(kolumna->nText),
-		sizeof(char*) );
-	kolumna->pText[kolumna->nText-1] = pBuf;
-//	goc_systemSendMsg(u, GOC_MSG_PAINT, 0, 0);
-	return GOC_ERR_OK;*/
 }
 
-static int listAddText(GOC_HANDLER u, const char *buf)
+// Dodanie nowego wiersza dla wybranej kolumny
+// tekst zostanie w tym przypadku skopiowany
+int goc_listAddTextToColumn(GOC_HANDLER u, const char *tekst, int kolumna)
 {
-	GOC_LISTROW wiersz;
-	int retCode;
-	memset( &wiersz, 0, sizeof(GOC_LISTROW) );
-	wiersz.nRow = -1;
-	wiersz.pText = goc_tableAdd(wiersz.pText, &wiersz.nText,
-		sizeof(const char *));
-	wiersz.pText[wiersz.nText-1] = buf;
-	GOC_MSG_LISTADDROW( msg, &wiersz );
-	retCode = goc_systemSendMsg(u, msg);
-	wiersz.pText = goc_tableClear(wiersz.pText, &wiersz.nText);
-	return retCode;
+	GOC_StList* lista = (GOC_StList*)u;
+	if ( lista->flag & GOC_LISTFLAG_EXTERNAL ) {
+		return goc_listInsertInColumn(u, (void*)tekst, kolumna, -1);
+	} else {
+		return goc_listInsertInColumn(u, goc_stringCopy(NULL, tekst), kolumna, -1);
+	}
 }
 
-const char *goc_listGetColumnText(GOC_HANDLER u, int pos, int kol)
-{
-	GOC_StList *lista = (GOC_StList*)u;
-	if ( lista == NULL )
-		return NULL;
-	if ( kol < 0 )
-		return NULL;
-	if ( kol >= lista->nKolumna )
-		return NULL;
-	if ( pos < 0 )
-		return NULL;
-	if ( pos >= lista->pKolumna[kol]->nText )
-		return NULL;
-	return lista->pKolumna[kol]->pText[pos];
+int goc_listAddToColumn(GOC_HANDLER u, void* element, int column) {
+	return goc_listInsertInColumn(u, element, column, -1);
 }
+
+static int listAdd(GOC_HANDLER u, void* element) {
+	return goc_listInsertInColumn(u, element, 0, -1);
+}
+
 /*
  * Odmowa wykonania polecenia, jezeli ustawione dane sa zewnetrzne.
  */
 int goc_listAddText(GOC_HANDLER u, const char *tekst)
 {
-	GOC_MSG_LISTADDTEXT( msg, tekst );
-	return goc_systemSendMsg(u, msg);
+	GOC_StList* lista = (GOC_StList*)u;
+	if ( lista->flag & GOC_LISTFLAG_EXTERNAL ) {
+		return goc_listAdd(u, (void*)tekst);
+	} else {
+		return goc_listAdd(u, goc_stringCopy(NULL, tekst) );
+	}
 }
 
-const char *goc_listGetText(GOC_HANDLER u, int pos)
-{
-	GOC_StList *lista = (GOC_StList*)u;
-	if ( lista == NULL )
-		return NULL;
-	return goc_listGetColumnText(u, pos, lista->nKolumna-1);
+int goc_listAdd(GOC_HANDLER u, void* element) {
+	GOC_MSG_LISTADD(msg, element);
+	return goc_systemSendMsg(u, msg);
 }
 
 int goc_listSetTitle(GOC_HANDLER u, const char *tekst)
 {
 	GOC_StList *lista = (GOC_StList*)u;
-	lista->pTytul = goc_stringCopy(lista->pTytul, tekst);
+	lista->pTitle = goc_stringCopy(lista->pTitle, tekst);
 	return GOC_ERR_OK;
 }
 
 static GOC_COLOR listSetColor(GOC_HANDLER uchwyt, int pos)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
-	if ( lista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &lista->columns ) ) {
 		return lista->color;
+	}
 	if ( pos != lista->kursor )
 		return lista->color;
 	else
@@ -262,10 +191,11 @@ int goc_listGetRowsAmmount(GOC_HANDLER uchwyt)
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int n = 0;
 	int j;
-	for ( j=0; j<lista->nKolumna; j++ )
-	{
-		if ( n < lista->pKolumna[j]->nText )
-			n = lista->pKolumna[j]->nText;
+	for ( j=0; j < goc_arraySize( &lista->columns ); j++ ) {
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, j );
+		if ( n < goc_arraySize( &column->elements ) ) {
+			n = goc_arraySize( &column->elements );
+		}
 	}
 	return n;
 }
@@ -286,14 +216,15 @@ static void listRedrawLine(GOC_HANDLER u, int pos)
 	e.color = msgFull.color;
 	e.y += pos - lista->start + 1;
 	(e.x)++;
-	for ( j = 0; j < lista->nKolumna; j++ )
-	{
-		k = lista->pKolumna[j];
+	for ( j = 0; j < goc_arraySize( &lista->columns ); j++ ) {
+		k = goc_arrayGet( &lista->columns, j );
 		e.width = k->position;
-		if ( pos<k->nText )
-			drawer(&e, k->pText[pos]);
-		else
+		if ( pos < goc_arraySize( &k->elements ) ) {
+			void* element = goc_arrayGet( &k->elements, pos );
+			drawer(&e, lista->elementToText(element) );
+		} else {
 			drawer(&e, "");
+		}
 		e.x += k->position;
 	}
 }
@@ -317,7 +248,7 @@ static int goc_listPaint(GOC_HANDLER u)
 	e.color = lista->kolorRamka;
 	goc_elementGetFrameDrawer(u)(&e, "*-*| |*-*");
 	// rysowanie tytulu, jesli obecny
-	if ( lista->pTytul )
+	if ( lista->pTitle )
 	{
 		GOC_StElement elTytul;
 		memcpy( &elTytul, lista, sizeof(GOC_StElement));
@@ -328,12 +259,12 @@ static int goc_listPaint(GOC_HANDLER u)
 		if ( elTytul.width > 2 )
 		{
 			elTytul.width -= 4;
-			if ( strlen(lista->pTytul)+2 < elTytul.width )
-				elTytul.width = strlen(lista->pTytul)+2;
+			if ( strlen(lista->pTitle)+2 < elTytul.width )
+				elTytul.width = strlen(lista->pTitle)+2;
 		}
 		else
 			elTytul.width = 0;
-		drawer(&elTytul, lista->pTytul);
+		drawer(&elTytul, lista->pTitle);
 
 	}
 	
@@ -346,26 +277,21 @@ static int goc_listPaint(GOC_HANDLER u)
 		GOC_MSG_LISTSETCOLOR( msg, i);
 		goc_systemSendMsg(u, msg);
 		e.color = msgFull.color;
-//		j %= lista->nKolumna;
 		e.y++;
 		e.x = lista->x;
 		(e.x)++;
-		for ( j = 0; j < lista->nKolumna; j++ )
+		for ( j = 0; j < goc_arraySize( &lista->columns ); j++ )
 		{
-			k = lista->pKolumna[j];
+			k = goc_arrayGet( &lista->columns, j );
 			e.width = k->position;
-			if ( i<k->nText )
-				drawer(&e, k->pText[i]);
-			else
+			if ( i < goc_arraySize( &k->elements ) ) {
+				void* element = goc_arrayGet( &k->elements, i );
+				drawer(&e, lista->elementToText( element ));
+			} else {
 				drawer(&e, "");
+			}
 			e.x += k->position;
 		}
-
-//		if (!j)
-//		{
-//		}
-//		e.width = lista->pKolumna[j];
-//		j++;
 	}
 	if (lista->kursor != -1)
 		goc_gotoxy(
@@ -404,15 +330,38 @@ static int listFocusFree(GOC_HANDLER uchwyt)
 	return GOC_ERR_OK;
 }
 
-char *goc_listGetUnderCursor(GOC_HANDLER uchwyt)
+void* goc_listGetAt(GOC_HANDLER u, int row, int col) {
+	GOC_StList *lista = (GOC_StList*)u;
+	if ( lista == NULL || col < 0 || col >= goc_arraySize( &lista->columns ) ) {
+		return NULL;
+	}
+
+	GOC_COLUMN* column = goc_arrayGet( &lista->columns, col );
+	if ( column == NULL || row < 0 || row >= goc_arraySize( &column->elements ) ) {
+		return NULL;
+	}
+	return goc_arrayGet( &column->elements, row );
+}
+
+const char *goc_listGetTextAt(GOC_HANDLER u, int row, int column)
 {
+	GOC_StList *lista = (GOC_StList*)u;
+	void* element = goc_listGetAt(u, row, column);
+	if ( element ) {
+		return lista->elementToText( element );	
+	} else {
+		return NULL;
+	}
+}
+
+void* goc_listGet(GOC_HANDLER uchwyt) {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
-	if ( lista->nKolumna < 0 )
-		return NULL;
-	if ( lista->kursor < 0 )
-		return NULL;
-	return lista->pKolumna[0]->pText[lista->kursor];
-//	return lista->pText[lista->kursor];
+	return goc_listGetAt( uchwyt, lista->kursor, 0 );
+}
+
+const char *goc_listGetText(GOC_HANDLER uchwyt) {
+	GOC_StList *lista = (GOC_StList*)uchwyt;
+	return goc_listGetTextAt( uchwyt, lista->kursor, 0 );
 }
 
 // Obliczenie polozenia start po zmianie kursora
@@ -437,21 +386,20 @@ int goc_listSetCursor(GOC_HANDLER uchwyt, int pos)
 	GOC_StList *lista = (GOC_StList*)uchwyt;
 	int cnt = goc_listGetRowsAmmount( uchwyt );
 	GOC_POSITION height = goc_elementGetHeight(uchwyt);
-	if ( lista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &lista->columns ) ) {
 		return GOC_ERR_REFUSE;
+	}
 	// jezeli pozycja sie nie zmienila nic nie rob
 	if ( lista->kursor == pos )
 		return GOC_ERR_OK;
-	if ( pos < 0 )
-	{
+	if ( pos < 0 ) {
 		lista->kursor = -1;
 		GOC_MSG_LISTCHANGE( msg, NULL, -1 );
 		goc_systemSendMsg(uchwyt, msg);
-	}
-	else if ( pos < cnt )
-	{
+	} else if ( pos < cnt ) {
 		lista->kursor = pos;
-		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+		GOC_MSG_LISTCHANGE( msg, goc_arrayGet( &column->elements, lista->kursor ),
 			lista->kursor );
 		goc_systemSendMsg(uchwyt, msg );
 	}
@@ -471,7 +419,8 @@ static int listCursorNext(GOC_HANDLER uchwyt)
 	{
 		GOC_POSITION height = goc_elementGetHeight(uchwyt);
 		lista->kursor++;
-		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+		GOC_MSG_LISTCHANGE( msg, goc_arrayGet( &column->elements, lista->kursor ),
 			lista->kursor );
 		goc_systemSendMsg(uchwyt, msg);
 		if ( lista->kursor - lista->start >= height-2 )
@@ -502,7 +451,8 @@ static int listCursorPrev(GOC_HANDLER uchwyt)
 	if ( lista->kursor > 0 )
 	{
 		lista->kursor--;
-		GOC_MSG_LISTCHANGE( msg, lista->pKolumna[0]->pText[lista->kursor],
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+		GOC_MSG_LISTCHANGE( msg, goc_arrayGet( &column->elements, lista->kursor ),
 			lista->kursor );
 		goc_systemSendMsg(uchwyt, msg );
 		if ( lista->start > lista->kursor )
@@ -583,7 +533,8 @@ static int listHotKeyPgUp(
 	if ( lista->kursor < 0 )
 		lista->kursor = 0;
 	// zgloszenie zmiany
-	GOC_MSG_LISTCHANGE( msgchange, lista->pKolumna[0]->pText[lista->kursor],
+	GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+	GOC_MSG_LISTCHANGE( msgchange, goc_arrayGet( &column->elements, lista->kursor ),
 		lista->kursor );
 	goc_systemSendMsg(uchwyt, msgchange);
 	// wy¶wietlenie
@@ -620,7 +571,8 @@ static int listHotKeyPgDown(
 	if ( lista->kursor >= n )
 		lista->kursor = n-1;
 	// zgloszenie zmiany
-	GOC_MSG_LISTCHANGE( msgchange, lista->pKolumna[0]->pText[lista->kursor],
+	GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+	GOC_MSG_LISTCHANGE( msgchange, goc_arrayGet( &column->elements, lista->kursor ),
 		lista->kursor );
 	goc_systemSendMsg(uchwyt, msgchange);
 	// wy¶wietlenie
@@ -641,15 +593,15 @@ static int listHotKeyPrev(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 	return listCursorPrev(uchwyt);
 }
 
+static const char* listElementToText(void* element) {
+	return (const char*)element;
+}
+
 static int listInit(GOC_HANDLER uchwyt)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
-//	lista->pText = NULL;
-//	lista->nText = 0;
-	lista->nKolumna = 0;
-	lista->pKolumna = NULL;
 
-	lista->pTytul = NULL;
+	lista->pTitle = NULL;
 
 	lista->start = 0;
 	lista->kursor = -1;
@@ -661,6 +613,9 @@ static int listInit(GOC_HANDLER uchwyt)
 
 	lista->color = lista->kolorPoleNieaktywny;
 	lista->kolorRamka = lista->kolorRamkaNieaktywny;
+
+	lista->elementToText = listElementToText;
+
 	goc_hkAdd( uchwyt, 0x600, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			listHotKeyNext );
 	goc_hkAdd( uchwyt, 0x603, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
@@ -685,26 +640,11 @@ static int listClear(GOC_HANDLER uchwyt)
 	lista->kursor = -1;
 	lista->start = 0;
 	
-	if ( lista->flag & GOC_LISTFLAG_EXTERNAL )
+	for ( j=0; j < goc_arraySize( &lista->columns ); j++ )
 	{
-		for ( j=0; j<lista->nKolumna; j++ )
-		{
-			k = lista->pKolumna[j];
-			k->pText = NULL;
-			k->nText = 0;
-			lista->flag &= ~GOC_LISTFLAG_EXTERNAL;
-		}
-	}
-	else
-	{
-		int i;
-		for ( j=0; j<lista->nKolumna; j++ )
-		{
-			k = lista->pKolumna[j];
-			for ( i=0; i<k->nText; i++ )
-				goc_stringFree(k->pText[i]);
-			k->pText = goc_tableClear(k->pText, &k->nText);
-		}
+		k = goc_arrayGet( &lista->columns, j );
+		goc_arrayClear( &k->elements );
+		lista->flag &= ~GOC_LISTFLAG_EXTERNAL;
 	}
 	return GOC_ERR_OK;
 }
@@ -726,10 +666,14 @@ int listSetExt(
 	
 	goc_listClear(uchwyt);
 	/* Jesli nie ma zadnej kolumny, to zbuduj */
-	if ( lista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &lista->columns ) ) {
 		goc_listAddColumn(uchwyt, goc_elementGetWidth(uchwyt));
-	lista->pKolumna[0]->pText = (char **)pTable;
-	lista->pKolumna[0]->nText = size;
+	}
+	GOC_COLUMN* column = goc_arrayGet( &lista->columns, 0 );
+	for ( int i = 0; i < size; i++ ) {
+		goc_arrayAdd( &column->elements, (void*)pTable[i] );
+	}
+	column->elements.freeElement = NULL;
 	lista->flag |= GOC_LISTFLAG_EXTERNAL;
 	return GOC_ERR_OK;
 }
@@ -752,12 +696,13 @@ int goc_listFindText(GOC_HANDLER u, const char *tekst)
 	int i;
 	GOC_COLUMN *k;
 
-	if ( lista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &lista->columns ) )
 		return -1;
-	k = lista->pKolumna[0];
-	for ( i=0; i < k->nText; i++ )
+	k = goc_arrayGet( &lista->columns, 0 );;
+	for ( i=0; i < goc_arraySize( &k->elements ); i++ )
 	{
-		if ( strcmp( k->pText[i], tekst) == 0 )
+		void* element = goc_arrayGet( &k->elements, i );
+		if ( strcmp( lista->elementToText( element ), tekst) == 0 )
 			return i;
 	}
 	return -1;
@@ -766,13 +711,9 @@ int goc_listFindText(GOC_HANDLER u, const char *tekst)
 static int goc_listDestroy(GOC_HANDLER uchwyt)
 {
 	GOC_StList *lista = (GOC_StList*)uchwyt;
-	int j;
 	goc_listClear(uchwyt);
-	goc_stringFree(lista->pTytul);
-	for ( j=0; j<lista->nKolumna; j++ )
-		free(lista->pKolumna[j]);
-	lista->pKolumna = goc_tableClear(
-		lista->pKolumna, &lista->nKolumna);
+	goc_stringFree(lista->pTitle);
+	goc_arrayClear( &lista->columns );
 	return goc_elementDestroy(uchwyt);
 }
 
@@ -809,15 +750,10 @@ int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 		GOC_StMsgListSetColor* msgcolor = (GOC_StMsgListSetColor*)msg;
 		msgcolor->color = listSetColor( uchwyt, msgcolor->position );
 	}
-	else if ( msg->id == GOC_MSG_LISTADDTEXT_ID )
+	else if ( msg->id == GOC_MSG_LISTADD_ID )
 	{
-		GOC_StMsgListAddText* msgadd = (GOC_StMsgListAddText*)msg;
-		return listAddText(uchwyt, msgadd->pText);
-	}
-	else if ( msg->id == GOC_MSG_LISTADDROW_ID )
-	{
-		GOC_StMsgListAddRow* msgadd = (GOC_StMsgListAddRow*)msg;
-		return listAddRow(uchwyt, msgadd->pRow);
+		GOC_StMsgListAdd* msgadd = (GOC_StMsgListAdd*)msg;
+		return listAdd(uchwyt, msgadd->element);
 	}
 	else if ( msg->id == GOC_MSG_LISTCLEAR_ID )
 	{

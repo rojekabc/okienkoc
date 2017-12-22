@@ -488,8 +488,6 @@ static const char *interpretMsgFull(GOC_HANDLER uchwyt, GOC_StMessage *msg)
 			break;
 		case GOC_MSG_FILELISTSETFOLDER_ID:
 			break;
-		case GOC_MSG_LISTADDROW_ID:
-			break;
 		case GOC_MSG_TIMERTICK_ID:
 			break;
 		case GOC_MSG_FILELISTISUPFOLDER_ID:
@@ -757,7 +755,7 @@ int goc_systemRegisterMsgGenerator(
 		return GOC_ERR_FALSE;
 	}
 
-	generators = generators = goc_arrayAdd( generators, terminal );
+	generators = goc_arrayAdd( generators, terminal );
 	return GOC_ERR_OK;
 }
 

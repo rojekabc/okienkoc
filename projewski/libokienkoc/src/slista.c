@@ -3,7 +3,6 @@
 #include "slista.h"
 
 #include <tools/screen.h>
-#include <tools/tablica.h>
 #include "global-inc.h"
 #include "system.h"
 
@@ -31,8 +30,9 @@ static int sellistInit(GOC_HANDLER uchwyt)
 int goc_sellistUnselect(GOC_HANDLER uchwyt, int pos)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	if ( slista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &slista->columns ) ) {
 		return GOC_ERR_REFUSE;
+	}
 	goc_nbitFieldSet(slista->pZaznaczony, pos, 0);
 	return GOC_ERR_OK;
 }
@@ -40,8 +40,9 @@ int goc_sellistUnselect(GOC_HANDLER uchwyt, int pos)
 int goc_sellistSelect(GOC_HANDLER uchwyt, int pos)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	if ( slista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &slista->columns ) ) {
 		return GOC_ERR_REFUSE;
+	}
 	goc_nbitFieldSet(slista->pZaznaczony, pos, 1);
 	return GOC_ERR_OK;
 }
@@ -50,8 +51,9 @@ GOC_BOOL goc_sellistIsSelected(GOC_HANDLER uchwyt, int pos)
 {
 	int tmp;
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	if ( slista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &slista->columns ) ) {
 		return GOC_FALSE;
+	}
 	// wyrownanie wzgledem kolumny
 //	pos -= pos % slista->nKolumna;
 	tmp = goc_nbitFieldGet(slista->pZaznaczony, pos);
@@ -64,8 +66,9 @@ GOC_BOOL goc_sellistIsSelected(GOC_HANDLER uchwyt, int pos)
 static GOC_COLOR goc_sellistSetColor(GOC_HANDLER uchwyt, int pos)
 {
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	if ( slista->nKolumna == 0 )
+	if ( goc_arrayIsEmpty( &slista->columns ) ) {
 		return slista->color;
+	}
 //	pos -= pos % slista->nKolumna;
 	if ( pos != slista->kursor )
 	{
@@ -83,11 +86,11 @@ static GOC_COLOR goc_sellistSetColor(GOC_HANDLER uchwyt, int pos)
 	}
 }
 
-static int sellistAddText(GOC_HANDLER uchwyt, const char *pText)
+static int sellistAddText(GOC_HANDLER uchwyt, void* element)
 {
 	int ret;
 	GOC_StSelList *slista = (GOC_StSelList*)uchwyt;
-	GOC_MSG_LISTADDTEXT( msg, pText );
+	GOC_MSG_LISTADD( msg, element );
 	ret = goc_listListener(uchwyt, msg);
 	if ( ret == GOC_ERR_OK )
 		goc_nbitFieldAdd(slista->pZaznaczony, 0);
@@ -152,9 +155,9 @@ int goc_sellistListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 		return GOC_ERR_OK;
 	} else if ( msg->id == GOC_MSG_INIT_ID ) {
 		return sellistInit(uchwyt);
-	} else if ( msg->id == GOC_MSG_LISTADDTEXT_ID ) {
-		GOC_StMsgListAddText* msgadd = (GOC_StMsgListAddText*) msg;
-		return sellistAddText(uchwyt, msgadd->pText);
+	} else if ( msg->id == GOC_MSG_LISTADD_ID ) {
+		GOC_StMsgListAdd* msgadd = (GOC_StMsgListAdd*) msg;
+		return sellistAddText(uchwyt, msgadd->element);
 	} else if ( msg->id == GOC_MSG_LISTCLEAR_ID ) {
 		return sellistClear(uchwyt);
 	} else if ( msg->id == GOC_MSG_LISTSETEXTERNAL_ID ) {

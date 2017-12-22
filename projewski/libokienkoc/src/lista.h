@@ -2,22 +2,14 @@
 #define _GOC_LIST_H_
 
 #include "element.h"
+#include <tools/array.h>
 
 /** struktury **/
 typedef struct GOC_StColumn
 {
-	char **pText;
-	int nText;
+	struct GOC_Array elements;
 	GOC_POSITION position;
 } GOC_COLUMN;
-
-typedef struct GOC_StListRow
-{
-	const char **pText; // teksty do kolumn - kolejnych
-	int nText; // liczba zamieszczonych tekstow
-	int nRow; // jesli -1 ustawi po wykonaniu funkcji nadana
-	// pozcje, jesli != -1 to umiesci we wskazanej pozcji.
-} GOC_LISTROW;
 
 /** id elementu **/
 extern const char* GOC_ELEMENT_LIST;
@@ -27,12 +19,12 @@ extern const char* GOC_ELEMENT_LIST;
  */
 typedef struct {
 	GOC_STRUCT_MESSAGE;
-	const char* pText;
+	void* element;
 	int position;
 } GOC_StMsgListChange;
-#define GOC_MSG_LISTCHANGE(variable, _text_, _position_) \
+#define GOC_MSG_LISTCHANGE(variable, _element_, _position_) \
 	GOC_MSG(GOC_StMsgListChange, variable, GOC_MSG_LISTCHANGE_ID); \
-	variable##Full.pText = _text_; \
+	variable##Full.element = _element_; \
 	variable##Full.position = _position_
 extern const char* GOC_MSG_LISTCHANGE_ID;
 /*
@@ -52,12 +44,12 @@ extern const char* GOC_MSG_LISTSETCOLOR_ID;
  */
 typedef struct {
 	GOC_STRUCT_MESSAGE;
-	const char* pText;
-} GOC_StMsgListAddText;
-#define GOC_MSG_LISTADDTEXT(variable, _text_) \
-	GOC_MSG(GOC_StMsgListAddText, variable, GOC_MSG_LISTADDTEXT_ID); \
-	variable##Full.pText = _text_
-extern const char* GOC_MSG_LISTADDTEXT_ID;
+	void* element;
+} GOC_StMsgListAdd;
+#define GOC_MSG_LISTADD(variable, _element_) \
+	GOC_MSG(GOC_StMsgListAdd, variable, GOC_MSG_LISTADD_ID); \
+	variable##Full.element = _element_
+extern const char* GOC_MSG_LISTADD_ID;
 /*
  * Remove all elements.
  */
@@ -76,18 +68,6 @@ typedef struct {
 	variable##Full.pTextArray = _textarray_; \
 	variable##Full.nTextArray = _countarray_
 extern const char* GOC_MSG_LISTSETEXTERNAL_ID;
-/*
- * Append row.
- */
-#define GOC_MSG_LISTADDROW(variable, _row_) \
-	GOC_MSG(GOC_StMsgListAddRow, variable, GOC_MSG_LISTADDROW_ID); \
-	variable##Full.pRow = _row_
-typedef struct {
-	GOC_STRUCT_MESSAGE;
-	GOC_LISTROW* pRow;
-} GOC_StMsgListAddRow;
-extern const char* GOC_MSG_LISTADDROW_ID;
-
 
 #define GOC_STRUCT_LIST \
 	GOC_STRUCT_ELEMENT; \
@@ -97,11 +77,11 @@ extern const char* GOC_MSG_LISTADDROW_ID;
 	GOC_COLOR kolorPoleAktywny; \
 	GOC_COLOR kolorPoleNieaktywny; \
 	GOC_COLOR kolorPoleKursor; \
-	GOC_COLUMN **pKolumna; \
-	char *pTytul; \
-	int nKolumna; \
+	struct GOC_Array columns; \
+	char* pTitle; \
 	int kursor; \
-	int start
+	int start; \
+	const char* (*elementToText)(void*)
 
 typedef struct GOC_StList
 {
@@ -109,21 +89,31 @@ typedef struct GOC_StList
 } GOC_StList;
 
 int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg);
+
+int goc_listAdd(GOC_HANDLER u, void* element);
+int goc_listAddToColumn(GOC_HANDLER u, void* element, int column);
+int goc_listSetToColumn(GOC_HANDLER u, void* element, int column);
+int goc_listInsertInColumn(GOC_HANDLER u, void* element, int column, int row);
+void* goc_listGet(GOC_HANDLER u);
+void* goc_listGetAt(GOC_HANDLER u, int row, int column);
+
 int goc_listAddText(GOC_HANDLER u, const char *tekst);
-int goc_listAddColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
-int goc_listSetColumnText(GOC_HANDLER u, const char *tekst, int kolumna);
+int goc_listAddTextToColumn(GOC_HANDLER u, const char *tekst, int kolumna);
+int goc_listSetTextToColumn(GOC_HANDLER u, const char *tekst, int kolumna);
+const char* goc_listGetText(GOC_HANDLER u);
+const char *goc_listGetTextAt(GOC_HANDLER u, int row, int column);
+
 int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width);
 int goc_listSetCursor(GOC_HANDLER uchwyt, int pos);
 #define goc_listGetCursor(uchwyt) ((GOC_StList*)uchwyt)->kursor
-char *goc_listGetUnderCursor(GOC_HANDLER u);
+
 int goc_listClear(GOC_HANDLER uchwyt);
 int goc_listSetExtTable(
 	GOC_HANDLER uchwyt, const char **pTable, unsigned int size);
-const char *goc_listGetText(GOC_HANDLER u, int pos);
 int goc_listGetRowsAmmount(GOC_HANDLER u);
 int goc_listFindText(GOC_HANDLER u, const char *tekst);
+
 int goc_listSetTitle(GOC_HANDLER u, const char *tekst);
 #define goc_listGetTitle(uchwyt) ((GOC_StList*)uchwyt)->pTytul
-const char *goc_listGetColumnText(GOC_HANDLER u, int pos, int kol);
 
 #endif // ifndef _GOC_LIST_H_
