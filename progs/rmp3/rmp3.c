@@ -100,7 +100,7 @@ void endProgram(int c)
 #define MODE_NEXT 5
 int mode = MODE_STOP; // TODO: DODAC MUTEX !!!!!!!!!!!!!!!!!
 
-int doAction(unsigned int action, void *param);
+int doAction(unsigned int action, const void *param);
 
 void eventChangeSongPlaying()
 {
@@ -244,7 +244,7 @@ void next_aumix_port()
 	mixerSelectElement( mixer, i );
 }
 
-int doAction(unsigned int action, void *param)
+int doAction(unsigned int action, const void *param)
 {
 	GOC_BDEBUG("Call action %d", action);
 	int old;
@@ -427,57 +427,6 @@ int doAction(unsigned int action, void *param)
 			finfoInfo(filename, fileInfo);
 			return 0;
 		}
-		case ACTION_SHUFFLE:
-			switch ( *(int*)param )
-			{
-				case SHUFFLE_YES:
-					playlistShuffleMode(SHUFFLE_RANDOM);
-					break;
-				case SHUFFLE_NO:
-					playlistShuffleMode(0);
-					break;
-				case SHUFFLE_REINIT:
-					// TODO // SHUFFLE_REINIT
-					break;
-			}
-			return 0;
-		case ACTION_PLAYLIST_ADDQUEUE:
-			playlistQueue( *(int*)param );
-			return 0;
-		case ACTION_PLAYLIST_REMQUEUE:
-			playlistRemQueue( *(int*)param );
-			return 0;
-		case ACTION_PLAYLIST_ISQUEUE:
-			(*(int*)param) = playlistIsQueue(*(int*)param );
-			return 0;
-		case ACTION_PLAYLIST_ADDFILE:
-			playlistAddFile( param );
-			return 0;
-		case ACTION_PLAYLIST_ADDLIST:
-			playlistAddList( param );
-			return 0;
-		case ACTION_PLAYLIST_CLEAR:
-			playlistClear();
-			return 0;
-		case ACTION_PLAYLIST_REMOVEFILE:
-			playlistRemoveFile( *((int *)param) );
-			return 0;
-		case ACTION_PLAYLIST_GETSIZE:
-			*((int *)param) = playlistGetSize();
-			return 0;
-		case ACTION_PLAYLIST_GETFILE:
-			*((char**)param) = (char*)playlistGetFile(
-					*((int *)param));
-			return 0;
-		case ACTION_PLAYLIST_GETTABLE:
-			*((const char***)param) = playlistGetTable();
-			return 0;
-		case ACTION_PLAYLIST_GETACTUAL:
-			*((int *)param) = playlistGetActualPos();
-			return 0;
-		case ACTION_PLAYLIST_STORE:
-			playlistStoreInFile( (const char *)param );
-			return 0;
 		default:
 			return ERR_UNKNOWN_ACTION;
 	}

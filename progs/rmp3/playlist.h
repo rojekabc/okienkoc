@@ -1,6 +1,8 @@
 #ifndef _PLAYLIST_H_
 #define _PLAYLIST_H_
 
+#include "finfo.h"
+
 #define SHUFFLE_RANDOM 1
 
 int playlistInit();
@@ -20,9 +22,10 @@ int playlistIsQueue( int inx );
 void playlistQueue( int inx );
 void playlistRemQueue( int inx );
 
-int playlistGetSize();
-const char *playlistGetFile( int pos );
-const char **playlistGetTable( );
+// int playlistGetSize();
+struct FileInfo* playlistGet( int pos );
+GOC_Array* playlistGetTable( );
 int playlistGetActualPos();
+void playlistUserSelect( int pos );
 
 #endif /* ifndef _PLAYLIST_H_ */

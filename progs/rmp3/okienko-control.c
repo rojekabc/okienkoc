@@ -1,8 +1,3 @@
-/*
- * Control interface to generic front ends.
- * written/copyrights 1997/99 by Andreas Neuhaus (and Michael Hipp)
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -26,10 +21,12 @@
 #include <tools/term.h>
 #include <tools/plik.h>
 #include <tools/fileistream.h>
+#include <tools/malloc.h>
 
 #include <sys/socket.h>
 #include "mod_fun.h"
 
+#include "playlist.h"
 #include "finfo.h"
 
 #define MODE_STOPPED 0
@@ -136,7 +133,7 @@ void list_mark(struct mark_type *mark) // ROJEK
 }
 
 */
-int (*doActionCall)(unsigned int, void*) = NULL;
+int (*doActionCall)(unsigned int, const void*) = NULL;
 
 void printMixer()
 {
@@ -169,13 +166,21 @@ static int nasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 	{
 		if ( msg->id == GOC_MSG_CHAR_ID )
 		{
+			GOC_MSG_PAINT(msgPaint);
 			GOC_StMsgChar* msgChar = (GOC_StMsgChar*)msg;
 			if ( msgChar->charcode == 0x0D )
 			{
-				char *selFile = goc_listGetUnderCursor( lLista );
-				if ( selFile ) {
-					doActionCall(ACTION_PLAY, selFile);
+				int cursor = goc_listGetCursor( lLista );
+
+				playlistUserSelect( cursor );
+				FileInfo* fileInfo = playlistGet( cursor );
+				if ( fileInfo ) {
+					doActionCall(ACTION_PLAY, fileInfo->filename);
 				}
+
+//				goc_sellistUnselect(lLista, playlistGetActualPos());
+//				goc_sellistSelect(lLista, cursor);
+//				goc_systemSendMsg(lLista, msgPaint);
 				return GOC_ERR_OK;
 			}
 			else if ( msgChar->charcode == 0x116 )
@@ -183,18 +188,10 @@ static int nasluch(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 				int pos = goc_listGetCursor(lLista);
 				if ( pos > 0 )
 				{
-					int size = 0;
-					const char **ptr;
-					doActionCall(ACTION_PLAYLIST_REMOVEFILE, &pos);
-					doActionCall(ACTION_PLAYLIST_GETSIZE, &size);
-					doActionCall(ACTION_PLAYLIST_GETTABLE, &ptr);
-					goc_listSetExtTable(lLista, ptr, size);
-					doActionCall(ACTION_PLAYLIST_GETACTUAL, &size);
-					goc_sellistSelect(lLista, size);
+					playlistRemoveFile( pos );
+					goc_listRemove( lLista, pos );
+					goc_sellistSelect(lLista, playlistGetActualPos() );
 					goc_listSetCursor(lLista, pos);
-//		goc_elementOrFlag(lLista, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE);
-//		goc_systemFocusOn(lLista);
-					GOC_MSG_PAINT(msgPaint);
 					goc_systemSendMsg(lLista, msgPaint);
 				}
 				return GOC_ERR_OK;
@@ -292,8 +289,7 @@ static int hotKeyAumixNext(
 static int hotKeyShuffleOn(
 	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg=SHUFFLE_YES;
-	doActionCall(ACTION_SHUFFLE, &arg);
+	playlistShuffleMode( SHUFFLE_RANDOM );
 	goc_gotoxy(1,9);
 	goc_clearline();
 	printf("W³±czono tryb mieszania.\n");
@@ -302,8 +298,7 @@ static int hotKeyShuffleOn(
 static int hotKeyShuffleOff(
 	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg=SHUFFLE_NO;
-	doActionCall(ACTION_SHUFFLE, &arg);
+	playlistShuffleMode( 0 );
 	goc_gotoxy(1,9);
 	goc_clearline();
 	printf("Wy³±czono tryb mieszania.\n");
@@ -324,14 +319,19 @@ static int hotKeyShowList(
 	}
 	else
 	{
-		int size = 0;
-		const char **ptr;
-		doActionCall(ACTION_PLAYLIST_GETSIZE, &size);
-		doActionCall(ACTION_PLAYLIST_GETTABLE, &ptr);
-		goc_listSetExtTable(lLista, ptr, size);
-		doActionCall(ACTION_PLAYLIST_GETACTUAL, &size);
-		goc_sellistSelect(lLista, size);
-		goc_listSetCursor(lLista, size);
+		GOC_Array* playlist = playlistGetTable();
+		for (int i=0; i<goc_arraySize(playlist); i++) {
+			struct FileInfo* finfo = goc_arrayGet(playlist, i);
+			char* name = NULL;
+			name = goc_stringCopy(name, finfo->artist);
+			name = goc_stringAdd(name, " - ");
+			name = goc_stringAdd(name, finfo->title);
+			goc_listAdd(lLista, name);
+		}
+		int cur = playlistGetActualPos();
+
+		goc_sellistSelect(lLista, cur);
+		goc_listSetCursor(lLista, cur);
 		goc_elementOrFlag(lLista, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE);
 		goc_systemFocusOn(lLista);
 	}
@@ -364,24 +364,6 @@ static int hotKeyAddFolder(
 	return GOC_ERR_OK;
 }
 
-// find audio stream in the file
-static void checkAddFile(const char *fullname)
-{
-	struct FileInfo fileInfo;
-	memset( &fileInfo, 0, sizeof(struct FileInfo) );
-	if ( finfoInfo(fullname, &fileInfo) == FINFO_CODE_OK ) {
-		doActionCall(ACTION_PLAYLIST_ADDFILE, (void*)fullname);
-		goc_stringFree(fileInfo.filename);
-		goc_stringFree(fileInfo.title);
-		goc_stringFree(fileInfo.artist);
-		goc_stringFree(fileInfo.album);
-		goc_stringFree(fileInfo.year);
-		goc_stringFree(fileInfo.comment);
-		goc_stringFree(fileInfo.genre);
-	}
-	return;
-}
-
 // listuj katalog i dodawaj pliki w nim zawarte, ktróre s± mp3
 static void listAddFolder(const char *fullname)
 {
@@ -400,10 +382,11 @@ static void listAddFolder(const char *fullname)
 		if ( fullname[strlen(fullname)-1] != '/' )
 			buf = goc_stringAdd( buf, "/" );
 		buf = goc_stringAdd( buf, ent->d_name );
-		if ( goc_isFolder( buf ) )
+		if ( goc_isFolder( buf ) ) {
 			listAddFolder( buf );
-		else
-			checkAddFile( buf );
+		} else {
+			playlistAddFile( buf );
+		}
 		buf = goc_stringFree( buf );
 	}
 	closedir( dir );
@@ -414,7 +397,7 @@ static int hotKeySelectFolder(
 {
 	char *element = goc_stringCopy(NULL, goc_filelistGetFolder(uchwyt));
 	element = goc_stringAdd(element, "/");
-	element = goc_stringAdd(element, goc_listGetUnderCursor(uchwyt));
+	element = goc_stringAdd(element, goc_listGetText(uchwyt));
 	if ( goc_isFileExists( element ) )
 	{
 		if ( goc_isFolder( element ) )
@@ -423,7 +406,7 @@ static int hotKeySelectFolder(
 		}
 		else
 		{ // a wiec to plik
-			checkAddFile( element );
+			playlistAddFile( element );
 		}
 		char *tmp = goc_stringAdd(goc_stringCopy(NULL, "Dodano: "), element);
 		goc_labelSetText(nStatus, tmp, 0);
@@ -438,21 +421,14 @@ static int hotKeySelectFolder(
 static int hotKeyQueue(
 	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
-	int arg;
 	GOC_FLAGS f = goc_elementGetFlag(lLista);
 	if ( f & GOC_EFLAGA_PAINTED )
 	{
-		arg = goc_listGetCursor(lLista);
-		doActionCall(ACTION_PLAYLIST_ISQUEUE, &arg);
-		if ( arg )
-		{
-			arg = goc_listGetCursor(lLista);
-			doActionCall(ACTION_PLAYLIST_REMQUEUE, &arg);
-		}
-		else
-		{
-			arg = goc_listGetCursor(lLista);
-			doActionCall(ACTION_PLAYLIST_ADDQUEUE, &arg);
+		int cursor = goc_listGetCursor(lLista);
+		if ( playlistIsQueue( cursor ) ) {
+			playlistRemQueue( cursor );
+		} else {
+			playlistQueue( cursor );
 		}
 	}
 	return GOC_ERR_OK;
@@ -460,7 +436,7 @@ static int hotKeyQueue(
 
 #define LOGO_FILE "/usr/local/share/rmp3/rmp3.logo"
 
-int controlInit(int (*fun)(unsigned int, void*))
+int controlInit(int (*fun)(unsigned int, const void*))
 {
 	finfoInitialize();
 	if ( fun == NULL )
@@ -573,8 +549,7 @@ int controlEvent(unsigned int event)
 	{
 		GOC_MSG_PAINT(msgPaint);
 
-		FileInfo* fileInfo = allocFileInfo();
-		doActionCall(ACTION_INFO, fileInfo);
+		FileInfo* fileInfo = playlistGet( playlistGetActualPos() );
 
 		goc_labelSetText(nPlik, fileInfo->filename, 0);
 		goc_systemSendMsg(nPlik, msgPaint);
@@ -594,16 +569,13 @@ int controlEvent(unsigned int event)
 		goc_labelSetText(nComment, fileInfo->comment, 0);
 		goc_systemSendMsg(nComment, msgPaint);
 
-		freeFileInfo( fileInfo );
 
 		if ( goc_elementGetFlag(lLista) & GOC_EFLAGA_PAINTED )
 		{
 			int pos = 0;
 			pos = goc_sellistGetSelectPos(lLista, 0);
 			goc_sellistUnselect(lLista, pos);
-			pos = 0;
-			doActionCall(ACTION_PLAYLIST_GETACTUAL, &pos);
-			goc_sellistSelect(lLista, pos);
+			goc_sellistSelect(lLista, playlistGetActualPos());
 			goc_systemSendMsg(lLista, msgPaint);
 		}
 	}

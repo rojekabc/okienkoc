@@ -19,6 +19,7 @@
 #define GOC_PRINTERROR
 #include <tools/log.h>
 #include <tools/array.h>
+#include <tools/malloc.h>
 
 #include "playlist.h"
 
@@ -35,6 +36,7 @@ typedef struct {
 	unsigned int currFile;
 	unsigned int currShuffle;
 	unsigned char shufflemode;
+	int userSelect;
 } stPlaylist;
 
 #define RANDPULLSIZE 64
@@ -83,6 +85,7 @@ void playlistRemQueue( int inx )
 
 const char *playlistNext()
 {
+	playlist->userSelect = -1;
 	if ( goc_arrayIsEmpty(playlist->files) ) {
 		return NULL;
 	}
@@ -107,11 +110,13 @@ const char *playlistNext()
 		playlist->currFile++;
 		playlist->currFile %= goc_arraySize(playlist->files);
 	}
-	return goc_arrayGet(playlist->files, playlist->currFile);
+	FileInfo* finfo = goc_arrayGet(playlist->files, playlist->currFile);
+	return finfo->filename;
 }
 
 const char *playlistPrev( )
 {
+	playlist->userSelect = -1;
 	if ( goc_arrayIsEmpty(playlist->files) ) {
 		return NULL;
 	}
@@ -135,13 +140,14 @@ const char *playlistPrev( )
 		else
 			playlist->currFile = goc_arraySize(playlist->files) - 1;
 	}
-	return goc_arrayGet(playlist->files, playlist->currFile);
+	FileInfo* finfo = goc_arrayGet(playlist->files, playlist->currFile);
+	return finfo->filename;
 }
 
 void playlistShuffleMode(unsigned char mode)
 {
 	playlist->shufflemode = mode;
-	if ( mode & 1 )
+	if ( mode == SHUFFLE_RANDOM )
 	{
 		int i;
 		// wyszukaj najblizsza liczbe pierwsza
@@ -175,6 +181,18 @@ void playlistShuffleMode(unsigned char mode)
 	}
 }
 
+static void freeFileInfo(void* ptr) {
+	struct FileInfo* finfo = (FileInfo*)ptr;
+	goc_stringFree(finfo->filename);
+	goc_stringFree(finfo->title);
+	goc_stringFree(finfo->artist);
+	goc_stringFree(finfo->album);
+	goc_stringFree(finfo->year);
+	goc_stringFree(finfo->comment);
+	goc_stringFree(finfo->genre);
+	free(finfo);
+}
+
 int playlistInit()
 {
 	playlist = (stPlaylist *) malloc(sizeof(stPlaylist));
@@ -185,6 +203,8 @@ int playlistInit()
 	playlist->currFile = -1;
 	playlist->currShuffle = -1;
 	playlist->files = goc_arrayAlloc();
+	playlist->files->freeElement = freeFileInfo;
+	playlist->userSelect = -1;
 	return 0;
 }
 
@@ -196,6 +216,7 @@ void playlistClear()
 		playlist->pShuffle, &playlist->nShuffle );
 	playlist->pQueue = goc_tableClear(
 		playlist->pQueue, &playlist->nQueue );
+	playlist->userSelect = -1;
 }
 
 void playlistCleanup()
@@ -218,23 +239,27 @@ int playlistGetSize()
 int playlistGetActualPos()
 {
 	if ( playlist ) {
-		return playlist->currFile;
+		if ( playlist->userSelect == -1 ) {
+			return playlist->currFile;
+		} else {
+			return playlist->userSelect;
+		}
 	}
 	return -1;
 }
 
-const char *playlistGetFile( int pos )
+FileInfo* playlistGet( int pos )
 {
 	if (( playlist ) && (pos >=0) && ( pos < goc_arraySize( playlist->files) )) {
-		return goc_arrayGet( playlist->files, pos );
+		return goc_arrayGet(playlist->files, pos);
 	}
 	return NULL;
 }
 
-const char **playlistGetTable( )
+GOC_Array* playlistGetTable( )
 {
 	if ( playlist ) {
-		return (const char**)playlist->files->pElement;
+		return playlist->files;
 	}
 	return NULL;
 }
@@ -270,28 +295,12 @@ int playlistRemoveFile( int pos )
  * wejscie http - nazwa 'http://'
  * wejscie ftp - nazwa 'ftp://'
  */
-int playlistAddFile( const char *filename )
+int playlistAddFile( const char* filename )
 {
-	char* tmp = NULL;
-	char* p = NULL;
-	
-	if ( !filename )
-		return -1;
-
-	tmp = goc_stringCopy(tmp, filename);
-
-	if ( (p = strchr(tmp, '\n')) )
-		tmp = goc_stringDelAtPnt(tmp, p);
-	if ( (p = strchr(tmp, '\r')) )
-		tmp = goc_stringDelAtPnt(tmp, p);
-	if ( strlen(tmp) == 0 )
-	{
-		free( tmp );
-		return -1;
+	ALLOC(struct FileInfo, fileInfo);
+	if ( finfoInfo(filename, fileInfo) == FINFO_CODE_OK ) {
+		goc_arrayAdd( playlist->files, fileInfo );
 	}
-
-	goc_arrayAdd( playlist->files, tmp );
-
 	return 0;
 }
 
@@ -307,8 +316,8 @@ int playlistStoreInFile( const char *filename )
 		return -1;
 	for ( i=0; i<goc_arraySize(playlist->files); i++ )
 	{
-		char* str = goc_arrayGet(playlist->files, i);
-		fprintf(plik, "%s\n", str);
+		FileInfo* fileInfo = goc_arrayGet(playlist->files, i);
+		fprintf(plik, "%s\n", fileInfo->filename);
 	}
 	fclose( plik );
 	return 0;
@@ -325,9 +334,22 @@ int playlistAddList( const char *filename )
 	plik = fopen(filename, "r");
 	
 	while ( fgets(buf, 1024, plik) ) {
+		char* pos = NULL;
+		pos = strchr(buf, '\n');
+		if (pos) {
+			*pos = 0;
+		}
+		pos = strchr(buf, '\r');
+		if ( pos) {
+			*pos = 0;
+		}
 		playlistAddFile(buf);
 	}
 
 	fclose(plik);
 	return 0;
+}
+
+void playlistUserSelect( int pos ) {
+	playlist->userSelect = pos;
 }
