@@ -110,48 +110,42 @@ int nasluchSelector(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 	return goc_systemDefaultAction(uchwyt, msg);
 }
 
-	/*
-	else if ( msg->id == GOC_MSG_CHAR_ID )
+static int hotKeySelectMission(GOC_HANDLER uchwyt, GOC_StMessage* msg) {
+	/* Action on press key on maska (space / enter) to create a mission */
+	GOC_StValuePoint *v = NULL;
+	StBuild* building = NULL;
+	GOC_StPoint mapCursor;
+	goc_maskGetCursor( maska, mapCursor );
+	v = goc_mapaposReadPoint(build, mapCursor.x, mapCursor.y);
+	if ( !v )
+		return GOC_ERR_OK;
+	building = (StBuild*)FROMGOC(v);
+	if ( building->flag != player.flag )
+		return GOC_ERR_OK;
+	if ( building->cname == cn_Airport )
 	{
-		GOC_StMsgChar* msgch = (GOC_StMsgChar*)msg;
-		if (( msgch->charcode == ' ' ) || ( msgch->charcode == 13 ))
+		StAirport* airport = (StAirport*)building;
+		if ( airport->nfly > 0 )
 		{
-			GOC_StValuePoint *v = NULL;
-			StBuild* building = NULL;
-			GOC_StPoint mapCursor;
-			goc_maskGetCursor( maska, mapCursor );
-			v = goc_mapaposReadPoint(build, mapCursor.x, mapCursor.y);
-			if ( !v )
-				return GOC_ERR_OK;
-			building = (StBuild*)FROMGOC(v);
-			if ( building->flag != player.flag )
-				return GOC_ERR_OK;
-			if ( building->cname == cn_Airport )
-			{
-				StAirport* airport = (StAirport*)building;
-				if ( airport->nfly > 0 )
-				{
-					char buf[80];
-					slidebarSelector = goc_elementCreate( GOC_ELEMENT_SLIDEBAR, 43, 5, 1, airport->nfly,
-						GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, GOC_HANDLER_SYSTEM );
-					GOC_MSG_PAINT( msgpaint );
-					goc_systemSendMsg(slidebarSelector, msgpaint);
-					goc_elementSetFunc(slidebarSelector, GOC_FUNID_LISTENER, nasluchSelector);
+			char buf[80];
+			slidebarSelector = goc_elementCreate( GOC_ELEMENT_SLIDEBAR, 48, 4, 1, airport->nfly,
+				GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE, GOC_WHITE, GOC_HANDLER_SYSTEM );
+			GOC_MSG_PAINT( msgpaint );
+			goc_systemSendMsg(slidebarSelector, msgpaint);
+			goc_elementSetFunc(slidebarSelector, GOC_FUNID_LISTENER, nasluchSelector);
 
-					labelInfo = goc_elementCreate( GOC_ELEMENT_LABEL, 2, 24, 0, 1,
-						GOC_EFLAGA_PAINTED, GOC_WHITE, GOC_HANDLER_SYSTEM );
-					selectedMission = 0;
-					sprintf(buf, labelInfoText[0], flyMission[selectedMission]);
-					goc_labelSetText( labelInfo, buf, GOC_FALSE );
-					goc_systemSendMsg(labelInfo, msgpaint);
+			labelInfo = goc_elementCreate( GOC_ELEMENT_LABEL, 2, 24, 0, 1,
+				GOC_EFLAGA_PAINTED, GOC_WHITE, GOC_HANDLER_SYSTEM );
+			selectedMission = 0;
+			sprintf(buf, labelInfoText[0], flyMission[selectedMission]);
+			goc_labelSetText( labelInfo, buf, GOC_FALSE );
+			goc_systemSendMsg(labelInfo, msgpaint);
 
-					goc_systemFocusOn(slidebarSelector);
-				}
-			}
-			return GOC_ERR_OK;
+			goc_systemFocusOn(slidebarSelector);
 		}
 	}
-	*/
+	return GOC_ERR_OK;
+}
 
 static void setFlyCounters()
 {
@@ -199,6 +193,8 @@ int main(int argc, char **argv)
 	xmlFreeDoc(doc);
 
 	createCommonObjects();
+
+	goc_hkAdd(maska, ' ', GOC_EFLAGA_ENABLE, hotKeySelectMission);
 
 	// liczniki
 	labelTickCount = goc_elementCreate( GOC_ELEMENT_LABEL, 2, 1, 13, 1, GOC_EFLAGA_PAINTED | GOC_EFLAGA_ENABLE,
