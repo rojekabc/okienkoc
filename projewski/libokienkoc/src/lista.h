@@ -81,7 +81,8 @@ extern const char* GOC_MSG_LISTSETEXTERNAL_ID;
 	char* pTitle; \
 	int kursor; \
 	int start; \
-	const char* (*elementToText)(void*)
+	const char* (*elementToText)(void*); \
+	void (*elementFree)(void*)
 
 typedef struct GOC_StList
 {
@@ -96,6 +97,7 @@ int goc_listSetToColumn(GOC_HANDLER u, void* element, int column);
 int goc_listInsertInColumn(GOC_HANDLER u, void* element, int column, int row);
 void* goc_listGet(GOC_HANDLER u);
 void* goc_listGetAt(GOC_HANDLER u, int row, int column);
+int goc_listRemove(GOC_HANDLER u, int row);
 
 int goc_listAddText(GOC_HANDLER u, const char *tekst);
 int goc_listAddTextToColumn(GOC_HANDLER u, const char *tekst, int kolumna);
@@ -115,5 +117,6 @@ int goc_listFindText(GOC_HANDLER u, const char *tekst);
 
 int goc_listSetTitle(GOC_HANDLER u, const char *tekst);
 #define goc_listGetTitle(uchwyt) ((GOC_StList*)uchwyt)->pTytul
+int goc_listSetElementFreeFunction(GOC_HANDLER handler, void (*free)(void*));
 
 #endif // ifndef _GOC_LIST_H_

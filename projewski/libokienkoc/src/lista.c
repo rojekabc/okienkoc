@@ -38,6 +38,7 @@ int goc_listAddColumn(GOC_HANDLER u, GOC_POSITION width)
 	}
 	goc_arrayAdd(&lista->columns, newColumn);
 	newColumn->position = width <= free ? width : free;
+	newColumn->elements.freeElement = lista->elementFree;
 
 	// new column has to have same number of rows
 	if ( goc_arraySize(&lista->columns) > 1 )
@@ -615,6 +616,7 @@ static int listInit(GOC_HANDLER uchwyt)
 	lista->kolorRamka = lista->kolorRamkaNieaktywny;
 
 	lista->elementToText = listElementToText;
+	lista->elementFree = &free;
 
 	goc_hkAdd( uchwyt, 0x600, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
 			listHotKeyNext );
@@ -715,6 +717,25 @@ static int goc_listDestroy(GOC_HANDLER uchwyt)
 	goc_stringFree(lista->pTitle);
 	goc_arrayClear( &lista->columns );
 	return goc_elementDestroy(uchwyt);
+}
+
+int goc_listSetElementFreeFunction(GOC_HANDLER handler, void (*free)(void*)) {
+	GOC_StList *lista = (GOC_StList*)handler;
+	lista->elementFree = free;
+	for ( int i=0; i<goc_arraySize( &lista->columns ); i++ ) {
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, i );
+		column->elements.freeElement = free;
+	}
+	return GOC_ERR_OK;
+}
+
+int goc_listRemove(GOC_HANDLER handler, int row) {
+	GOC_StList *lista = (GOC_StList*)handler;
+	for ( int i=0; i<goc_arraySize( &lista->columns ); i++ ) {
+		GOC_COLUMN* column = goc_arrayGet( &lista->columns, i );
+		goc_arrayRemove( &column->elements, row );
+	}
+	return GOC_ERR_OK;
 }
 
 int goc_listListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
