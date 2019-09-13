@@ -4,7 +4,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/select.h>
-#include "term.h"
 #include "iterm.h"
 #include "conflog.h"
 #include <tools/term.h>
