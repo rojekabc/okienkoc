@@ -1,6 +1,6 @@
 #include "array.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 static void internalRemove(GOC_Array* array, int pos) {

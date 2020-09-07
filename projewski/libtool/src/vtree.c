@@ -1,6 +1,6 @@
+#include "global-inc.h"
 #include "vtree.h"
 #include "mystr.h"
-#include <malloc.h>
 #include <string.h>
 
 #define VCHECK(ret) \
@@ -67,7 +67,7 @@ GOC_VTree *goc_vtreeGet(const GOC_VTree* vtree, const char* nodename)
 	VCHECK( NULL );
 	for (; i < vtree->nNode; i++)
 	{
-		if ( goc_stringEquals(vtree->pNode[i]->name, nodename) )
+		if ( string_equals(vtree->pNode[i]->name, nodename) )
 			return vtree->pNode[i];
 	}
 	return NULL;
@@ -79,7 +79,7 @@ GOC_VTree *goc_vtreeRemove(GOC_VTree* vtree, const char* nodename)
 	VCHECK( NULL );
 	for (; i < vtree->nNode; i++)
 	{
-		if ( goc_stringEquals(vtree->pNode[i]->name, nodename) )
+		if ( string_equals(vtree->pNode[i]->name, nodename) )
 		{
 			goc_vtreeFree(vtree->pNode[i]);
 			vtree->pNode = goc_tableRemove( vtree->pNode, &vtree->nNode, sizeof(GOC_VTree*), i );
@@ -134,7 +134,7 @@ GOC_VTree *goc_vtreeDetach(GOC_VTree* vtree, const char *nodename)
 	VCHECK( NULL );
 	for (; i < vtree->nNode; i++)
 	{
-		if ( goc_stringEquals(vtree->pNode[i]->name, nodename) )
+		if ( string_equals(vtree->pNode[i]->name, nodename) )
 		{
 			GOC_VTree* result = vtree->pNode[i];
 			vtree->pNode = goc_tableRemove( vtree->pNode, &vtree->nNode, sizeof(GOC_VTree*), i );

@@ -1,4 +1,4 @@
-#include <tools/nbitpola.h>
+#include <nbitpola.h>
 #include <stdio.h>
 #include <time.h>
 #include <signal.h>

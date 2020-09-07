@@ -4,13 +4,14 @@
 #	include "tablica.h"
 #	include "iterator.h"
 #	include "istream.h"
+#   include "ostream.h"
 
-// kategoria domy¶lna - u¿ywana, gdy nie ma ¿adnej kategorii
+// default category
 #define GOC_PROPERTIES_CATEGORY_DEFAULT "default"
 
-// W³a¶ciwo¶æ
-// name - nazwa w³a¶ciwo¶ci
-// value - warto¶æ w³a¶ciwo¶ci
+// The property
+// - name
+// - value
 #	define GOC_STRUCT_PROPERTY \
 		char *name; \
 		char *value
@@ -20,10 +21,9 @@ typedef struct GOC_Property
 	GOC_STRUCT_PROPERTY;
 } GOC_Property;
 
-// Kategoria
-// name - nazwa kategorii
-// pProperty - zbiór w³a¶ciwo¶ci
-// nProperty - liczba w³a¶ciwo¶ci w zbiorze
+// Category
+// - name
+// - properties
 #	define GOC_STRUCT_CATEGORY \
 		char *name; \
 		GOC_Property **pProperty; \
@@ -34,9 +34,7 @@ typedef struct GOC_Category
 	GOC_STRUCT_CATEGORY;
 } GOC_Category;
 
-// Zbiór w³a¶ciwo¶ci skategoryzowanych
-// pCategory - zbiór kategorii
-// pCategory - liczba kategorii w zbiorze
+// Categorized properties
 #	define GOC_STRUCT_PROPERTIES \
 		GOC_Category **pCategory; \
 		_GOC_TABEL_SIZETYPE_ nCategory
@@ -47,50 +45,48 @@ typedef struct GOC_Properties
 } GOC_Properties;
 
 
-// Stwórz pust± strukturê
+// alloc empty properties
 GOC_Properties *goc_propertiesAlloc();
-// Zwolnij strukturê
+// free properties
 GOC_Properties *goc_propertiesFree(GOC_Properties *properties);
 
 
-// za³adowanie ze strumienia wej¶ciowego is w³a¶ciwo¶ci properties
+// load properties
 //
-// properties - w³a¶ciwo¶ci
-// is - strumieñ wej¶ciowy
+// properties - the properties structure
+// is - the input stream
 //
-// return - struktura w³a¶ciwo¶ci
+// return the properties structure
 //
-// je¿eli properties jest NULL to utworzy strukturê properties
-// je¿eli properties istnieje to doda doñ odczytane w³a¶ciwo¶ci
-// 	oraz kategorie
-// Je¿eli strumieñ jest null, to zwróci strukturê properties bez zmian,
-// 	a je¶li by³a NULL to utworzy pust±
+// if properties argue NULL - create ones, in other hand append categorized properties
+// if stream is NULL - nothing will be changed (if properties NULL too, create empty)
 GOC_Properties *goc_propertiesLoad(GOC_Properties* properties, GOC_IStream* is);
-// TODO: zachowanie do wskazanego strumienia
-// void propertiesSave(GOC_Properties*, OStream*);
-//  Wyczy¶æ wszystkie kategorie i w³a¶ciwo¶ci
+
+
+void goc_propertiesSave(GOC_Properties* properties, GOC_OStream* os);
+//  Wyczyï¿½ï¿½ wszystkie kategorie i wï¿½aï¿½ciwoï¿½ci
 GOC_Properties* goc_propertiesClear(GOC_Properties*);
-// Wyczy¶æ w³a¶ciwo¶ci wybranej kategorii
-GOC_Properties* propertiesCategoryClear(GOC_Properties*, char*);
+// Wyczyï¿½ï¿½ wï¿½aï¿½ciwoï¿½ci wybranej kategorii
+// GOC_Properties* goc_propertiesCategoryClear(GOC_Properties*, char*);
 
 
-// wylistowanie w³a¶ciwo¶ci w domy¶lnej kategorii
+// wylistowanie wï¿½aï¿½ciwoï¿½ci w domyï¿½lnej kategorii
 // return GOC_Iterator of GOC_Property
 GOC_Iterator *goc_propertiesList(GOC_Properties*);
 // wtlistowanie kategorii
 // return GOC_Iterator of GOC_Category
 GOC_Iterator *goc_propertiesListCategories(GOC_Properties*);
-// wylistowanie w³a¶ciwo¶ci w kategorii
+// wylistowanie wï¿½aï¿½ciwoï¿½ci w kategorii
 GOC_Iterator *goc_propertiesListCategory(GOC_Properties*, char*);
-// podaj warto¶æ w³a¶ciwo¶ci dla klucza z domy¶lnej kategorii
-char *goc_propertiesGetValue(GOC_Properties*, char*);
-// podaj warto¶æ w³a¶ciwo¶ci dla klucza z wybranej kategorii
-char *goc_propertiesGetCategoryValue(GOC_Properties*, char*, char*);
+// podaj wartoï¿½ï¿½ wï¿½aï¿½ciwoï¿½ci dla klucza z domyï¿½lnej kategorii
+const char *goc_propertiesGetValue(GOC_Properties*, const char*);
+// podaj wartoï¿½ï¿½ wï¿½aï¿½ciwoï¿½ci dla klucza z wybranej kategorii
+const char *goc_propertiesGetCategoryValue(GOC_Properties*, const char*, const char*);
 
 
 GOC_Properties *goc_propertiesAddCategory(GOC_Properties*, char*);
-GOC_Properties *propertiesSet(GOC_Properties*, char*, char*);
-GOC_Properties *propertiesCategorySet(GOC_Properties*, char*, char*, char*);
-GOC_Properties *propertiesRemCategory(GOC_Properties*, char*);
+GOC_Properties *goc_propertiesSet(GOC_Properties*, const char*, const char*);
+GOC_Properties *goc_propertiesCategorySet(GOC_Properties*, const char*, const char*, const char*);
+GOC_Properties *goc_propertiesRemCategory(GOC_Properties*, char*);
 
 #endif // ifndef _GOC_PROPERTIES_H_

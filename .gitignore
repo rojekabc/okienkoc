@@ -6,3 +6,9 @@
 **/.lflags
 **/.cflags
 **/target
+
+# cmake
+**/cmake-build-*/
+
+#intelij
+**/.idea

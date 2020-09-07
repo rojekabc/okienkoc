@@ -1,5 +1,7 @@
 #include "easymap.h"
 
+#include <stdlib.h>
+#include <string.h>
 // klucze i wartosci nie sa kopiowane !
 
 GOC_EasyMap *goc_mapCreate()
@@ -48,21 +50,21 @@ GOC_EasyMap *goc_mapFree(GOC_EasyMap *map)
 	return NULL;
 }
 
-GOC_EasyMap *goc_mapKeyCmpFunction(GOC_EasyMap *map, int (fun*)(GOC_MAPKEYTYPE, GOC_MAPKEYTYPE))
+GOC_EasyMap *goc_mapKeyCmpFunction(GOC_EasyMap *map, int (*fun)(GOC_MAPKEYTYPE, GOC_MAPKEYTYPE))
 {
 	if ( map )
 		map->keyCompare = fun;
 	return map;
 }
 
-GOC_EasyMap *goc_mapKeyFreeFunction(GOC_EasyMap *map, GOC_MAPKEYTYPE (fun*)(GOC_MAPKEYTYPE))
+GOC_EasyMap *goc_mapKeyFreeFunction(GOC_EasyMap *map, GOC_MAPKEYTYPE (*fun)(GOC_MAPKEYTYPE))
 {
 	if ( map )
 		map->keyFree = fun;
 	return map;
 }
 
-GOC_EasyMap *goc_mapValueFreeFunction(GOC_EasyMap *map, MAPVALUE (fun*)(MAPVALUE))
+GOC_EasyMap *goc_mapValueFreeFunction(GOC_EasyMap *map, GOC_MAPVALUETYPE (*fun)(GOC_MAPVALUETYPE))
 {
 	if ( map )
 		map->valueFree = fun;
@@ -92,12 +94,12 @@ static int getKeyPos(GOC_EasyMap *map, GOC_MAPKEYTYPE key)
 	return -1;
 }
 
-GOC_EasyMap *goc_mapSet(GOC_EasyMap *map, GOC_MAPKEYTYPE key, MAPKEYVALUE value)
+GOC_EasyMap *goc_mapSet(GOC_EasyMap *map, GOC_MAPKEYTYPE key, GOC_MAPVALUETYPE value)
 {
 	int i;
 	if ( map == NULL )
 		return map;
-	i = getKeyPos( key );
+	i = getKeyPos( map, key );
 	if ( i == -1 )
 	{
 		i = map->nMap;
@@ -117,7 +119,7 @@ GOC_EasyMap *goc_mapSet(GOC_EasyMap *map, GOC_MAPKEYTYPE key, MAPKEYVALUE value)
 	return map;
 }
 
-GOC_MAPVALUETYPE goc_mapGet(GOC_EasyMap *map, MAPKEYTUPE key)
+GOC_MAPVALUETYPE goc_mapGet(GOC_EasyMap *map, GOC_MAPKEYTYPE key)
 {
 	int i;
 	if ( map )

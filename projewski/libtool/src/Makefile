@@ -6,7 +6,7 @@ TARGETPATH=target
 TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))
 
 CFLAGS = -Wall -fPIC
-LFLAGS = -shared -lpthread -lprojewski-tools
+LFLAGS = -shared -lpthread 
 
 include Makefile.properties
 

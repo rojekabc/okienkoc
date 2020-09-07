@@ -3,11 +3,11 @@
 #include <sys/time.h>
 #include <signal.h>
 
-#include <tools/nbitpola.h>
-#include <tools/random.h>
-#include <tools/mystr.h>
-#include <tools/tablica.h>
-#include <tools/log.h>
+#include <nbitpola.h>
+#include <random.h>
+#include <mystr.h>
+#include <tablica.h>
+#include <log.h>
 
 #define GOC_FLAGSTATS 1
 #define GOC_FLAGDEBUG 2
@@ -65,9 +65,9 @@ void test_001()
 	srand(time(NULL));
 	if ( GOC_IS_STATS )
 		starttimer(timertick, sigtimeralarm);
-	
+
 	while (LICZBA_TESTOW--)
-	{ 
+	{
 		ld = 1+goc_random(255);
 		pole = goc_nbitFieldCreate(1, 0);
 		while (ld--)
@@ -76,10 +76,10 @@ void test_001()
 			goc_nbitFieldAdd(pole, val);
 			strGen = goc_stringAddInt( strGen, val );
 		}
-		GOC_FDEBUG( goc_stringAdd( goc_stringAdd( goc_stringCopy(NULL, 
+		GOC_FDEBUG( goc_stringAdd( goc_stringAdd( goc_stringCopy(NULL,
 			"test_001 [GOC_DEBUG]: Ciag testowy: ["), strGen), "%s]\n") );
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -116,9 +116,9 @@ void test_002()
 	srand(time(NULL));
 	if ( GOC_IS_STATS )
 		starttimer(timertick, sigtimeralarm);
-	
+
 	while (LICZBA_TESTOW--)
-	{ 
+	{
 		ld = 1+goc_random(255);
 		pole = goc_nbitFieldCreate(1, 0);
 		while (ld--)
@@ -130,7 +130,7 @@ void test_002()
 			printf("test_002 [GOC_DEBUG]: Ciag testowy: [%s]\n", strGen);
 		goc_nbitFieldFromString(pole, strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -170,9 +170,9 @@ void test_003()
 	srand(time(NULL));
 	if ( GOC_IS_STATS )
 		starttimer(timertick, sigtimeralarm);
-	
+
 	while (LICZBA_TESTOW--)
-	{ 
+	{
 		ld = 1+goc_random(255);
 		lbnw = 1+goc_random(4);
 		pole = goc_nbitFieldCreate(lbnw, 0);
@@ -186,7 +186,7 @@ void test_003()
 		if ( GOC_IS_DEBUG )
 			printf("test_003 [GOC_DEBUG]: Ciag testowy: [%s]\n", strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -232,9 +232,9 @@ void test_004()
 	srand(time(NULL));
 	if ( GOC_IS_STATS )
 		starttimer(timertick, sigtimeralarm);
-	
+
 	while (LICZBA_TESTOW--)
-	{ 
+	{
 		ld = 1+goc_random(255);
 		lbnw = 1+goc_random(4);
 		pole = goc_nbitFieldCreate(lbnw, 0);
@@ -248,7 +248,7 @@ void test_004()
 			printf("test_004 [%d] [GOC_DEBUG]: Ciag testowy: [%s]\n", LICZBA_TESTOW, strGen);
 		goc_nbitFieldFromString(pole, strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -315,7 +315,7 @@ void test_005()
 		if ( GOC_IS_DEBUG )
 			printf("test_005 [%d] [GOC_DEBUG]: Ciag testowy: [%s]\n", LICZBA_TESTOW, strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -393,7 +393,7 @@ void test_006()
 		if ( GOC_IS_DEBUG )
 			printf("test_006 [%d] [GOC_DEBUG]: Ciag testowy po usuwaniu: [%s]\n", LICZBA_TESTOW, strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -425,8 +425,8 @@ void test_006()
 
 void test_007()
 {
-	// test na usuwanie ciagow wartosci od wylosowanej pozycji, a¿ usunie
-	// ca³o¶æ
+	// test na usuwanie ciagow wartosci od wylosowanej pozycji, aï¿½ usunie
+	// caï¿½oï¿½ï¿½
 	// liczba bitow losowana - pomiedzy 1 a 4
 	// liczba danych losowana
 	// dane losowane
@@ -472,7 +472,7 @@ void test_007()
 		if ( GOC_IS_DEBUG )
 			printf("test_007 [%d] [GOC_DEBUG]: Ciag testowy po usuwaniu: [%s]\n", LICZBA_TESTOW, strGen);
 		str = goc_nbitFieldToString(pole);
-		if ( !goc_stringEquals( str, strGen ) )
+		if ( !string_equals( str, strGen ) )
 		{
 			char *strFail = NULL;
 			strFail = goc_stringAdd( strFail, "\nERROR: Otrzymano bledny string\n" );
@@ -624,8 +624,8 @@ void test_009()
 
 void test_010()
 {
-	// test na usuwanie ciagow wartosci od wylosowanej pozycji, a¿ usunie
-	// ca³o¶æ
+	// test na usuwanie ciagow wartosci od wylosowanej pozycji, aï¿½ usunie
+	// caï¿½oï¿½ï¿½
 	// liczba bitow 8
 	// liczba danych losowana
 	// dane losowane
@@ -656,7 +656,7 @@ void test_010()
 		pGen = malloc(pole->ld);
 		nGen = pole->ld;
 		memcpy(pGen, pole->dane, pole->ld);
-		
+
 		if ( GOC_IS_DEBUG )
 		{
 			printf("test_010 [%d] [GOC_DEBUG]: Ciag testowy przed usuwaniem: ", LICZBA_TESTOW);
@@ -699,7 +699,7 @@ void test_010()
 // -debug wypisuj informacje typue debug
 int main(int argc, char **argv)
 {
-	
+
 	int number_failed;
 
 	if ( argc > 1 )
@@ -707,9 +707,9 @@ int main(int argc, char **argv)
 		int i;
 		for ( i=0; i<argc; i++ )
 		{
-			if ( goc_stringEquals(argv[i], "-stats") )
+			if ( string_equals(argv[i], "-stats") )
 				flag |= GOC_FLAGSTATS;
-			else if ( goc_stringEquals(argv[i], "-debug") )
+			else if ( string_equals(argv[i], "-debug") )
 				flag |= GOC_FLAGDEBUG;
 		}
 	}
@@ -732,6 +732,6 @@ int main(int argc, char **argv)
 	test_007();
 	test_009();
 	test_010();
-	
+
 	return 0;
 }

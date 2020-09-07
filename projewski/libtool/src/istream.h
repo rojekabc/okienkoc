@@ -1,10 +1,6 @@
 #ifndef _GOC_ISTREAM_H_
 #define _GOC_ISTREAM_H_
 
-// Rezygnujê z funkcji sk³adowej readArray - bêdzie budowana
-// tylko func readChar - zak³adam, ¿e nie wyst±pi a¿ tak znacz±ce
-// spowolnienie w odczytywaniu w stosunku do pojedynczej iteracji
-
 #define GOC_STRUCT_ISTREAM \
 	int (*readChar)(struct GOC_IStream *); \
 	int (*close)(struct GOC_IStream *); \
@@ -26,11 +22,11 @@ int goc_isReadChar(GOC_IStream *is);
 // -2 GOC_ERROR
 int goc_isReadArray(GOC_IStream *is, unsigned char *pBuffer, unsigned int nBuffer);
 
-// Odczytanie ze strumienia lini, która powinna byæ zakoñczona znakiem
+// Odczytanie ze strumienia lini, ktï¿½ra powinna byï¿½ zakoï¿½czona znakiem
 // nowej linii. Znak ten nie jest przekazywany do strumienia.
-// Zwrócony ci±g znaków zostanie zakoñczony znakiem koñca ci±gu.
-// Je¿eli nie uda siê nic odczytaæ z powodu koñca pliku lub b³êdów
-// zostanie zwrócone NULL
+// Zwrï¿½cony ciï¿½g znakï¿½w zostanie zakoï¿½czony znakiem koï¿½ca ciï¿½gu.
+// Jeï¿½eli nie uda siï¿½ nic odczytaï¿½ z powodu koï¿½ca pliku lub bï¿½ï¿½dï¿½w
+// zostanie zwrï¿½cone NULL
 char *goc_isReadLine(GOC_IStream *is);
 
 // == 0 OK

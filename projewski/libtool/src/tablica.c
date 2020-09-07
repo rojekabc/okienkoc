@@ -5,19 +5,19 @@
 /*
  * Funkcja:
  * Dodanie jednego elementu na koniec tablicy
- * Argumenty nie s± sprawdzane pod k±tem poprawno¶ci. Zak³ada siê, ¿e
+ * Argumenty nie sï¿½ sprawdzane pod kï¿½tem poprawnoï¿½ci. Zakï¿½ada siï¿½, ï¿½e
  * 1. nTablica != NULL
- * 2. je¿eli *nTablica != 0  =>  pTablica != NULL
+ * 2. jeï¿½eli *nTablica != 0  =>  pTablica != NULL
  * 3. elemSize > 0
  *
  * Argumenty:
- * pTablica - aktualne wskazanie na tablicê
- * nTablica - wskazanie na zmienn± zawieraj±c± liczbê elementów w tablicy
+ * pTablica - aktualne wskazanie na tablicï¿½
+ * nTablica - wskazanie na zmiennï¿½ zawierajï¿½cï¿½ liczbï¿½ elementï¿½w w tablicy
  * elemSize - rozmiar pojedynczego elementu
  *
  * Zwraca:
- * Wskazanie na nowy obszar pamiêci z pamiêci± przydzielon± do tablicy.
- * Stare wskazanie jest ju¿ nieaktualne !
+ * Wskazanie na nowy obszar pamiï¿½ci z pamiï¿½ciï¿½ przydzielonï¿½ do tablicy.
+ * Stare wskazanie jest juï¿½ nieaktualne !
  * Dodany obszar nie jest zerowany !
  *
  */
@@ -37,22 +37,22 @@ void *goc_tableAdd(
 }
 /*
  * Funkcja:
- * Dodanie podanej liczby elementów na koniec tablicy
- * Argumenty nie s± sprawdzane pod k±tem poprawno¶ci. Zak³ada siê, ¿e
+ * Dodanie podanej liczby elementï¿½w na koniec tablicy
+ * Argumenty nie sï¿½ sprawdzane pod kï¿½tem poprawnoï¿½ci. Zakï¿½ada siï¿½, ï¿½e
  * 1. nTablica != NULL
- * 2. je¿eli *nTablica != 0  =>  pTablica != NULL
+ * 2. jeï¿½eli *nTablica != 0  =>  pTablica != NULL
  * 3. elemSize > 0
  * 4. nElem > 0
  *
  * Argumenty:
- * pTablica - aktualne wskazanie na tablicê
- * nTablica - wskazanie na zmienn± zawieraj±c± liczbê elementów w tablicy
+ * pTablica - aktualne wskazanie na tablicï¿½
+ * nTablica - wskazanie na zmiennï¿½ zawierajï¿½cï¿½ liczbï¿½ elementï¿½w w tablicy
  * elemSize - rozmiar pojedynczego elementu
- * nElem - liczba dodawanych elementów
+ * nElem - liczba dodawanych elementï¿½w
  *
  * Zwraca:
- * Wskazanie na nowy obszar pamiêci z pamiêci± przydzielon± do tablicy.
- * Stare wskazanie jest ju¿ nieaktualne !
+ * Wskazanie na nowy obszar pamiï¿½ci z pamiï¿½ciï¿½ przydzielonï¿½ do tablicy.
+ * Stare wskazanie jest juï¿½ nieaktualne !
  * Dodany obszar nie jest zerowany !
  *
  */
@@ -75,22 +75,22 @@ void *goc_tableResize(
 }
 /*
  * Funkcja:
- * Usuniêcie jednego elementu
- * Argumenty nie s± sprawdzane pod k±tem poprawno¶ci. Zak³ada siê, ¿e
+ * Usuniï¿½cie jednego elementu
+ * Argumenty nie sï¿½ sprawdzane pod kï¿½tem poprawnoï¿½ci. Zakï¿½ada siï¿½, ï¿½e
  * 1. nTablica != NULL
- * 2. je¿eli *nTablica != 0  =>  pTablica != NULL
+ * 2. jeï¿½eli *nTablica != 0  =>  pTablica != NULL
  * 3. elemSize > 0
  *
  * Argumenty:
- * pTablica - aktualne wskazanie na tablicê
- * nTablica - wskazanie na zmienn± zawieraj±c± liczbê elementów w tablicy
+ * pTablica - aktualne wskazanie na tablicï¿½
+ * nTablica - wskazanie na zmiennï¿½ zawierajï¿½cï¿½ liczbï¿½ elementï¿½w w tablicy
  * elemSize - rozmiar pojedynczego elementu
- * pozycja - pozycja elementu do usuniêcia
+ * pozycja - pozycja elementu do usuniï¿½cia
  *
  * Zwraca:
- * Wskazanie na nowy obszar pamiêci z pamiêci± przydzielon± do tablicy.
- * Stare wskazanie jest ju¿ nieaktualne (zwolniona pamiêæ) !
- * Je¿eli rozmiar nowej tablicy jest zerowy, zwróci wskazanie na NULL
+ * Wskazanie na nowy obszar pamiï¿½ci z pamiï¿½ciï¿½ przydzielonï¿½ do tablicy.
+ * Stare wskazanie jest juï¿½ nieaktualne (zwolniona pamiï¿½ï¿½) !
+ * Jeï¿½eli rozmiar nowej tablicy jest zerowy, zwrï¿½ci wskazanie na NULL
  *
  */
 void *goc_tableRemove(
@@ -119,11 +119,11 @@ void *goc_tableRemove(
 
 /*
  * Funkcja:
- * Wyczyszczenie tablicy. Zajêta pamiêæ jest zwalniana.
+ * Wyczyszczenie tablicy. Zajï¿½ta pamiï¿½ï¿½ jest zwalniana.
  *
  * Argumenty:
- * pTablica - wskazanie na tablicê elementów
- * nTablica - wskazanie na licznik elementów tablicy
+ * pTablica - wskazanie na tablicï¿½ elementï¿½w
+ * nTablica - wskazanie na licznik elementï¿½w tablicy
  *
  * Zwraca:
  * Nowe wskazanie. Zawsze jako NULL.
@@ -144,12 +144,12 @@ void *goc_tableClear(
  *
  * Argumenty:
  * pTablica - tablica poddawana zmianie.
- * nTablica - licznik elementów tablicy
+ * nTablica - licznik elementï¿½w tablicy
  * elemSize - rozmiar pojedynczego elementu tablicy
- * pozycja  - pozycja, w jak± nale¿y wstawiæ element
+ * pozycja  - pozycja, w jakï¿½ naleï¿½y wstawiï¿½ element
  *
  * Zwraca:
- * wskazanie na now± tablicê z zarezerwowan± przestrzeni±
+ * wskazanie na nowï¿½ tablicï¿½ z zarezerwowanï¿½ przestrzeniï¿½
  * stara tablica jest zwalniana.
  *
  *

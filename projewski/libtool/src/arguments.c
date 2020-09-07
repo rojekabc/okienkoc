@@ -103,7 +103,7 @@ GOC_Arguments* goc_argumentsSetUnknownFunction(
 	return args;
 }
 
-// Jako czwarty argument przyjmuje strukturê GOC_Arguments
+// Jako czwarty argument przyjmuje strukturï¿½ GOC_Arguments
 int goc_argumentHelpFunction(char **argv, int pos, int argc, void* param)
 {
 	GOC_Arguments* args = *((GOC_Arguments**)param);
@@ -158,7 +158,7 @@ int goc_argumentsParse(
 			int j;
 			for (j=0; j < args->pArgument[i]->nName; j++ )
 			{
-				if ( goc_stringEquals(args->pArgument[i]->pName[j], argv[pos]) )
+				if ( string_equals(args->pArgument[i]->pName[j], argv[pos]) )
 				{
 					res = args->pArgument[i]->function(argv, pos, argc, args->pArgument[i]->parameter);
 					interpret = 1;

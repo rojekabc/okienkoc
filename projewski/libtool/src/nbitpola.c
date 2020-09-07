@@ -481,7 +481,7 @@ void goc_nbitFieldFromString(GOC_StNBitField *pole, const char *str)
 	pole->ld = 0;
 	if ( str == NULL )
 		return;
-	if ( goc_stringEquals(str, "<NULL>") )
+	if ( string_equals(str, "<NULL>") )
 	{
 		pole->dane = NULL;
 		pole->ld = 0;
@@ -508,7 +508,7 @@ void goc_nbitFieldFromString(GOC_StNBitField *pole, const char *str)
 		for (i=0; i<pole->ld; i++)
 		{
 			c = str[i<<1];
-			// zamieñ znak 0-F na warto¶æ liczbow±
+			// zamieï¿½ znak 0-F na wartoï¿½ï¿½ liczbowï¿½
 			if ( c & 0x40 )
 			{
 				c++;
@@ -520,7 +520,7 @@ void goc_nbitFieldFromString(GOC_StNBitField *pole, const char *str)
 			pole->dane[i] = c;
 
 			c = str[(i<<1)+1];
-			// zamieñ znak 0-F na warto¶æ liczbow±
+			// zamieï¿½ znak 0-F na wartoï¿½ï¿½ liczbowï¿½
 			if ( c & 0x40 )
 			{
 				c++;

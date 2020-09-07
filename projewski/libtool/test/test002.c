@@ -1,10 +1,11 @@
 /*
- * Program testujacy odczytywanie klawiszy na ró¿ne sposoby
+ * Program testujacy odczytywanie klawiszy na rï¿½ne sposoby
  */
-#include <tools/term.h>
+#include <term.h>
 #include <stdio.h>
-#include <tools/mystr.h>
+#include <mystr.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <linux/keyboard.h>
 #include <linux/kd.h>
 //
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
 		signal(SIGTSTP, die);
 		signal(SIGTTIN, die);
 		signal(SIGTTOU, die);
-		if ( goc_stringEquals(argv[1], "goc_getch") )
+		if ( string_equals(argv[1], "goc_getch") )
 		{
 			printf("Przerywam po nacisnieciu Ctrl-C\n");
 			goc_termInit();
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
 				fflush(stdout);
 			}
 		}
-		else if ( goc_stringEquals(argv[1], "wait") )
+		else if ( string_equals(argv[1], "wait") )
 		{
 			printf("Przerywam po nacisnieciu Ctrl-C\n");
 			goc_termInit();
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
 				fflush(stdout);
 			}
 		}
-		else if ( goc_stringEquals(argv[1], "scan") )
+		else if ( string_equals(argv[1], "scan") )
 		{
 			printf("Przerywam po nacisnieciu lewego Ctrl\n");
 			if ( goc_kbdScanMode() < 0 )
@@ -107,7 +108,7 @@ int main(int argc, char **argv)
 					die(0);
 			}
 		}
-		else if ( goc_stringEquals(argv[1], "iscan") )
+		else if ( string_equals(argv[1], "iscan") )
 		{
 			// stan klawiszy specjalnych
 			int flag = 0;
@@ -173,8 +174,8 @@ int main(int argc, char **argv)
 					keycode |= 0x0200;
 				// przy standardowym zachowaniu powinno byc
 				// tak, ze keycode jest jak przy samym
-				// naci¶niêciu SHIFT i dodawany jest kontrol
-				// Tu, wyj±tkowo rozró¿niam wielko¶æ litery
+				// naciï¿½niï¿½ciu SHIFT i dodawany jest kontrol
+				// Tu, wyjï¿½tkowo rozrï¿½niam wielkoï¿½ï¿½ litery
 				// oraz rodzaj
 				if ( flag & (LCTRL | RCTRL) )
 					putchar('^');

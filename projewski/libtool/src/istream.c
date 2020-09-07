@@ -98,8 +98,7 @@ char *goc_isReadLine(GOC_IStream *is)
 	}
 	if (( tmp == NULL ) && ( buf[0] == 0 ) && ( c < 0 ))
 		return NULL;
-	tmp = goc_stringAdd(tmp, buf);
-	return tmp;
+	return goc_stringAdd(tmp, buf);
 }
 
 // == 0 OK

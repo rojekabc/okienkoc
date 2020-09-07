@@ -25,7 +25,7 @@ int goc_osWriteByte(GOC_OStream *os, unsigned char b)
 	return 0;
 }
 
-int goc_osWrite(GOC_OStream *os, const void *pArray, int nArray)
+int goc_osWrite(GOC_OStream *os, const void *pArray, unsigned int nArray)
 {
 	CHECK_NULL(os);
 	CHECK_NULL(os->write);

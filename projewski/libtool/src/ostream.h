@@ -12,7 +12,7 @@ typedef struct GOC_OStream
 } GOC_OStream;
 
 int goc_osWriteByte(GOC_OStream *os, unsigned char b);
-int goc_osWrite(GOC_OStream *os, const void *pArray, int nArray);
+int goc_osWrite(GOC_OStream *os, const void *pArray, unsigned int nArray);
 int goc_osFlush(GOC_OStream *os);
 int goc_osClose(GOC_OStream *os);
 

@@ -8,6 +8,8 @@ typedef struct GOC_Array {
 	void (*freeElement)(void*);
 } GOC_Array;
 
+#define array_add(_array_, _value_) _array_ = goc_arrayAdd(_array_, _value_)
+
 GOC_Array* goc_arrayAlloc();
 GOC_Array* goc_arrayFree(GOC_Array* array);
 GOC_Array* goc_arrayAdd(GOC_Array* array, void* pElement);

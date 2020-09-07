@@ -1,5 +1,5 @@
-#include <tools/mystr.h>
-#include <tools/screen.h>
+#include <mystr.h>
+#include <screen.h>
 #include <stdio.h>
 
 
@@ -41,55 +41,55 @@ int main()
 	tmp = goc_stringCopy(tmp, "\t \tCiag znakow\t \t \n\r");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z zestawem do usuniecia z obu stron",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "Ciag znakow\t \t \n\r");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z zestawem do usuniecia na koncu",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "\t \t\n\rCiag znakow");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z zestawem do usuniecia na poczatku",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "Ciag znakow");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim bez usuwania",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "\tCiag znakow");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z jednym na poczatku do usuniecia",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "Ciag znakow\t");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z jednym na koncu do usuniecia",
-			goc_stringEquals(tmp, "Ciag znakow"),
+              string_equals(tmp, "Ciag znakow"),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "\t \n\r\t\t\t\t\t     \n\t\n\n\n\r");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z wszystkim do usuniecia",
-			goc_stringEquals(tmp, NULL),
+              string_equals(tmp, NULL),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, "");
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim bez niczego",
-			goc_stringEquals(tmp, NULL),
+              string_equals(tmp, NULL),
 			testTrue(), testFalse());
 
 	tmp = goc_stringCopy(tmp, NULL);
 	tmp = goc_stringTrim(tmp);
 	TEST_TRUE("Test goc_stringTrim z NULL",
-			goc_stringEquals(tmp, NULL),
+              string_equals(tmp, NULL),
 			testTrue(), testFalse());
 	tmp = goc_stringFree(tmp);
 	TEST_END();
