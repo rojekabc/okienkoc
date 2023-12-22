@@ -11,17 +11,17 @@
 
 int counter = 0;
 char direction = 0;
-char wait = 0;
+char waitflag = 0;
 int width = 0;
 
 int labelMoveDrawer(GOC_StElement *e, const char *tekst)
 {
-	if ( wait )
+	if ( waitflag )
 	{
-		wait--;
+		waitflag--;
 		return GOC_ERR_OK;
 	}
-	wait = 1;
+	waitflag = 1;
 
 	if ( width != goc_elementGetWidth( (GOC_HANDLER)e ) )
 	{

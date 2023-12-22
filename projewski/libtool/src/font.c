@@ -2,7 +2,9 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <linux/kd.h>
+#ifndef __MACH__
+#	include <linux/kd.h>
+#endif
 #include <stdio.h>
 #include <unistd.h>
 
@@ -13,6 +15,7 @@ void goc_fontSet(char *bufor, const char *font, const int n)
 //  bufor[(n<<5)+
 }
 
+#ifndef __MACH__
 void goc_fontsSet(const char *bufor)
 /* Ustaw fonty, aby byly zgodne z zawartoscia bufora */
 {
@@ -21,6 +24,16 @@ void goc_fontsSet(const char *bufor)
   ioctl(fd, PIO_FONT, bufor);
   close(fd);
 }
+
+void goc_getfonts(char *bufor)
+/* Wczytaj fonty aktualnie ustawione do bufora */
+{
+  int fd;
+  fd = open("/dev/tty", O_RDONLY);
+  ioctl(fd, GIO_FONT, bufor);
+  close(fd);
+}
+#endif
 
 void goc_fontsSave(const char *nazwa, const char *bufor)
 /* Zapisz do pliku bufor z ustawionymi fontami */
@@ -44,11 +57,3 @@ void goc_fontsLoad(const char *nazwa, char *bufor)
     close(fd);
 }
 
-void goc_getfonts(char *bufor)
-/* Wczytaj fonty aktualnie ustawione do bufora */
-{
-  int fd;
-  fd = open("/dev/tty", O_RDONLY);
-  ioctl(fd, GIO_FONT, bufor);
-  close(fd);
-}

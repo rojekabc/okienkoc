@@ -151,7 +151,7 @@ static int filelistListFolder(GOC_HANDLER uchwyt, char *name)
 	if ( plista == NULL )
 		return GOC_ERR_WRONGARGUMENT;
 	if ( plista->folder == NULL )
-		plista->folder = get_current_dir_name();
+		plista->folder = goc_getCurrentWorkdir();
 	if ( name == NULL )
 		name = plista->folder;
 	GOC_MSG_FILELISTISFOLDER( msgisfolder, name, -1 );
@@ -236,16 +236,14 @@ static int filelistSetFolder(GOC_HANDLER uchwyt, const char *dirname)
 	if ( goc_isFolder( folder ) )
 	{
 		// zachowaj biezacy
-		plista->folder = goc_stringSet(plista->folder,
-			get_current_dir_name() );
+		plista->folder = goc_stringSet(plista->folder, goc_getCurrentWorkdir() );
 		if ( chdir( folder ) == -1 )
 		{
 			folder = goc_stringFree( folder );
 			return GOC_ERR_REFUSE;
 		}
 		// pobierz docelowy
-		folder = goc_stringSet( folder,
-			get_current_dir_name() );
+		folder = goc_stringSet( folder, goc_getCurrentWorkdir() );
 		// przywroc rzeczywisty
 		chdir( plista->folder );
 		plista->folder = goc_stringCopy( plista->folder, folder );

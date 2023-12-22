@@ -1,4 +1,4 @@
-#include <malloc.h>
+#include "global-inc.h"
 #include <string.h>
 #include <stdio.h>
 #include "slidebar.h"

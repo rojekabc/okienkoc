@@ -1,6 +1,10 @@
 #include "array.h"
 
-#include <malloc.h>
+#ifdef __MACH__
+#	include <stdlib.h>
+#else
+#	include <malloc.h>
+#endif
 #include <string.h>
 
 static void internalRemove(GOC_Array* array, int pos) {

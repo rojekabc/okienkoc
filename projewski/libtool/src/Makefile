@@ -6,7 +6,8 @@ TARGETPATH=target
 TARGETOBJS = $(patsubst %.o, $(TARGETPATH)/%.o, $(OBJS))
 
 CFLAGS = -Wall -fPIC
-LFLAGS = -shared -lpthread -lprojewski-tools
+LFLAGS = -shared -lpthread
+# LFLAGS = -shared -lpthread -lprojewski-tools
 
 include Makefile.properties
 
@@ -32,10 +33,14 @@ INCLUDEPATHS =
 
 # number of bits
 LBITS = $(shell getconf LONG_BIT)
+# operating system
+OSTYPE=$(shell echo "$${OSTYPE}")
 
 # Miejsca instalacji
 PREFIX = /usr/local
-ifeq ($(LBITS), 64)
+ifeq ($(findstring darwin,$(OSTYPE)), darwin)
+	PREFIXLIB = $(PREFIX)${exec_prefix}/lib
+else ifeq ($(LBITS), 64)
 	PREFIXLIB = $(PREFIX)${exec_prefix}/lib64
 else ifeq ($(LBITS), 32)
 	PREFIXLIB = $(PREFIX)${exec_prefix}/lib

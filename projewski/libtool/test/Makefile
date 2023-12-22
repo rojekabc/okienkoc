@@ -20,10 +20,15 @@ NORMALLFLAGS = -s -ldl -lpthread -lX11 -lprojewski-tools
 CFLAGSFILE = .cflags
 LFLAGSFILE = .lflags
 
-TESTPROG = test001 test002 test003 testlog testiterator \
-	testlosuj testterm teststream test-nbit testproperties teststring \
-	testprint testmultitable testtable testxterm testmempipe testarguments
+OSTYPE=$(shell echo "$${OSTYPE}")
 
+TESTPROG = test001 test003 testlog testiterator \
+	testlosuj testterm teststream test-nbit testproperties teststring \
+	testprint testmultitable testtable testmempipe testarguments
+
+ifneq ($(findstring darwin,$(OSTYPE)), darwin)
+	TESTPROG +=  test002 testxterm
+endif
 all: prepare $(TESTPROG)
 
 debug: preparedebug $(TESTPROG)

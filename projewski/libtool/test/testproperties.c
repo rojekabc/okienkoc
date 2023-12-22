@@ -2,7 +2,11 @@
 #include <tools/log.h>
 #include <tools/fileistream.h>
 #include <tools/properties.h>
-#include <malloc.h>
+#ifdef __MACH__
+#	include <stdlib.h>
+#else
+#	include <malloc.h>
+#endif
 
 int main(int argc, char **argv)
 {

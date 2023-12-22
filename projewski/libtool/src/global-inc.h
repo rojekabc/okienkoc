@@ -10,6 +10,10 @@
 //#		include "memwatch.h"
 #		include <malloc.h>
 #	else
-#		include <malloc.h>
+#		ifdef __MACH__
+#			include <stdlib.h>
+#		else
+#			include <malloc.h>
+#		endif
 #	endif
 #endif

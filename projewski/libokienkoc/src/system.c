@@ -621,6 +621,7 @@ static int systemHotKeyTab(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 	}
 }
 
+#ifndef __MACH__
 static int systemHotKeySwitchTerm(
 	GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
@@ -630,6 +631,7 @@ static int systemHotKeySwitchTerm(
 	}
 	return GOC_ERR_OK;
 }
+#endif
 
 static int systemListener(GOC_HANDLER uchwyt, GOC_StMessage* msg)
 {
@@ -805,22 +807,16 @@ static void systemInit()
 		_focusElement = GOC_HANDLER_SYSTEM;
 		_pFuncListen = NULL;
 
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 27, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeyESC);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 9, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeyTab);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x100, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x101, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x102, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x103, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x104, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
-		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x105, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM,
-			systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 27, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeyESC);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 9, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeyTab);
+#ifndef __MACH__
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x100, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x101, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x102, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x103, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x104, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+		goc_hkAdd(GOC_HANDLER_SYSTEM, 0x105, GOC_EFLAGA_ENABLE | GOC_HKFLAG_SYSTEM, systemHotKeySwitchTerm);
+#endif
 		
 		goc_systemRegisterElement(GOC_ELEMENT_FRAME, &goc_frameListener );
 		goc_systemRegisterElement(GOC_ELEMENT_LABEL, &goc_labelListener );

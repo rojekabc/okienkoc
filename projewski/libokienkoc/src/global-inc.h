@@ -1,8 +1,16 @@
 #ifndef _GOC_GLOBAL_INC_H_
 #	define _GOC_GLOBAL_INC_H_
 #	ifdef _DEBUG
-#		include <malloc.h>
+#		ifdef __MACH__
+#			include <stdlib.h>
+#		else
+#			include <malloc.h>
+#		endif
 #	else
-#		include <malloc.h>
+#		ifdef __MACH__
+#			include <stdlib.h>
+#		else
+#			include <malloc.h>
+#		endif
 #	endif
 #endif

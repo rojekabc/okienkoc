@@ -10,7 +10,9 @@
 #define GOC_PRINTERROR
 #include <tools/log.h>
 #include <stdio.h>
-#include <malloc.h>
+#ifndef __MACH__
+#	include <malloc.h>
+#endif
 #include <string.h>
 #include <math.h>
 #include "system-drops.h"

@@ -6,7 +6,9 @@
 #define GOC_PRINTERROR
 #include <tools/log.h>
 #include <tools/mystr.h>
-
+#ifdef __MACH__
+#	include <stdlib.h>
+#endif
 
 int main(int argc, char **argv)
 {

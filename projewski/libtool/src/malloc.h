@@ -1,6 +1,10 @@
 #ifndef _GOC_MALLOC_H_
 #	define _GOC_MALLOC_H_
-#	include <malloc.h>
+#	ifdef __MACH__
+#		include <stdlib.h>
+#	else
+#		include <malloc.h>
+#	endif
 #	include <string.h>
 
 #	define ALLOC( _type_, _name_ ) \

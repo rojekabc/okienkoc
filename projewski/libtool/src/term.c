@@ -5,7 +5,7 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <fcntl.h>
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !defined(__MACH__)
 #	include <linux/kd.h>
 #	include <linux/vt.h>
 #	include <linux/keyboard.h>
@@ -24,11 +24,15 @@ static int kbdmode;
 
 int goc_kbdCanReadKbdMode()
 {
+#ifdef __MACH__
+	return 0;
+#else
 	int kbdm;
 	int fd = STDIN_FILENO;
 	if ( ioctl(fd, KDGKBMODE, &kbdm) )
 		return 0;
 	return 1;
+#endif
 }
 
 // Przelaczenie sie na tryb czytania scan code klawiatury
@@ -37,6 +41,9 @@ int goc_kbdCanReadKbdMode()
 // NIE UZYWAC W POLACZENIU Z FUNKCJA goc_termInit / goc_termRestore
 int goc_kbdScanMode(void)
 {
+#ifdef __MACH__
+	return -1;
+#else
 	struct termios tio;
 	int fd = STDIN_FILENO;
 	/*
@@ -88,6 +95,7 @@ int goc_kbdScanMode(void)
 		return -1;
 	}
 	return 0;
+#endif
 }
 
 int goc_screenGetWidth()
@@ -110,6 +118,7 @@ int goc_screenGetHeight()
 	return wsize.ws_row;
 }
 
+#ifndef __MACH__
 // przelacz na oryginalny tryb klawiatury
 int goc_kbdRestoreMode(void)
 {
@@ -246,6 +255,7 @@ void goc_termSwitchTo(int num)
 	ioctl(STDIN_FILENO, VT_ACTIVATE, num);
 	ioctl(STDIN_FILENO, VT_WAITACTIVE, num);
 }
+#endif
 
 /* initialze terminal */
 int goc_termInit(void)

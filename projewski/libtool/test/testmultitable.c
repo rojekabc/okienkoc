@@ -2,7 +2,11 @@
 #include <string.h>
 #include <tools/typetable.h>
 #include <tools/mystr.h>
-#include <malloc.h>
+#ifdef __MACH__
+#	include <stdlib.h>
+#else
+#	include <malloc.h>
+#endif
 
 static int intFree(int x) {return 0;}
 static int intCopy(int x) {return x;}
