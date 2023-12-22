@@ -13,9 +13,9 @@ void goc_textcolor(int color) {
 
 void goc_textallcolor(unsigned char color) {
     printf("\033[");
-    if (color & 0x80)
+    if (color & GOC_FBLINK)
 	printf("5;");
-    if (color & 0x40)
+    if (color & GOC_FBOLD)
 	printf("1;");
     if (!(color & 0xC0))
 	printf("0;");

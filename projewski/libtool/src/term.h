@@ -6,8 +6,8 @@ int goc_getch();
 int goc_isZnak();
 int goc_getchar();
 int goc_charWait();
+#ifndef __MACH__
 int goc_kbdRestoreMode(void);
-int goc_kbdScanMode(void);
 int goc_scanToKey(int scan);
 int goc_keyToEntry(int keyCode, int kbdTable);
 int goc_keyToAscii(int keyCode);
@@ -18,6 +18,8 @@ void goc_ledSetFlag(int led);
 void goc_clrLedFlag(int led);
 int goc_isLedFlag(int led);
 void goc_termSwitchTo(int num);
+#endif
+int goc_kbdScanMode(void);
 int goc_screenGetWidth();
 int goc_screenGetHeight();
 int goc_kbdCanReadKbdMode();

@@ -16,6 +16,8 @@ void goc_getnum(long *c, long old, long min, long max);
 #define goc_movedown(n) printf("\033[%dB", n)
 #define goc_moveup(n) printf("\033[%dA", n)
 int goc_stringToColor(const char* str);
+#define goc_hideCursor() printf("\033[?25l")
+#define goc_showCursor() printf("\033[?25h")
 
 #define GOC_BLACK           0x00
 #define GOC_RED             0x01

@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <tools/global-inc.h>
 
 #include "bcd.h"
 

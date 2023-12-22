@@ -4,11 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
-#ifdef _DEBUG
-#include <mpatrol.h>
-#else
-#include <malloc.h>
-#endif
+#include <tools/global-inc.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -23,7 +19,7 @@
 #define _TESTING_
 
 #define PROGRAM_AUTHOR "Piotr Rojewski"
-#define PROGRAM_TITLE "Magazynier - wersja 1.2.1"
+#define PROGRAM_TITLE "Magazynier - wersja 1.2.2"
 
 #define KONFKLUCZ_FOLDER "Katalog plansz"
 
@@ -46,10 +42,6 @@
 // default gamedata folder
 #define GAME_FOLDER "games"
 			
-#define piszblad( komunikat, opis ) \
-	std::cerr << __FILE__ << ":" << __LINE__ << std::endl \
-			<< komunikat << " " << opis << std::endl
-
 // czas rozpoczêcia gry na danej planszy
 time_t czas_start;
 GOC_HANDLER formaPoziom;
@@ -782,7 +774,7 @@ void planRuch( int x, int y )
 		e.flag |= GOC_EFLAGA_CENTER;
 		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TA", "Gratulacje"));
 		e.x = 27; e.y = 13; e.width = 26; e.height = 1;
-		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TB", "Gotuj siê na trudniejsze"));
+		goc_labelDrawer( &e, konfplikDajUstParametr(_scena->konf, "TB", "Gotuj się na trudniejsze"));
 		goc_gotoxy(1, 1);
 		fflush(stdout);
 		sleep(3);
@@ -822,34 +814,11 @@ void planBudujOtoczenie()
 	free(tmp);
 }
 
-GOC_COLOR planDoKolor(const char *ciag)
-{
-	GOC_COLOR tmp = 0;
-	if ( strlen(ciag) <= 2 )
-		return GOC_WHITE;
-	if ( strstr(ciag,"biały") )
-		tmp = GOC_WHITE;
-	else if ( strstr(ciag,"czerwony") )
-		tmp = GOC_RED;
-	else if ( strstr(ciag,"niebieski") )
-		tmp = GOC_BLUE;
-	else if ( strstr(ciag,"zielony") )
-		tmp = GOC_GREEN;
-	else if ( strstr(ciag,"cyjankowy") )
-		tmp = GOC_CYAN;
-	else if ( strstr(ciag,"żółty") )
-		tmp = GOC_YELLOW;
-	if ( strstr(ciag,"jasny") )
-		tmp |= GOC_FBOLD;
-	
-	return tmp;
-}
-
 void planNadajWartosc( const char *klucz, unsigned int pozycja, char znak, GOC_COLOR color )
 {
 	const char *tmp = konfplikDajParametr( _scena->konf, klucz );
 	if ( strlen(tmp) )
-		goc_maskSetValue(_plan->gra, pozycja, tmp[0], planDoKolor(tmp) );
+		goc_maskSetValue(_plan->gra, pozycja, tmp[0], goc_stringToColor(tmp) );
 	else
 		goc_maskSetValue( _plan->gra, pozycja, znak, color );
 }
