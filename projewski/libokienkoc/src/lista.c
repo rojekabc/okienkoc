@@ -733,7 +733,7 @@ int goc_listRemove(GOC_HANDLER handler, int row) {
 	GOC_StList *lista = (GOC_StList*)handler;
 	for ( int i=0; i<goc_arraySize( &lista->columns ); i++ ) {
 		GOC_COLUMN* column = goc_arrayGet( &lista->columns, i );
-		goc_arrayRemove( &column->elements, row );
+		goc_arrayRemoveAt( &column->elements, row );
 	}
 	return GOC_ERR_OK;
 }
